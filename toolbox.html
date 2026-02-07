@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hexindo Toolbox Pro - Fast Check</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --hex-yellow: #ffc107; --hex-dark: #212529; --success: #d4edda; --warning: #fff3cd; --danger: #f8d7da; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 10px; background: #f4f4f4; font-size: 11px; }
+        .container { background: white; padding: 20px; border-radius: 12px; max-width: 1100px; margin: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--hex-yellow); margin-bottom: 15px; padding-bottom: 8px; }
+        .month-badge { background: var(--hex-dark); color: var(--hex-yellow); padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 12px; }
+        .summary-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .summary-card { flex: 1; padding: 10px; border-radius: 8px; text-align: center; color: white; font-weight: bold; font-size: 14px; }
+        .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; background: #f9f9f9; padding: 12px; border-radius: 8px; }
+        input { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Tombol Controls */
+        .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        button { padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; }
+        .btn-check-all { background: #17a2b8; } /* Warna Cyan */
+        .btn-clear { background: #6c757d; }
+        
+        .main-grid { display: flex; gap: 15px; margin-bottom: 20px; }
+        .scroll-area { height: 380px; overflow-y: scroll; border: 1px solid #ddd; border-radius: 8px; background: #fff; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--hex-dark); color: white; position: sticky; top: 0; padding: 10px; z-index: 5; }
+        td { padding: 6px; border-bottom: 1px solid #eee; }
+        .row-baik { background-color: var(--success) !important; }
+        .row-rusak { background-color: var(--warning) !important; }
+        .row-hilang { background-color: var(--danger) !important; }
+        .hist-table { width: 100%; border-collapse: collapse; background: white; font-size: 10px; margin-top: 10px; }
+        .btn-edit { background: #ffc107; color: black; padding: 3px 8px; font-size: 9px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2 style="margin:0"><span style="color:var(--hex-yellow)">HEXINDO</span> TOOLBOX</h2>
+        <div class="month-badge" id="currentMonthBadge">Loading...</div>
+    </div>
+
+    <div class="summary-container">
+        <div class="summary-card" style="background:#28a745">B: <span id="countB">0</span></div>
+        <div class="summary-card" style="background:#ffc107; color:black">R: <span id="countR">0</span></div>
+        <div class="summary-card" style="background:#dc3545">H: <span id="countH">0</span></div>
+    </div>
+
+    <input type="hidden" id="editingId" value="">
+
+    <div class="meta-grid">
+        <input type="text" id="asset" placeholder="Asset No" value="101602010004">
+        <input type="text" id="pic" placeholder="PIC Name" value="M. IRVAN RIFAI">
+        <input type="date" id="tgl" onchange="updateMonthBadge()">
+        <input type="text" id="branch" value="ADARO PROJECT">
+    </div>
+
+    <div class="controls">
+        <button id="btnSubmit" style="background:#28a745" onclick="prosesSimpan()">🚀 SIMPAN KE CLOUD</button>
+        <button class="btn-check-all" onclick="checkAllBaik()">✅ CHECK ALL (B)</button>
+        <button class="btn-clear" onclick="clearAll()">🚫 CLEAR ALL</button>
+        <button style="background:#007bff" onclick="resetForm()">➕ DATA BARU</button>
+    </div>
+
+    <div class="main-grid">
+        <div style="flex:1"><div class="scroll-area"><table><thead><tr><th>No</th><th>Item 1-53</th><th>B</th><th>R</th><th>H</th></tr></thead><tbody id="area1"></tbody></table></div></div>
+        <div style="flex:1"><div class="scroll-area"><table><thead><tr><th>No</th><th>Item 54-106</th><th>B</th><th>R</th><th>H</th></tr></thead><tbody id="area2"></tbody></table></div></div>
+    </div>
+
+    <div class="history-section">
+        <h3>📋 Riwayat Sinkronisasi</h3>
+        <table class="hist-table">
+            <thead><tr><th>Tgl</th><th>Asset</th><th>PIC</th><th>B/R/H</th><th>Aksi</th></tr></thead>
+            <tbody id="histBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const listAlat = ["Adjustable wrench L=12\"", "Adjustable wrench pipe L=10\"", "Allen key 12mm", "Allen key 14mm", "Allen key 17mm", "Allen key set 2-10mm", "Brush steel W=30mm", "Catridge belt wrench 125mm", "Chisel plate W=11 L=140mm", "Combination wrench 24mm", "Combination wrench 27mm", "Combination wrench 30mm", "Combination wrench 32mm", "Combination wrench 36mm", "Combination wrench 41mm", "Extention socket 1/2\" L=10\"", "Extention socket 1/2\" L=5\"", "Extention socket 3/4\" L=18\"", "Extention socket 3/4\" L=8\"", "Extention socket 1/2\" U-joint", "Feeler gauge set", "Files set (5 pcs) 150mm", "Files plate type 250mm", "Files round type 250mm", "Haksaw iron & blade", "Half moon wrench 14x17", "Half moon wrench 19x22", "Hammer besi 0.5kg", "Hammer karet 0.5kg", "Hammer plastik 0.5kg", "Handle socket T 1/2\"", "Handle socket T 3/4\"", "Handle rachet 1/2\"", "Handle rachet 3/4\"", "Magnetic stick L=50cm", "Multitester CD 800", "Open end 6x7", "Open end 8x9", "Open end 10x11", "Open end 12x13", "Open end 14x15", "Open end 16x17", "Open end 18x19", "Open end 20x22", "Open end 24x26", "Open end 36x41", "Paint brush", "Pliers combination 200mm", "Pliers side cutting 200mm", "Pliers water pump", "Pliers viece grip", "Pliers snap ring (in)", "Pliers snap ring (out)", "Pry bar L=40cm", "Punch drift 150mm", "Punch center 130mm", "Ring spanner 6x7", "Ring spanner 8x9", "Ring spanner 10x11", "Ring spanner 12x13", "Ring spanner 14x15", "Ring spanner 16x17", "Ring spanner 18x19", "Ring spanner 20x22", "Ring spanner 24x26", "Scale meter roll 2.5m", "Scrape blade W=25mm", "Screw drive plus 75mm", "Screw drive plus 100mm", "Screw drive plus 125mm", "Screw drive plus 150mm", "Screw drive plate 75mm", "Screw drive plate 100mm", "Screw drive plate 150mm", "Screw drive plate 200mm", "Socket (12) 1/2\" 10mm", "Socket (12) 1/2\" 11mm", "Socket (12) 1/2\" 12mm", "Socket (12) 1/2\" 13mm", "Socket (12) 1/2\" 14mm", "Socket (12) 1/2\" 15mm", "Socket (12) 1/2\" 16mm", "Socket (12) 1/2\" 17mm", "Socket (12) 1/2\" 18mm", "Socket (12) 1/2\" 19mm", "Socket (12) 1/2\" 20mm", "Socket (12) 1/2\" 21mm", "Socket (12) 1/2\" 22mm", "Socket (12) 3/4\" 22mm", "Socket (12) 3/4\" 23mm", "Socket (12) 3/4\" 24mm", "Socket (12) 3/4\" 27mm", "Socket (12) 3/4\" 28mm", "Socket (12) 3/4\" 29mm", "Socket (12) 3/4\" 30mm", "Socket (12) 3/4\" 32mm", "Socket (12) 3/4\" 36mm", "Socket (12) 3/4\" 38mm", "Socket (12) 3/4\" 41mm", "Socket (12) 3/4\" 46mm", "Stop watch digital", "Thermometer 0-200C", "Treeds gauge set", "Tools box 3 step", "Test pen DC", "Vernier caliper 150mm"];
+
+    function refreshSummary() {
+        let b = 0, r = 0, h = 0;
+        listAlat.forEach((_, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"]:checked`);
+            const row = document.getElementById(`row-${i+1}`);
+            if(rad) {
+                row.className = rad.value === "B" ? "row-baik" : rad.value === "R" ? "row-rusak" : "row-hilang";
+                if(rad.value === "B") b++; else if(rad.value === "R") r++; else h++;
+            }
+        });
+        document.getElementById('countB').innerText = b;
+        document.getElementById('countR').innerText = r;
+        document.getElementById('countH').innerText = h;
+    }
+
+    // FUNGSI CHECK ALL BAIK
+    function checkAllBaik() {
+        listAlat.forEach((_, i) => {
+            const radB = document.querySelector(`input[name="t-${i+1}"][value="B"]`);
+            if(radB) radB.checked = true;
+        });
+        refreshSummary();
+    }
+
+    // FUNGSI CLEAR ALL
+    function clearAll() {
+        if(!confirm("Kosongkan semua pilihan?")) return;
+        document.querySelectorAll('input[type="radio"]').forEach(r => {
+            r.checked = false;
+            const row = r.closest('tr');
+            if(row) row.className = "";
+        });
+        refreshSummary();
+    }
+
+    function updateMonthBadge() {
+        const d = new Date(document.getElementById('tgl').value);
+        const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+        document.getElementById('currentMonthBadge').innerText = months[d.getMonth()] + " " + d.getFullYear();
+    }
+
+    // Render Table
+    const area1 = document.getElementById('area1'), area2 = document.getElementById('area2');
+    listAlat.forEach((name, i) => {
+        const no = i + 1;
+        const html = `<tr id="row-${no}"><td>${no}</td><td>${name}</td><td><input type="radio" name="t-${no}" value="B" onclick="refreshSummary()"></td><td><input type="radio" name="t-${no}" value="R" onclick="refreshSummary()"></td><td><input type="radio" name="t-${no}" value="H" onclick="refreshSummary()"></td></tr>`;
+        if(no <= 53) area1.innerHTML += html; else area2.innerHTML += html;
+    });
+
+    // CONFIG SUPABASE (SESUAIKAN)
+    const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+    const sbClient = window.supabase.createClient(SB_URL, SB_KEY);
+
+    async function prosesSimpan() {
+        const values = listAlat.map((_, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"]:checked`);
+            return rad ? rad.value : null;
+        });
+        if(values.includes(null)) return alert("Masih ada item yang belum dicek!");
+
+        const payload = {
+            asset_no: document.getElementById('asset').value,
+            pic_name: document.getElementById('pic').value,
+            check_date: document.getElementById('tgl').value,
+            branch: document.getElementById('branch').value,
+            items_data: values
+        };
+
+        const editingId = document.getElementById('editingId').value;
+        let res;
+        if(editingId) res = await sbClient.from('toolbox_reports').update(payload).eq('id', editingId);
+        else res = await sbClient.from('toolbox_reports').insert([payload]);
+
+        if(res.error) alert(res.error.message);
+        else { alert("Berhasil Disimpan!"); fetchHistory(); }
+    }
+
+    async function fetchHistory() {
+        const { data } = await sbClient.from('toolbox_reports').select('*').order('check_date', { ascending: false }).limit(5);
+        const histBody = document.getElementById('histBody');
+        histBody.innerHTML = "";
+        if(data) {
+            data.forEach(row => {
+                const b = row.items_data.filter(x => x==='B').length;
+                const r = row.items_data.filter(x => x==='R').length;
+                const h = row.items_data.filter(x => x==='H').length;
+                histBody.innerHTML += `<tr>
+                    <td>${row.check_date}</td>
+                    <td>${row.asset_no}</td>
+                    <td>${row.pic_name}</td>
+                    <td>B:${b} R:${r} H:${h}</td>
+                    <td><button class="btn-edit" onclick='loadData(${JSON.stringify(row)})'>Edit</button></td>
+                </tr>`;
+            });
+        }
+    }
+
+    function loadData(row) {
+        document.getElementById('editingId').value = row.id;
+        document.getElementById('asset').value = row.asset_no;
+        document.getElementById('pic').value = row.pic_name;
+        document.getElementById('tgl').value = row.check_date;
+        row.items_data.forEach((val, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"][value="${val}"]`);
+            if(rad) rad.checked = true;
+        });
+        document.getElementById('btnSubmit').innerText = "🔄 UPDATE REVISI";
+        refreshSummary();
+        updateMonthBadge();
+        window.scrollTo(0,0);
+    }
+
+    function resetForm() {
+        document.getElementById('editingId').value = "";
+        document.getElementById('btnSubmit').innerText = "🚀 SIMPAN KE CLOUD";
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        refreshSummary();
+        alert("Form direset ke input baru.");
+    }
+
+    document.getElementById('tgl').valueAsDate = new Date();
+    updateMonthBadge();
+    fetchHistory();
+</script>
+</body>
+</html>
