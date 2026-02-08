@@ -3,204 +3,339 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toolbox Inventory | Hexindo Fleet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Toolbox Pro | Hexindo Fleet</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        .tool-card { transition: all 0.2s; }
-        .tool-card:hover { border-color: #eab308; background-color: #fefce8; }
+        :root { 
+            --hex-yellow: #ffc107; 
+            --hex-dark: #1a1d20; 
+            --bg-body: #f0f2f5;
+            --success: #198754; 
+            --warning: #ffc107; 
+            --danger: #dc3545;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        html { display: none; } /* Proteksi sebelum cek login */
+
+        body { 
+            font-family: 'Inter', -apple-system, sans-serif; 
+            margin: 0; padding: 20px; 
+            background: var(--bg-body); 
+            color: #334155;
+            font-size: 11px;
+        }
+
+        .container { max-width: 1400px; margin: auto; }
+
+        .top-bar { 
+            background: var(--hex-dark); color: white; 
+            padding: 15px 25px; border-radius: 14px; 
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; box-shadow: var(--card-shadow);
+            border-bottom: 4px solid var(--hex-yellow);
+        }
+
+        .brand-section { display: flex; align-items: center; gap: 15px; }
+        .btn-home { background: var(--hex-yellow); border: none; padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .btn-home:hover { transform: scale(1.1); }
+
+        .role-indicator { font-size: 9px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+
+        .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .s-card { background: white; padding: 20px; border-radius: 16px; text-align: center; box-shadow: var(--card-shadow); }
+        .s-card.baik { border-bottom: 5px solid var(--success); }
+        .s-card.rusak { border-bottom: 5px solid var(--warning); }
+        .s-card.hilang { border-bottom: 5px solid var(--danger); }
+        .s-val { font-size: 28px; font-weight: 900; display: block; }
+        .s-label { font-size: 10px; text-transform: uppercase; font-weight: 800; color: #64748b; margin-top: 5px; }
+
+        .meta-card { 
+            background: white; padding: 20px; border-radius: 16px; 
+            display: grid; grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; margin-bottom: 20px; box-shadow: var(--card-shadow);
+        }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 800; color: #475569; font-size: 10px; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 12px; font-weight: 600; }
+        .readonly-bg { background: #f1f5f9; color: #475569; border: none; }
+
+        .btn-group { display: flex; gap: 12px; margin-bottom: 25px; }
+        .btn-group button { 
+            flex: 1; padding: 16px; border: none; border-radius: 12px; 
+            font-weight: 900; cursor: pointer; transition: 0.2s; color: white;
+            text-transform: uppercase; font-size: 11px; letter-spacing: 1px;
+        }
+        .btn-save { background: var(--hex-dark); border: 2px solid var(--hex-yellow) !important; color: var(--hex-yellow) !important; }
+        .btn-pull { background: #7c3aed; } /* Violet untuk Pull Cloud */
+        .btn-check { background: #0ea5e9; }
+        .btn-new { background: #64748b; }
+
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .table-container { background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--card-shadow); border: 1px solid #e2e8f0; }
+        .scroll-area { height: 500px; overflow-y: auto; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a1d20; color: white; padding: 15px; font-size: 10px; text-transform: uppercase; text-align: left; position: sticky; top: 0; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+
+        .row-baik { background-color: #f0fdf4; }
+        .row-rusak { background-color: #fffbeb; }
+        .row-hilang { background-color: #fef2f2; }
+
+        .history-card { background: white; padding: 25px; border-radius: 16px; box-shadow: var(--card-shadow); }
+        .btn-edit { background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 10px; }
+
+        @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } .meta-card { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
-<body class="min-h-screen pb-20">
+<body>
 
-    <header class="bg-[#1a1d20] text-white p-6 shadow-xl border-b-4 border-yellow-500 mb-8 no-print">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <button onclick="window.location.href='index.html'" class="bg-yellow-500 p-2 rounded-lg text-slate-900 shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                </button>
-                <div>
-                    <h1 class="text-xl font-black italic uppercase">Toolbox <span class="text-yellow-500 not-italic">Inventory</span></h1>
-                    <p id="accessLabel" class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic italic">Checking Access...</p>
-                </div>
-            </div>
-            <div class="flex gap-2">
-                <button onclick="syncToolbox()" id="btnSync" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl uppercase transition-all">☁️ Sync Cloud</button>
-                <button onclick="fetchToolbox()" class="bg-violet-700 hover:bg-violet-600 text-[10px] font-black px-4 py-2 rounded-xl uppercase transition-all">🔄 Pull Cloud</button>
+<div class="container">
+    <div class="top-bar">
+        <div class="brand-section">
+            <button class="btn-home" onclick="window.location.href='index.html'">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </button>
+            <div>
+                <h2 style="margin:0; font-size: 18px; font-weight: 900; letter-spacing: -0.5px;">TOOLBOX <span style="color:var(--hex-yellow)">PRO</span></h2>
+                <div class="role-indicator" id="roleText">Access: Checking...</div>
             </div>
         </div>
-    </header>
+        <div class="brand-section">
+            <div id="currentMonthBadge" style="background:rgba(255,255,255,0.1); padding:8px 15px; border-radius:8px; font-weight:900; border:1px solid var(--hex-yellow)">FEB 2026</div>
+        </div>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-10">
-        
-        <div class="lg:col-span-4 space-y-6">
-            <div class="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-200">
-                <h2 class="text-xl font-black text-slate-800 mb-6 flex items-center uppercase italic">
-                    <span class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center mr-3 text-slate-900 text-xs shadow-lg shadow-yellow-500/20">ADD</span>
-                    Registrasi Alat
-                </h2>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Nama Alat / Tool Name</label>
-                        <input type="text" id="toolName" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:border-yellow-500 focus:outline-none transition-all" placeholder="E.g. Torque Wrench 1/2">
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Kondisi / Condition</label>
-                        <select id="toolCondition" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:border-yellow-500 focus:outline-none transition-all">
-                            <option value="Good">✅ Good Condition</option>
-                            <option value="Damaged">❌ Damaged / Broken</option>
-                            <option value="Missing">⚠️ Missing / Lost</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Catatan Tambahan</label>
-                        <input type="text" id="toolNote" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm focus:border-yellow-500 focus:outline-none transition-all" placeholder="E.g. Calibration due June 2026">
-                    </div>
-                    <button onclick="addToolLocally()" class="w-full bg-slate-900 text-yellow-500 font-black py-5 rounded-2xl hover:bg-slate-800 transition-all uppercase text-xs tracking-[0.2em] shadow-xl">Tambahkan ke List</button>
-                </div>
+    <div class="summary-grid">
+        <div class="s-card baik"><span class="s-val" id="countB" style="color:var(--success)">0</span><span class="s-label">Kondisi Baik</span></div>
+        <div class="s-card rusak"><span class="s-val" id="countR" style="color:#d97706">0</span><span class="s-label">Kondisi Rusak</span></div>
+        <div class="s-card hilang"><span class="s-val" id="countH" style="color:#dc3545">0</span><span class="s-label">Item Hilang</span></div>
+    </div>
+
+    <input type="hidden" id="editingId" value="">
+
+    <div class="meta-card">
+        <div class="input-group"><label>NRP Teknisi</label><input type="text" id="asset" class="readonly-bg" readonly></div>
+        <div class="input-group"><label>Nama Lengkap</label><input type="text" id="pic" class="readonly-bg" readonly></div>
+        <div class="input-group"><label>Tanggal Inspeksi</label><input type="date" id="tgl" onchange="updateMonthBadge()"></div>
+        <div class="input-group"><label>Lokasi Kerja</label><input type="text" id="branch" value="ADARO PROJECT" class="readonly-bg" readonly></div>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-save" onclick="prosesSimpan()" id="btnSubmit">☁️ Sync To Cloud</button>
+        <button class="btn-pull" onclick="fetchHistory()">🔄 Pull From Cloud</button>
+        <button class="btn-check" onclick="checkAllBaik()">✅ Check All B</button>
+        <button class="btn-new" onclick="resetForm()">➕ New Inspection</button>
+    </div>
+
+    <div class="main-grid">
+        <div class="table-container">
+            <div class="scroll-area">
+                <table>
+                    <thead><tr><th width="40">No</th><th>Item Deskripsi (1-53)</th><th width="40">B</th><th width="40">R</th><th width="40">H</th></tr></thead>
+                    <tbody id="area1"></tbody>
+                </table>
             </div>
         </div>
-
-        <div class="lg:col-span-8">
-            <div class="flex justify-between items-end mb-6 px-2">
-                <h2 class="text-2xl font-black text-slate-800 italic uppercase">Daftar Inventaris</h2>
-                <span id="toolCount" class="bg-slate-200 text-slate-600 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest">0 Tools</span>
-            </div>
-
-            <div id="toolList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                </div>
-            
-            <div id="emptyState" class="hidden text-center py-20 bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
-                <p class="text-slate-400 font-bold italic uppercase tracking-widest">Belum ada data alat terdaftar.</p>
+        <div class="table-container">
+            <div class="scroll-area">
+                <table>
+                    <thead><tr><th width="40">No</th><th>Item Deskripsi (54-106)</th><th width="40">B</th><th width="40">R</th><th width="40">H</th></tr></thead>
+                    <tbody id="area2"></tbody>
+                </table>
             </div>
         </div>
-    </main>
+    </div>
 
-    <script>
-        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        const sb = supabase.createClient(SB_URL, SB_KEY);
+    <div class="history-card">
+        <h3 style="margin-top:0; font-size:14px; text-transform:uppercase; color:#1e293b; font-weight:900; border-left:4px solid var(--hex-yellow); padding-left:10px;">📋 Cloud Sync Records</h3>
+        <table style="width:100%; margin-top:15px;">
+            <thead>
+                <tr style="background:#f8fafc">
+                    <th style="color:#64748b; padding:10px;">Date</th>
+                    <th style="color:#64748b;">NIK / NRP</th>
+                    <th style="color:#64748b;">PIC Name</th>
+                    <th style="color:#64748b;">Summary</th>
+                    <th style="text-align:right; color:#64748b;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="histBody"></tbody>
+        </table>
+        <div id="loader" style="display:none; text-align:center; padding:20px; font-weight:bold; color:var(--hex-yellow)">Menghubungkan ke Cloud...</div>
+    </div>
+</div>
 
-        const role = localStorage.getItem('userRole');
-        const userNrp = localStorage.getItem('userNRP');
-        const userName = localStorage.getItem('userName');
-        const STORAGE_KEY = 'toolbox_local_data';
+<script>
+    const userRole = localStorage.getItem('userRole') || 'technician';
+    const userNrp = localStorage.getItem('userNRP');
+    const userName = localStorage.getItem('userName');
 
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('accessLabel').innerText = (role === 'admin') 
-                ? "Access: Admin (Monitor All Toolboxes)" 
-                : `Access: Technician (${userName})`;
-            renderTools();
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+    } else {
+        document.documentElement.style.display = 'block';
+        document.getElementById('roleText').innerText = userRole === 'admin' ? "🛡️ Access: Administrator" : `🔧 Access: Technician (${userName})`;
+    }
+
+    const listAlat = ["Adjustable wrench L=12\"", "Adjustable wrench pipe L=10\"", "Allen key 12mm", "Allen key 14mm", "Allen key 17mm", "Allen key set 2-10mm", "Brush steel W=30mm", "Catridge belt wrench 125mm", "Chisel plate W=11 L=140mm", "Combination wrench 24mm", "Combination wrench 27mm", "Combination wrench 30mm", "Combination wrench 32mm", "Combination wrench 36mm", "Combination wrench 41mm", "Extention socket 1/2\" L=10\"", "Extention socket 1/2\" L=5\"", "Extention socket 3/4\" L=18\"", "Extention socket 3/4\" L=8\"", "Extention socket 1/2\" U-joint", "Feeler gauge set", "Files set (5 pcs) 150mm", "Files plate type 250mm", "Files round type 250mm", "Haksaw iron & blade", "Half moon wrench 14x17", "Half moon wrench 19x22", "Hammer besi 0.5kg", "Hammer karet 0.5kg", "Hammer plastik 0.5kg", "Handle socket T 1/2\"", "Handle socket T 3/4\"", "Handle rachet 1/2\"", "Handle rachet 3/4\"", "Magnetic stick L=50cm", "Multitester CD 800", "Open end 6x7", "Open end 8x9", "Open end 10x11", "Open end 12x13", "Open end 14x15", "Open end 16x17", "Open end 18x19", "Open end 20x22", "Open end 24x26", "Open end 36x41", "Paint brush", "Pliers combination 200mm", "Pliers side cutting 200mm", "Pliers water pump", "Pliers viece grip", "Pliers snap ring (in)", "Pliers snap ring (out)", "Pry bar L=40cm", "Punch drift 150mm", "Punch center 130mm", "Ring spanner 6x7", "Ring spanner 8x9", "Ring spanner 10x11", "Ring spanner 12x13", "Ring spanner 14x15", "Ring spanner 16x17", "Ring spanner 18x19", "Ring spanner 20x22", "Ring spanner 24x26", "Scale meter roll 2.5m", "Scrape blade W=25mm", "Screw drive plus 75mm", "Screw drive plus 100mm", "Screw drive plus 125mm", "Screw drive plus 150mm", "Screw drive plate 75mm", "Screw drive plate 100mm", "Screw drive plate 150mm", "Screw drive plate 200mm", "Socket (12) 1/2\" 10mm", "Socket (12) 1/2\" 11mm", "Socket (12) 1/2\" 12mm", "Socket (12) 1/2\" 13mm", "Socket (12) 1/2\" 14mm", "Socket (12) 1/2\" 15mm", "Socket (12) 1/2\" 16mm", "Socket (12) 1/2\" 17mm", "Socket (12) 1/2\" 18mm", "Socket (12) 1/2\" 19mm", "Socket (12) 1/2\" 20mm", "Socket (12) 1/2\" 21mm", "Socket (12) 1/2\" 22mm", "Socket (12) 3/4\" 22mm", "Socket (12) 3/4\" 23mm", "Socket (12) 3/4\" 24mm", "Socket (12) 3/4\" 27mm", "Socket (12) 3/4\" 28mm", "Socket (12) 3/4\" 29mm", "Socket (12) 3/4\" 30mm", "Socket (12) 3/4\" 32mm", "Socket (12) 3/4\" 36mm", "Socket (12) 3/4\" 38mm", "Socket (12) 3/4\" 41mm", "Socket (12) 3/4\" 46mm", "Stop watch digital", "Thermometer 0-200C", "Treeds gauge set", "Tools box 3 step", "Test pen DC", "Vernier caliper 150mm"];
+
+    const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+    const sbClient = supabase.createClient(SB_URL, SB_KEY);
+
+    function refreshSummary() {
+        let b = 0, r = 0, h = 0;
+        listAlat.forEach((_, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"]:checked`);
+            const row = document.getElementById(`row-${i+1}`);
+            if(rad) {
+                row.className = rad.value === "B" ? "row-baik" : rad.value === "R" ? "row-rusak" : "row-hilang";
+                if(rad.value === "B") b++; else if(rad.value === "R") r++; else h++;
+            }
+        });
+        document.getElementById('countB').innerText = b;
+        document.getElementById('countR').innerText = r;
+        document.getElementById('countH').innerText = h;
+    }
+
+    function checkAllBaik() {
+        listAlat.forEach((_, i) => {
+            const radB = document.querySelector(`input[name="t-${i+1}"][value="B"]`);
+            if(radB) radB.checked = true;
+        });
+        refreshSummary();
+    }
+
+    function updateMonthBadge() {
+        const tglInput = document.getElementById('tgl').value;
+        if(!tglInput) return;
+        const d = new Date(tglInput);
+        const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+        document.getElementById('currentMonthBadge').innerText = months[d.getMonth()] + " " + d.getFullYear();
+    }
+
+    const area1 = document.getElementById('area1'), area2 = document.getElementById('area2');
+    listAlat.forEach((name, i) => {
+        const no = i + 1;
+        const html = `<tr id="row-${no}"><td>${no}</td><td style="font-weight:700; color:#334155">${name}</td><td><input type="radio" name="t-${no}" value="B" onclick="refreshSummary()"></td><td><input type="radio" name="t-${no}" value="R" onclick="refreshSummary()"></td><td><input type="radio" name="t-${no}" value="H" onclick="refreshSummary()"></td></tr>`;
+        if(no <= 53) area1.innerHTML += html; else area2.innerHTML += html;
+    });
+
+    async function prosesSimpan() {
+        const btn = document.getElementById('btnSubmit');
+        const values = listAlat.map((_, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"]:checked`);
+            return rad ? rad.value : null;
         });
 
-        function addToolLocally() {
-            const name = document.getElementById('toolName').value;
-            const condition = document.getElementById('toolCondition').value;
-            const note = document.getElementById('toolNote').value;
+        if(values.includes(null)) return alert("⚠️ Perhatian: Ada item yang belum diperiksa!");
 
-            if(!name) return alert("Nama alat wajib diisi!");
+        btn.disabled = true;
+        btn.innerText = "⏳ Memproses...";
 
-            const newTool = {
-                id: Date.now(),
-                nik: userNrp,
-                owner: userName,
-                tool_name: name,
-                condition: condition,
-                note: note,
-                updated_at: new Date().toISOString()
-            };
+        const payload = {
+            nik: document.getElementById('asset').value,
+            pic_name: document.getElementById('pic').value,
+            check_date: document.getElementById('tgl').value,
+            branch: document.getElementById('branch').value,
+            items_data: values
+        };
 
-            let tools = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            tools.unshift(newTool);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
-            
-            document.getElementById('toolName').value = '';
-            document.getElementById('toolNote').value = '';
-            renderTools();
+        const editingId = document.getElementById('editingId').value;
+        let res;
+        
+        if(editingId) {
+            res = await sbClient.from('toolbox_reports').update(payload).eq('id', editingId);
+        } else {
+            res = await sbClient.from('toolbox_reports').insert([payload]);
         }
 
-        function renderTools() {
-            const list = document.getElementById('toolList');
-            const tools = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            document.getElementById('toolCount').innerText = `${tools.length} Tools`;
-            
-            if(tools.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-                list.innerHTML = '';
-                return;
-            }
-            document.getElementById('emptyState').classList.add('hidden');
+        if(res.error) {
+            alert("Error: " + res.error.message);
+        } else {
+            alert("✅ Data inspeksi berhasil disinkronkan ke Cloud!");
+            fetchHistory();
+            resetForm();
+        }
+        btn.disabled = false;
+        btn.innerText = "☁️ Sync To Cloud";
+    }
 
-            list.innerHTML = tools.map(t => `
-                <div class="tool-card bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm flex flex-col justify-between relative overflow-hidden">
-                    <div>
-                        <div class="flex justify-between items-start mb-4">
-                            <span class="text-[10px] font-black uppercase px-3 py-1 rounded-lg ${t.condition === 'Good' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">${t.condition}</span>
-                            <button onclick="deleteTool(${t.id})" class="text-slate-300 hover:text-red-500 font-bold text-xl">&times;</button>
-                        </div>
-                        <h4 class="text-lg font-black text-slate-800 uppercase italic leading-tight">${t.tool_name}</h4>
-                        <p class="text-xs text-slate-500 mt-2 font-medium italic">"${t.note || '-'}"</p>
-                    </div>
-                    <div class="mt-6 pt-4 border-t border-slate-50 flex justify-between items-center">
-                        <div class="text-[8px] font-black text-slate-400 uppercase">
-                            OWNER: ${t.owner}<br>
-                            NIK: ${t.nik}
-                        </div>
-                        <div class="text-[8px] text-slate-300 font-bold uppercase">${new Date(t.updated_at).toLocaleDateString()}</div>
-                    </div>
-                </div>
-            `).join('');
+    async function fetchHistory() {
+        document.getElementById('loader').style.display = 'block';
+        let query = sbClient.from('toolbox_reports').select('*');
+
+        // LOGIKA FILTER: Jika bukan admin, hanya ambil milik sendiri (berdasarkan NIK)
+        if (userRole !== 'admin') {
+            query = query.eq('nik', userNrp);
         }
 
-        function deleteTool(id) {
-            if(!confirm("Hapus alat ini dari daftar?")) return;
-            let tools = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            tools = tools.filter(t => t.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
-            renderTools();
+        const { data, error } = await query.order('check_date', { ascending: false }).limit(10);
+        
+        document.getElementById('loader').style.display = 'none';
+        const histBody = document.getElementById('histBody');
+        histBody.innerHTML = "";
+
+        if(data && data.length > 0) {
+            data.forEach(row => {
+                const b = row.items_data.filter(x => x==='B').length;
+                const r = row.items_data.filter(x => x==='R').length;
+                const h = row.items_data.filter(x => x==='H').length;
+                histBody.innerHTML += `<tr style="border-bottom:1px solid #f1f5f9">
+                    <td style="padding:12px; font-weight:700">${row.check_date}</td>
+                    <td style="color:#64748b">${row.nik || '-'}</td>
+                    <td style="text-transform:uppercase; font-weight:600">${row.pic_name}</td>
+                    <td>
+                        <span style="color:var(--success)">B:${b}</span> 
+                        <span style="color:#d97706; margin:0 5px;">R:${r}</span> 
+                        <span style="color:var(--danger)">H:${h}</span>
+                    </td>
+                    <td style="text-align:right"><button class="btn-edit" onclick='loadData(${JSON.stringify(row)})'>REVISI</button></td>
+                </tr>`;
+            });
+        } else {
+            histBody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:#94a3b8;'>Tidak ada riwayat sinkronisasi ditemukan.</td></tr>";
         }
+    }
 
-        async function syncToolbox() {
-            const btn = document.getElementById('btnSync');
-            const tools = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            if(!tools.length) return alert("Daftar alat kosong!");
+    function loadData(row) {
+        document.getElementById('editingId').value = row.id;
+        document.getElementById('asset').value = row.nik;
+        document.getElementById('pic').value = row.pic_name;
+        document.getElementById('tgl').value = row.check_date;
+        
+        row.items_data.forEach((val, i) => {
+            const rad = document.querySelector(`input[name="t-${i+1}"][value="${val}"]`);
+            if(rad) rad.checked = true;
+        });
 
-            btn.innerText = "Syncing..."; btn.disabled = true;
-            try {
-                // Upsert data ke tabel 'toolbox_inventory'
-                const { error } = await sb.from('toolbox_inventory').upsert(tools);
-                if(error) throw error;
-                alert("✅ Sinkronisasi Berhasil!");
-            } catch (err) {
-                alert("❌ Gagal Sync: " + err.message);
-            } finally {
-                btn.innerText = "☁️ Sync Cloud"; btn.disabled = false;
-            }
-        }
+        document.getElementById('btnSubmit').innerText = "🔄 Update Revisi Ke Cloud";
+        refreshSummary();
+        updateMonthBadge();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    }
 
-        async function fetchToolbox() {
-            if(!confirm("Pull data dari Cloud? Data lokal akan tertimpa.")) return;
-            try {
-                let query = sb.from('toolbox_inventory').select('*');
-                
-                // FILTER: Admin tarik semua, Teknisi tarik per NIK
-                if (role !== 'admin') {
-                    query = query.eq('nik', userNrp);
-                }
+    function resetForm() {
+        document.getElementById('editingId').value = "";
+        document.getElementById('btnSubmit').innerText = "☁️ Sync To Cloud";
+        document.getElementById('asset').value = userNrp;
+        document.getElementById('pic').value = userName;
+        document.getElementById('tgl').valueAsDate = new Date();
+        document.querySelectorAll('input[type="radio"]').forEach(r => {
+            r.checked = false;
+            r.closest('tr').className = "";
+        });
+        refreshSummary();
+        updateMonthBadge();
+    }
 
-                const { data, error } = await query.order('tool_name', { ascending: true });
-                if(error) throw error;
-                
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-                renderTools();
-                alert("✅ Data Berhasil Ditarik!");
-            } catch (err) {
-                alert("❌ Gagal: " + err.message);
-            }
-        }
-    </script>
+    // Initialize
+    document.getElementById('tgl').valueAsDate = new Date();
+    document.getElementById('asset').value = userNrp;
+    document.getElementById('pic').value = userName;
+    
+    updateMonthBadge();
+    fetchHistory();
+</script>
 </body>
 </html>
