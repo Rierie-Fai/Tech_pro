@@ -4,126 +4,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Hexindo Fleet Pro</title>
+    
     <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta name="theme-color" content="#e0eafc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="logo.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Salju Latar Belakang */
+        .snow-flake {
+            position: absolute; top: -10px; color: white; user-select: none;
+            z-index: 1; pointer-events: none; animation: fall linear infinite;
+            filter: blur(1px); opacity: 0.8;
+        }
+        @keyframes fall {
+            to { transform: translateY(105vh) rotate(360deg); }
+        }
+
+        /* Partikel Serpihan Es (Saat Klik) */
+        .ice-shard {
+            position: absolute; pointer-events: none;
+            background: white; border-radius: 2px;
+            z-index: 100; animation: burst 0.8s ease-out forwards;
+        }
+        @keyframes burst {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+
+        /* Glass Box */
         .glass-login {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(25px) saturate(200%);
+            -webkit-backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 30px 60px -12px rgba(31, 38, 135, 0.15);
+            border-radius: 3.5rem;
+            width: 100%; max-width: 420px;
+            position: relative; z-index: 10;
         }
-        .input-group-custom:focus-within {
-            border: 2px solid #eab308;
-            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.8) !important;
+            border-radius: 1.25rem; transition: 0.3s all;
         }
-        input::-ms-reveal, input::-ms-clear { display: none; }
+        .input-glass:focus {
+            background: rgba(255, 255, 255, 0.9) !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .logo-blend { mix-blend-mode: multiply; filter: contrast(1.1) brightness(1.1); }
+
+        .btn-ice {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.4);
+            transition: 0.3s all; overflow: hidden; position: relative;
+        }
+        .btn-ice:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5); }
+        .btn-ice:active:not(:disabled) { transform: scale(0.95); }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body>
 
-    <div class="max-w-md w-full">
-        <div class="text-center mb-10">
-            <div class="inline-block w-20 h-20 bg-yellow-500 rounded-3xl mb-6 flex items-center justify-center text-slate-900 text-4xl font-black italic shadow-2xl">H</div>
-            <h1 class="text-3xl font-black text-white tracking-tighter italic uppercase">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
-            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Digital Service Terminal</p>
+    <div id="snow-container" class="absolute inset-0 pointer-events-none"></div>
+
+    <div class="glass-login p-10 text-center">
+        <div class="flex flex-col items-center mb-8">
+            <div class="w-32 h-32 mb-4 relative">
+                <div class="absolute inset-0 bg-blue-400/10 blur-2xl rounded-full scale-75"></div>
+                <img src="logo.png" alt="Logo" class="w-full h-full object-contain relative z-10 logo-blend drop-shadow-[0_5px_15px_rgba(255,255,255,0.4)]">
+            </div>
+            <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">
+                Hexindo <span class="text-blue-600">Fleet Pro</span>
+            </h1>
+            <p class="text-[9px] font-bold text-slate-500 tracking-[0.4em] uppercase mt-3 italic">Adaro Project Digital Terminal</p>
         </div>
 
-        <div class="glass-login p-8 rounded-[2.5rem] shadow-2xl border-t-4 border-t-yellow-500">
-            <h2 class="text-xl font-black text-white mb-8 border-l-4 border-yellow-500 pl-4 uppercase italic">Sistem Autentikasi</h2>
-            
-            <form id="loginForm" class="space-y-5">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NIK / NRP Teknisi</label>
-                    <div class="input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl transition-all overflow-hidden">
-                        <input type="text" id="nikInput" required
-                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest uppercase placeholder:text-slate-600"
-                            placeholder="MASUKKAN NIK">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
-                    <div class="relative input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl flex items-center transition-all overflow-hidden">
-                        <input type="password" id="passInput" required
-                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest placeholder:text-slate-600"
-                            placeholder="••••••••">
-                        
-                        <button type="button" onclick="togglePass()" class="p-4 text-slate-500 hover:text-yellow-500 transition-colors">
-                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="pt-4">
-                    <button type="submit" id="btnLogin"
-                        class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-5 rounded-2xl uppercase text-xs tracking-[0.2em] shadow-xl transition-all active:scale-95 flex justify-center items-center">
-                        <span id="btnText">Masuk Ke Portal</span>
-                    </button>
-                </div>
-            </form>
-            <p id="errorMsg" class="text-red-400 text-[10px] font-bold mt-4 text-center hidden uppercase tracking-widest"></p>
+        <div id="loginAlert" class="hidden mb-6 p-4 rounded-2xl bg-red-100/90 border border-red-200 text-red-600 text-[10px] font-black uppercase italic animate-pulse">
+            ⚠️ NIK atau Password Salah!
         </div>
+
+        <form id="loginForm" class="space-y-6 text-left">
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-4 mb-2 block tracking-widest italic">Personal NIK</label>
+                <input type="text" id="nikInput" required 
+                    class="input-glass w-full px-6 py-4 text-slate-800 font-bold focus:outline-none" 
+                    placeholder="Masukkan NIK...">
+            </div>
+
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-500 ml-4 mb-2 block tracking-widest italic">Password</label>
+                <input type="password" id="passInput" required 
+                    class="input-glass w-full px-6 py-4 text-slate-800 font-bold focus:outline-none" 
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" id="btnLogin" class="btn-ice w-full py-5 rounded-[1.5rem] text-white font-black text-[10px] uppercase tracking-[0.2em] mt-8">
+                Initialize Login
+            </button>
+        </form>
+
+        <footer class="mt-12 opacity-40">
+            <p class="text-[8px] text-slate-500 font-bold uppercase tracking-[0.4em]">© 2026 PT Hexindo Adaro Project</p>
+        </footer>
     </div>
 
     <script>
-        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        const sbClient = supabase.createClient(SB_URL, SB_KEY);
+        // 1. EFEK SALJU LATAR
+        function createSnow() {
+            const container = document.getElementById('snow-container');
+            for (let i = 0; i < 40; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snow-flake';
+                flake.innerHTML = '❄';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                flake.style.opacity = Math.random();
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                flake.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(flake);
+            }
+        }
+        createSnow();
 
-        function togglePass() {
-            const input = document.getElementById('passInput');
-            const icon = document.getElementById('eyeIcon');
-            if (input.type === "password") {
-                input.type = "text";
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />';
-            } else {
-                input.type = "password";
-                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+        // 2. EFEK ICE BURST (SAAT KLIK)
+        function createIceBurst(e) {
+            const btn = e.currentTarget;
+            const rect = btn.getBoundingClientRect();
+            for (let i = 0; i < 15; i++) {
+                const shard = document.createElement('div');
+                shard.className = 'ice-shard';
+                
+                // Ukuran acak serpihan
+                const size = Math.random() * 6 + 2;
+                shard.style.width = size + 'px';
+                shard.style.height = size + 'px';
+                
+                // Posisi awal di tengah tombol
+                shard.style.left = (e.clientX) + 'px';
+                shard.style.top = (e.clientY) + 'px';
+                
+                // Arah ledakan acak
+                const tx = (Math.random() - 0.5) * 200;
+                const ty = (Math.random() - 0.5) * 200;
+                shard.style.setProperty('--tx', `${tx}px`);
+                shard.style.setProperty('--ty', `${ty}px`);
+                
+                document.body.appendChild(shard);
+                setTimeout(() => shard.remove(), 800);
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const nikInput = document.getElementById('nikInput');
-            const passInput = document.getElementById('passInput');
-            const btnText = document.getElementById('btnText');
-            const errorMsg = document.getElementById('errorMsg');
+        // 3. LOGIKA LOGIN & SUPABASE
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
 
-            errorMsg.classList.add('hidden');
-            btnText.innerText = "AUTENTIFICATION..."; 
+        const form = document.getElementById('loginForm');
+        const alertBox = document.getElementById('loginAlert');
+        const btn = document.getElementById('btnLogin');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            createIceBurst(e); // Jalankan efek es
+
+            btn.disabled = true;
+            btn.innerText = "AUTHENTICATING...";
+            alertBox.classList.add('hidden');
+
+            const nik = document.getElementById('nikInput').value;
+            const pass = document.getElementById('passInput').value;
 
             try {
-                const { data, error } = await sbClient
-                    .from('users')
-                    .select('*')
-                    .eq('nik', nikInput.value.trim().toUpperCase())
-                    .eq('password', passInput.value)
-                    .single();
-
-                if (error || !data) throw new Error("NIK ATAU PASSWORD SALAH!");
+                const { data, error } = await sb.from('users').select('*').eq('nik', nik).single();
+                if (error || !data || data.password !== pass) throw new Error();
 
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userNRP', data.nik);
+                localStorage.setItem('userNRP', data.nik); 
                 localStorage.setItem('userName', data.full_name);
                 localStorage.setItem('userRole', data.role);
-
-                window.location.href = 'index.html';
-            } catch (err) {
-                errorMsg.innerText = "⚠️ " + err.message;
-                errorMsg.classList.remove('hidden');
                 
-                // BERSIHKAN PASSWORD SAJA
-                passInput.value = ""; 
-                passInput.focus();
-                btnText.innerText = "Masuk Ke Portal";
+                setTimeout(() => { window.location.href = 'index.html'; }, 600);
+            } catch (err) {
+                alertBox.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = "INITIALIZE LOGIN";
             }
         });
+
+        if (localStorage.getItem('isLoggedIn') === 'true') window.location.href = 'index.html';
     </script>
 </body>
 </html>

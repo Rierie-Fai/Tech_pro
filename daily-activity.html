@@ -9,110 +9,145 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@500&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
         
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #0f172a; 
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ENGINE AURORA BOREALIS */
+        .aurora-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; overflow: hidden; pointer-events: none;
+            background: linear-gradient(to bottom, #0f172a, #1e293b);
+        }
+
+        .aurora {
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 150, 0.15) 0%, rgba(0, 200, 255, 0.1) 25%, rgba(100, 50, 255, 0.05) 50%, transparent 70%);
+            filter: blur(60px); animation: auroraMove 15s infinite alternate ease-in-out; opacity: 0.6;
+        }
+
+        .aurora-secondary {
+            background: radial-gradient(circle at 30% 70%, rgba(0, 255, 255, 0.1) 0%, rgba(150, 0, 255, 0.05) 30%, transparent 60%);
+            animation: auroraMove 20s infinite alternate-reverse ease-in-out; animation-delay: -5s;
+        }
+
+        @keyframes auroraMove {
+            0% { transform: rotate(0deg) scale(1) translate(0, 0); }
+            50% { transform: rotate(10deg) scale(1.1) translate(-5%, 5%); }
+            100% { transform: rotate(-5deg) scale(1) translate(5%, -5%); }
+        }
+
+        /* GLASS ICE UI */
+        .glass-ice {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            color: white; position: relative; z-index: 10;
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 12px; font-size: 0.85rem; transition: 0.3s; color: white !important;
+        }
+        .input-glass:focus { background: rgba(255, 255, 255, 0.15) !important; border-color: #00f2ff !important; outline: none; }
+
+        th { font-size: 10px; background: rgba(255,255,255,0.1); text-align: left; color: #94a3b8; text-transform: uppercase; padding: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        td { border: 1px solid rgba(255,255,255,0.1); font-size: 11px; vertical-align: top; padding: 8px; color: #e2e8f0; }
+
+        .cell-time { font-family: 'Fira Code', monospace; font-size: 9px; color: #00f2ff; padding: 10px 4px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); }
+        
+        label { color: #94a3b8 !important; }
+        b, h1, h2, h3 { color: white !important; }
+
         #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #0f172a; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 9999;
-            transition: opacity 0.8s ease, visibility 0.8s; color: white;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 1s, visibility 1s;
         }
         .fade-out { opacity: 0; visibility: hidden; }
 
-        .col-from, .col-to { width: 50px; min-width: 50px; }
-        .input-box { border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; width: 100%; font-size: 0.85rem; transition: 0.2s; }
-        .input-box:focus { border-color: #ffc107; outline: none; box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.2); }
-        .input-area { border: 1px solid #cbd5e1; padding: 10px; border-radius: 8px; width: 100%; font-size: 0.85rem; min-height: 100px; line-height: 1.5; }
-        
-        th { font-size: 10px; background-color: #f1f5f9; text-align: left; border: 1px solid #e2e8f0; color: #475569; text-transform: uppercase; padding: 12px; }
-        td { border: 1px solid #f1f5f9; font-size: 11px; vertical-align: top; padding: 8px; }
-
-        .chrono-row { display: flex; width: 100%; border-bottom: 1px solid #f1f5f9; }
-        .cell-time { 
-            font-family: 'Fira Code', monospace; font-size: 9px; color: #64748b;
-            padding: 10px 4px; display: flex; justify-content: center; align-items: center;
-            border-right: 1px solid #f1f5f9; background-color: #fcfcfd;
-        }
-        .cell-work { padding: 10px 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; color: #1e293b; flex: 1; }
-
-        .overlap-warning { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
-        
-        .scroll-container { width: 100%; overflow-x: auto; border-top: 1px solid #e2e8f0; }
-
-        @media print { 
-            .no-print { display: none !important; } 
-            .report-wrapper { page-break-after: always; padding: 0; margin-bottom: 20px; }
-        }
+        @media print { .no-print { display: none !important; } body { background: white; color: black; } }
     </style>
 </head>
-<body class="bg-slate-100">
+<body class="p-2 md:p-6">
 
-    <div id="splash-screen">
-        <h2 class="font-black tracking-widest uppercase italic text-lg text-yellow-500 text-center">Hexindo Fleet Pro<br><span class="text-white text-sm">Daily Activity System</span></h2>
+    <div class="aurora-container no-print">
+        <div class="aurora"></div>
+        <div class="aurora aurora-secondary"></div>
     </div>
 
-    <div class="max-w-[1600px] mx-auto bg-white shadow-2xl min-h-screen md:my-6 md:rounded-3xl overflow-hidden border border-slate-200">
-        <header class="bg-slate-900 p-5 text-white border-b-4 border-yellow-500 flex flex-wrap justify-between items-center no-print gap-4">
+    <div id="splash-screen">
+        <img src="logo.png" alt="Logo" class="w-32 h-32 object-contain mb-6 contrast-125 brightness-110">
+        <h2 class="font-black tracking-[0.3em] uppercase italic text-white text-lg">AURORA <span class="text-cyan-400">TERMINAL</span></h2>
+    </div>
+
+    <div class="max-w-[1600px] mx-auto space-y-6 relative z-10">
+        
+        <header class="glass-ice p-5 rounded-[2.5rem] flex flex-wrap justify-between items-center no-print gap-4">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.href='index.html'" class="h-12 w-12 bg-yellow-500 hover:bg-yellow-400 rounded-xl flex items-center justify-center text-slate-900 transition-all shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                <button onclick="window.location.href='index.html'" class="h-12 w-12 bg-white/10 hover:bg-white/20 rounded-2xl flex items-center justify-center text-white transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 </button>
                 <div>
-                    <h1 class="text-2xl font-black text-yellow-500 tracking-tighter uppercase italic leading-none">Activity Terminal</h1>
-                    <p id="roleBadge" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1 italic">Detecting Role...</p>
+                    <h1 class="text-xl font-black tracking-tighter uppercase italic leading-none">Activity Report</h1>
+                    <p id="roleBadge" class="text-[9px] text-cyan-400 font-bold uppercase tracking-widest mt-1">Verifying...</p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button onclick="syncToCloud()" id="btnSync" class="bg-indigo-600 hover:bg-indigo-500 px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase transition-all shadow-md">☁️ Sync to Cloud</button>
-                <button onclick="fetchFromCloud()" class="bg-violet-700 hover:bg-violet-600 px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase transition-all shadow-md">🔄 Pull from Cloud</button>
-                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase transition-all shadow-md">📊 Export Excel</button>
-                <button onclick="window.print()" class="bg-slate-700 px-5 py-2.5 rounded-lg font-bold text-[10px] uppercase shadow-md">🖨️ Print PDF</button>
+                <button onclick="pullFromCloud()" id="btnPull" class="bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase border border-white/20 transition-all">🔄 Pull Cloud</button>
+                <button onclick="syncToCloud()" id="btnSync" class="bg-cyan-600 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">☁️ Sync Cloud</button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-bold text-[10px] uppercase active:scale-95 transition-all">📊 Excel</button>
             </div>
         </header>
 
-        <div class="p-8 bg-white border-b no-print">
+        <div class="glass-ice p-8 rounded-[3rem] no-print">
             <input type="hidden" id="editId">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner">
-                <div class="md:col-span-1">
-                    <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Technician / NIK</label>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Technician / NIK</label>
                     <div class="flex gap-2">
-                        <input type="text" id="nameInp" class="input-box uppercase font-bold bg-slate-200" readonly>
-                        <input type="text" id="nikInp" class="input-box w-32 bg-slate-200 text-center" readonly>
+                        <input type="text" id="nameInp" class="input-glass w-full uppercase font-bold" readonly>
+                        <input type="text" id="nikInp" class="input-glass w-32 text-center font-mono" readonly>
                     </div>
                 </div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Customer Name</label><input type="text" id="customerInp" class="input-box uppercase font-bold" placeholder="E.G. ADARO ENERGY"></div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Site / Location</label><input type="text" id="locationInp" class="input-box uppercase" placeholder="E.G. KELANIS"></div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Service Date</label><input type="date" id="dateInp" class="input-box font-bold"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Customer Name</label><input type="text" id="customerInp" class="input-glass w-full uppercase font-bold"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Site / Location</label><input type="text" id="locationInp" class="input-glass w-full uppercase"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Service Date</label><input type="date" id="dateInp" class="input-glass w-full font-bold"></div>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Unit Model</label><input type="text" id="modelInp" class="input-box uppercase font-bold"></div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Serial Number</label><input type="text" id="snInp" class="input-box uppercase"></div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Hour Meter</label><input type="number" step="0.1" id="hmInp" class="input-box font-bold"></div>
-                <div><label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Job Description</label><input type="text" id="jobDescInp" class="input-box uppercase" placeholder="E.G. PREVENTIVE MAINTENANCE"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Unit Model</label><input type="text" id="modelInp" class="input-glass w-full uppercase font-bold text-cyan-400"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Serial Number</label><input type="text" id="snInp" class="input-glass w-full uppercase"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Hour Meter</label><input type="number" step="0.1" id="hmInp" class="input-glass w-full font-bold"></div>
+                <div><label class="text-[9px] font-black uppercase mb-2 block">Job Description</label><input type="text" id="jobDescInp" class="input-glass w-full uppercase"></div>
             </div>
             
             <div id="detailRowsContainer" class="space-y-4 mb-8"></div>
             
-            <div class="flex gap-4">
-                <button onclick="smartAddTask()" class="bg-blue-600 hover:bg-blue-500 text-white px-10 py-5 rounded-2xl font-black text-xs uppercase shadow-xl transition-all">+ Add Work Progress</button>
-                <button id="submitBtn" onclick="submitLog()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-yellow-400 font-black py-5 rounded-2xl uppercase text-xs shadow-xl transition-all tracking-widest">Save Activity Report</button>
+            <div class="flex flex-col md:flex-row gap-4">
+                <button onclick="smartAddTask()" class="bg-white/5 hover:bg-white/10 text-cyan-400 px-10 py-4 rounded-2xl font-black text-[10px] uppercase border border-white/10 transition-all">+ Add Progress</button>
+                <button id="submitBtn" onclick="submitLog()" class="flex-1 bg-cyan-600 hover:bg-cyan-700 text-white font-black py-4 rounded-2xl uppercase text-[10px] shadow-xl shadow-cyan-500/20 transition-all">Save Activity Report</button>
             </div>
-            <p id="conflictLabel" class="hidden text-red-600 text-[10px] mt-3 font-bold uppercase italic animate-bounce">⚠️ Warning: Time Overlap Detected!</p>
         </div>
 
-        <div class="scroll-container">
-            <div id="masterList" class="p-8 space-y-12 bg-slate-50"></div>
-        </div>
+        <div id="loader" class="hidden text-center p-10 font-black text-cyan-400 italic animate-pulse">PULLING DATA FROM CLOUD...</div>
+        <div id="masterList" class="space-y-8 pb-20"></div>
     </div>
 
     <script>
-        // SESSION & ROLE CHECK
         const role = localStorage.getItem('userRole') || 'technician';
         const userNrp = localStorage.getItem('userNRP');
         const userName = localStorage.getItem('userName');
-
         if (localStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'login.html';
 
         const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
@@ -122,131 +157,95 @@
         let isEditMode = false;
 
         window.addEventListener('load', () => { 
-            setTimeout(() => { document.getElementById('splash-screen').classList.add('fade-out'); }, 800); 
-            document.getElementById('roleBadge').innerText = (role === 'admin') ? "Access: Administrator (Full Fleet View)" : `Access: Technician (NIK: ${userNrp})`;
+            setTimeout(() => { document.getElementById('splash-screen').classList.add('fade-out'); }, 1500); 
+            document.getElementById('roleBadge').innerText = `NIK: ${userNrp} | ${userName}`;
         });
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('dateInp').valueAsDate = new Date();
             document.getElementById('nameInp').value = userName;
             document.getElementById('nikInp').value = userNrp;
-            
-            // 1. Refresh dari Lokal
             refreshTable();
             if(!document.getElementById('detailRowsContainer').children.length) addDetailRow();
-
-            // 2. AUTO PULL FROM CLOUD
-            autoFetchFromCloud();
+            pullFromCloud(); // Auto pull saat load
         });
 
-        async function autoFetchFromCloud() {
+        // FUNGSI PULL FROM CLOUD (KEMBALI AKTIF)
+        async function pullFromCloud() {
+            const btn = document.getElementById('btnPull');
+            const loader = document.getElementById('loader');
+            
+            btn.disabled = true;
+            btn.innerText = "WAIT...";
+            loader.classList.remove('hidden');
+
             try {
                 let query = sb.from('tech_logs').select('log_data');
-                if (role !== 'admin') { query = query.eq('nik', userNrp); }
-                const { data, error } = await query;
+                // Jika bukan admin, hanya ambil data milik NIK sendiri
+                if (role !== 'admin') query = query.eq('nik', userNrp);
+                
+                const { data, error } = await query.order('id', { ascending: false });
+                
                 if(error) throw error;
-                if(data && data.length > 0) {
+                
+                if(data) {
                     const cloudLogs = data.map(item => item.log_data);
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudLogs));
                     refreshTable();
+                    console.log("Cloud pull success");
                 }
-            } catch (err) { console.log("Auto-pull skip (Offline or Error)"); }
+            } catch (err) {
+                alert("Pull Failed: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🔄 Pull Cloud";
+                loader.classList.add('hidden');
+            }
         }
 
         function addDetailRow(timeF = '', timeT = '', desc = '') {
             const container = document.getElementById('detailRowsContainer');
             const div = document.createElement('div');
-            div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative transition-all";
+            div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white/5 p-5 rounded-[2rem] border border-white/10 relative transition-all";
             div.innerHTML = `
-                <div class="col-span-1 md:w-32">
-                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">From</label>
-                    <input type="time" class="input-box" value="${timeF}" oninput="validateOverlap()">
-                </div>
-                <div class="col-span-1 md:w-32">
-                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">To</label>
-                    <input type="time" class="input-box" value="${timeT}" oninput="validateOverlap()">
-                </div>
-                <div class="col-span-2 md:flex-1">
-                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">Detailed Progress Description</label>
-                    <textarea class="input-area w-full" placeholder="Describe what you did...">${desc}</textarea>
-                </div>
-                <button onclick="this.parentElement.remove(); validateOverlap();" 
-                    class="absolute -top-2 -right-2 md:static md:mt-8 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm">
-                    &times;
-                </button>
+                <div class="col-span-1 md:w-32"><label class="text-[8px] block mb-2 font-black uppercase">From</label><input type="time" class="input-glass w-full" value="${timeF}"></div>
+                <div class="col-span-1 md:w-32"><label class="text-[8px] block mb-2 font-black uppercase">To</label><input type="time" class="input-glass w-full" value="${timeT}"></div>
+                <div class="col-span-2 md:flex-1"><label class="text-[8px] block mb-2 font-black uppercase">Description</label><textarea class="input-glass w-full min-h-[80px]">${desc}</textarea></div>
+                <button onclick="this.parentElement.remove()" class="md:mt-8 bg-red-500/20 text-red-400 rounded-full w-8 h-8 flex items-center justify-center border border-red-500/20">&times;</button>
             `;
             container.appendChild(div);
-            validateOverlap();
         }
 
         function smartAddTask() {
             const rows = document.querySelectorAll('#detailRowsContainer > div');
-            let lastTime = "";
-            if (rows.length > 0) {
-                const times = rows[rows.length - 1].querySelectorAll('input[type="time"]');
-                lastTime = times[1].value;
-            }
+            let lastTime = rows.length > 0 ? rows[rows.length - 1].querySelectorAll('input[type="time"]')[1].value : "";
             addDetailRow(lastTime, "");
-        }
-
-        function validateOverlap() {
-            const rows = document.querySelectorAll('#detailRowsContainer > div');
-            const ranges = [];
-            let conflict = false;
-            rows.forEach((row) => {
-                row.classList.remove('overlap-warning');
-                const t = row.querySelectorAll('input[type="time"]');
-                if(t[0].value && t[1].value) ranges.push({ f: t[0].value, t: t[1].value, row });
-            });
-            for (let i = 0; i < ranges.length; i++) {
-                for (let j = i + 1; j < ranges.length; j++) {
-                    if (ranges[i].f < ranges[j].t && ranges[j].f < ranges[i].t) {
-                        ranges[i].row.classList.add('overlap-warning');
-                        ranges[j].row.classList.add('overlap-warning');
-                        conflict = true;
-                    }
-                }
-            }
-            document.getElementById('conflictLabel').style.display = conflict ? 'block' : 'none';
-            return conflict;
         }
 
         function submitLog() {
             const dateVal = document.getElementById('dateInp').value;
             const modelVal = document.getElementById('modelInp').value;
-            if(!dateVal || !modelVal) return alert("Required: Date and Unit Model");
+            if(!dateVal || !modelVal) return alert("Required: Date & Unit Model");
 
             const details = Array.from(document.querySelectorAll('#detailRowsContainer > div')).map(row => {
                 const t = row.querySelectorAll('input[type="time"]');
-                let rawDesc = row.querySelector('textarea').value.trim();
-                let formattedDesc = rawDesc !== "" ? rawDesc.split('\n').map(line => {
-                    let trm = line.trim();
-                    if (trm === "") return "";
-                    return (!trm.startsWith('•') && !trm.startsWith('-')) ? '• ' + trm : trm;
-                }).filter(l => l !== "").join('\n') : "";
-                return { f: t[0].value, t: t[1].value, d: formattedDesc };
-            }).filter(item => item.d !== "").sort((a,b) => (a.f || '99:99').localeCompare(b.f || '99:99'));
+                return { f: t[0].value, t: t[1].value, d: row.querySelector('textarea').value.trim() };
+            }).filter(item => item.d !== "");
 
             const logEntry = {
                 id: isEditMode ? parseInt(document.getElementById('editId').value) : Date.now(),
-                date: dateVal, 
-                name: document.getElementById('nameInp').value.toUpperCase(), 
-                nik: document.getElementById('nikInp').value,
+                date: dateVal, name: userName, nik: userNrp,
                 customer: document.getElementById('customerInp').value.toUpperCase(), 
                 location: document.getElementById('locationInp').value.toUpperCase(),
-                model: modelVal.toUpperCase(), 
-                sn: document.getElementById('snInp').value.toUpperCase(),
-                hm: document.getElementById('hmInp').value, 
-                job: document.getElementById('jobDescInp').value.toUpperCase(),
-                isSynced: false,
-                detailData: details
+                model: modelVal.toUpperCase(), sn: document.getElementById('snInp').value.toUpperCase(),
+                hm: document.getElementById('hmInp').value, job: document.getElementById('jobDescInp').value.toUpperCase(),
+                isSynced: false, detailData: details
             };
 
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             isEditMode ? logs = logs.map(l => l.id === logEntry.id ? logEntry : l) : logs.push(logEntry);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-            clearForm(); refreshTable();
-            alert("✅ Report Saved Locally!");
+            clearForm(); refreshTable(); alert("✅ Saved Locally!");
         }
 
         function refreshTable() {
@@ -255,56 +254,36 @@
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             
             logs.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id).forEach(obj => {
-                // STATUS AWAN
-                const syncStatus = obj.isSynced 
-                    ? '<span class="text-emerald-600 flex items-center gap-1 font-black">✅ <span class="hidden md:inline">Synced</span></span>' 
-                    : '<span class="text-slate-400 flex items-center gap-1 font-black">☁️ <span class="hidden md:inline">Local Only</span></span>';
-
                 let chronoRows = (obj.detailData || []).map(item => `
-                    <div class="chrono-row">
-                        <div class="col-from cell-time">${item.f || '--:--'}</div>
-                        <div class="col-to cell-time">${item.t || '--:--'}</div>
-                        <div class="cell-work">${item.d}</div>
+                    <div class="chrono-row flex border-b border-white/10">
+                        <div class="cell-time w-24 text-center">${item.f} - ${item.t}</div>
+                        <div class="p-2 flex-1 text-slate-300 text-[10px]">${item.d}</div>
                     </div>`).join('');
 
                 const section = document.createElement('div');
-                section.className = "report-wrapper bg-white shadow-xl rounded-3xl overflow-hidden border border-slate-200 mb-8";
+                section.className = "glass-ice rounded-[2.5rem] overflow-hidden mb-6";
                 section.innerHTML = `
-                    <div class="no-print bg-slate-100 p-4 flex justify-between items-center border-b">
-                        <div class="flex items-center gap-4">
-                            <span class="font-black text-[10px] text-slate-400 tracking-widest uppercase italic">ID: ${obj.id}</span>
-                            <div class="text-[10px] uppercase">${syncStatus}</div>
-                        </div>
+                    <div class="bg-white/5 p-4 flex justify-between items-center border-b border-white/10">
+                        <span class="text-[10px] font-black text-cyan-400 uppercase tracking-widest">${obj.isSynced ? '✅ SYNCED' : '☁️ LOCAL'}</span>
                         <div class="flex gap-2">
-                            <button onclick="editLog(${obj.id})" class="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">DELETE</button>
+                            <button onclick="editLog(${obj.id})" class="text-cyan-400 text-[9px] font-black px-3 py-1 border border-cyan-400/30 rounded-lg">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="text-red-400 text-[9px] font-black px-3 py-1 border border-red-400/30 rounded-lg">DEL</button>
                         </div>
                     </div>
-                    <div class="overflow-x-auto p-6 md:p-8">
-                        <table class="w-full border-collapse border border-slate-300 min-w-[1200px]">
-                            <thead>
-                                <tr class="bg-slate-900 text-white uppercase text-[10px] tracking-widest">
-                                    <th class="w-24 p-4 border border-slate-700 text-center text-yellow-500">Service Date</th>
-                                    <th class="w-48 p-4 border border-slate-700">Technician Info</th>
-                                    <th class="w-48 p-4 border border-slate-700">Customer & Site</th>
-                                    <th class="w-48 p-4 border border-slate-700">Unit Info</th>
-                                    <th class="w-48 p-4 border border-slate-700">Main Job Task</th>
-                                    <th class="p-0 border border-slate-700"><div class="flex w-full"><div class="col-from p-3 border-r border-slate-700 text-center">From</div><div class="col-to p-3 border-r border-slate-700 text-center">To</div><div class="flex-1 p-3">Detailed Work Progress</div></div></th>
-                                </tr>
-                            </thead>
+                    <div class="p-6 overflow-x-auto">
+                        <table class="w-full min-w-[1000px]">
+                            <thead><tr><th>Date</th><th>Customer</th><th>Unit Info</th><th>Job</th><th class="p-0">Progress Details</th></tr></thead>
                             <tbody>
-                                <tr class="bg-white">
-                                    <td class="text-center font-bold p-4 border border-slate-200 text-slate-900">${obj.date}</td>
-                                    <td class="p-4 border border-slate-200"><b class="text-slate-900 uppercase">${obj.name}</b><br><span class="text-[9px] text-slate-500 font-mono italic">NIK: ${obj.nik}</span></td>
-                                    <td class="p-4 border border-slate-200"><b class="text-slate-900 uppercase">${obj.customer}</b><br><span class="text-[9px] text-blue-600 uppercase font-bold">${obj.location}</span></td>
-                                    <td class="p-4 border border-slate-200"><b class="text-slate-900 uppercase">${obj.model}</b><br><span class="text-[9px] text-slate-600 font-bold">SN: ${obj.sn}<br>HM: ${obj.hm} HRS</span></td>
-                                    <td class="p-4 border border-slate-200 text-[10px] font-bold text-slate-700 uppercase leading-relaxed">${obj.job}</td>
-                                    <td class="p-0 border border-slate-200">${chronoRows}</td>
+                                <tr>
+                                    <td class="font-bold">${obj.date}</td>
+                                    <td>${obj.customer}<br><span class="text-slate-500">${obj.location}</span></td>
+                                    <td>${obj.model}<br>SN: ${obj.sn}</td>
+                                    <td class="text-cyan-400 font-bold uppercase">${obj.job}</td>
+                                    <td class="p-0">${chronoRows}</td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                `;
+                    </div>`;
                 masterList.appendChild(section);
             });
         }
@@ -312,65 +291,39 @@
         async function syncToCloud() {
             const btn = document.getElementById('btnSync');
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            if(!logs.length) return alert("Tidak ada data untuk disinkron.");
-            btn.innerText = "Processing..."; btn.disabled = true;
+            if(!logs.length) return alert("No data to sync.");
+            
+            btn.innerText = "WAIT..."; btn.disabled = true;
             try {
-                const payload = logs.map(l => ({ 
-                    id: l.id, 
-                    nik: l.nik, 
-                    log_data: { ...l, isSynced: true } 
-                }));
+                const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: { ...l, isSynced: true } }));
                 const { error } = await sb.from('tech_logs').upsert(payload);
                 if(error) throw error;
                 
-                const updatedLogs = logs.map(l => ({ ...l, isSynced: true }));
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-                refreshTable();
-                alert("✅ Cloud Sync Success!");
-            } catch (err) { alert("❌ Error: " + err.message); }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
+                refreshTable(); alert("✅ Cloud Sync Success!");
+            } catch (err) { alert("Error: " + err.message); }
             finally { btn.innerText = "☁️ Sync Cloud"; btn.disabled = false; }
-        }
-
-        async function fetchFromCloud() {
-            if(!confirm("Pull data dari Cloud?")) return;
-            autoFetchFromCloud();
-        }
-
-        function exportToExcel() {
-            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            let flatData = [];
-            logs.forEach(l => {
-                l.detailData.forEach(d => {
-                    flatData.push({ Date: l.date, Tech: l.name, NIK: l.nik, Customer: l.customer, Location: l.location, Unit: l.model, SN: l.sn, HM: l.hm, Job: l.job, From: d.f, To: d.t, Work_Detail: d.d });
-                });
-            });
-            const ws = XLSX.utils.json_to_sheet(flatData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Log");
-            XLSX.writeFile(wb, `Hexindo_Fleet_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         function editLog(id) {
             const logs = JSON.parse(localStorage.getItem(STORAGE_KEY));
             const log = logs.find(l => l.id === id);
-            if(!log) return;
             isEditMode = true;
             document.getElementById('editId').value = log.id;
-            document.getElementById('customerInp').value = log.customer || '';
-            document.getElementById('locationInp').value = log.location || '';
-            document.getElementById('dateInp').value = log.date || '';
-            document.getElementById('modelInp').value = log.model || '';
-            document.getElementById('snInp').value = log.sn || '';
-            document.getElementById('hmInp').value = log.hm || '';
-            document.getElementById('jobDescInp').value = log.job || '';
+            document.getElementById('customerInp').value = log.customer;
+            document.getElementById('locationInp').value = log.location;
+            document.getElementById('dateInp').value = log.date;
+            document.getElementById('modelInp').value = log.model;
+            document.getElementById('snInp').value = log.sn;
+            document.getElementById('hmInp').value = log.hm;
+            document.getElementById('jobDescInp').value = log.job;
             document.getElementById('detailRowsContainer').innerHTML = '';
             log.detailData.forEach(d => addDetailRow(d.f, d.t, d.d));
-            document.getElementById('submitBtn').innerText = "Update Activity Report";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function deleteLog(id) {
-            if(confirm("Permanently delete locally? (Cloud data stays safe)")) {
+            if(confirm("Hapus data dari memori lokal?")) {
                 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)).filter(l => l.id !== id);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
                 refreshTable();
@@ -380,10 +333,23 @@
         function clearForm() {
             isEditMode = false;
             ['customerInp','locationInp','modelInp','snInp','hmInp','jobDescInp'].forEach(id => document.getElementById(id).value = '');
-            document.getElementById('dateInp').valueAsDate = new Date();
             document.getElementById('detailRowsContainer').innerHTML = '';
             addDetailRow();
             document.getElementById('submitBtn').innerText = "Save Activity Report";
+        }
+
+        function exportToExcel() {
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            let flatData = [];
+            logs.forEach(l => {
+                l.detailData.forEach(d => {
+                    flatData.push({ Date: l.date, Tech: l.name, NIK: l.nik, Customer: l.customer, Unit: l.model, Job: l.job, From: d.f, To: d.t, Work: d.d });
+                });
+            });
+            const ws = XLSX.utils.json_to_sheet(flatData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Logs");
+            XLSX.writeFile(wb, `Hexindo_Activity_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
     </script>
 </body>

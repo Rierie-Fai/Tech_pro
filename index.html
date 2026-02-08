@@ -1,174 +1,206 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Utama | Hexindo Fleet</title>
+    <title>Portal Utama | Hexindo Fleet Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e0eafc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
-        .menu-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .menu-card:hover { transform: translateY(-8px); }
-        
-        .digital-clock { font-family: 'JetBrains Mono', monospace; }
-        
-        .glass-widget {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
+            min-height: 100vh;
+            color: #1e293b;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        /* Badge Glow Effect */
-        .admin-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
-        .tech-glow { box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
+        /* 1. EFEK HUJAN KRISTAL ES (DI-UPGRADE) */
+        .crystal-ice {
+            position: fixed;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+            width: 3px; /* Lebih tebal */
+            height: 25px; /* Lebih panjang */
+            top: -50px;
+            z-index: 1;
+            pointer-events: none;
+            animation: iceRain linear infinite;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); /* Efek menyala */
+        }
+        @keyframes iceRain {
+            0% { transform: translateY(0) rotate(15deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(15deg); opacity: 0; }
+        }
+
+        /* 2. EFEK PECAHAN ES SAAT HOVER */
+        .shatter-piece {
+            position: absolute; background: white; pointer-events: none;
+            z-index: 50; box-shadow: 0 0 10px white;
+            animation: shatterOut 0.6s ease-out forwards;
+        }
+        @keyframes shatterOut {
+            0% { transform: translate(0,0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); opacity: 0; }
+        }
+
+        /* UI ELEMENTS */
+        .glass-ice {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+            position: relative; z-index: 10;
+        }
+
+        .logo-blend { mix-blend-mode: multiply; filter: contrast(1.2); }
+
+        .menu-card {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-radius: 2.5rem;
+        }
+        .menu-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #3b82f6;
+        }
+
+        .digital-clock { font-family: 'JetBrains Mono', monospace; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="p-4 md:p-8 flex justify-center">
 
-    <header class="bg-[#1a1d20] text-white p-4 md:px-10 md:py-6 shadow-lg border-b-4 border-yellow-500">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="hidden md:block w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center text-slate-900 font-black text-xl italic shadow-lg shadow-yellow-500/20">H</div>
+    <div id="ice-container" class="fixed inset-0 pointer-events-none"></div>
+
+    <div class="max-w-5xl w-full space-y-6 relative z-10">
+        
+        <header class="glass-ice rounded-[2.5rem] p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-5">
+                <div class="w-16 h-16 bg-white/40 p-2 rounded-2xl flex items-center justify-center border border-white/60">
+                    <img src="logo.png" alt="Logo" class="w-full h-full object-contain logo-blend">
+                </div>
                 <div>
-                    <h1 class="text-xl md:text-2xl font-black tracking-tighter italic leading-none">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
-                    <p class="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1.5">Portal Service Adaro Project</p>
+                    <h1 class="text-xl font-extrabold tracking-tight text-slate-800 uppercase italic leading-none">HEXINDO <span class="text-blue-600">FLEET PRO</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase tracking-[0.3em] mt-1">Adaro Project Terminal</p>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <div class="text-right hidden sm:block">
-                    <p id="userNameDisplay" class="text-sm md:text-base font-bold text-white italic">User Name</p>
-                    <div id="roleBadge" class="inline-block mt-1 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter">
-                        Loading Access...
-                    </div>
+            
+            <div class="flex items-center gap-4 bg-white/60 p-2 pr-4 rounded-3xl border border-white/80">
+                <div class="text-right pl-3">
+                    <p id="userNameDisplay" class="text-sm font-black text-slate-800 italic leading-none">Commander</p>
+                    <p id="userNikDisplay" class="text-[10px] text-blue-600 font-bold mt-1">NIK: ------</p>
                 </div>
-                <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 p-2.5 md:px-4 md:py-2 rounded-xl transition-all shadow-lg active:scale-90">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
+                <button onclick="handleLogout()" class="bg-white/80 hover:bg-red-500 hover:text-white p-3 rounded-2xl transition-all">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
             </div>
-        </div>
-    </header>
+        </header>
 
-    <main class="flex-grow p-4 md:p-10">
-        <div class="max-w-7xl mx-auto">
-            
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
-                <div>
-                    <h2 class="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight leading-tight">
-                        Selamat Bekerja, <br> 
-                        <span class="text-yellow-600 italic" id="hiName">User</span>!
-                    </h2>
-                    <p class="text-slate-500 text-sm md:text-lg mt-3">Sistem terhubung ke server. Pilih modul aplikasi:</p>
-                </div>
-
-                <div class="glass-widget p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 min-w-[280px] border-l-8 border-l-yellow-500 relative overflow-hidden">
-                    <div class="flex items-center gap-4 relative z-10">
-                        <div class="bg-yellow-500 text-slate-900 p-3 rounded-2xl">
-                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        </div>
-                        <div>
-                            <p id="liveDate" class="text-xs md:text-sm font-black text-slate-400 uppercase tracking-tighter">Memuat Tanggal...</p>
-                            <h3 id="liveTime" class="digital-clock text-2xl md:text-4xl font-bold text-slate-800 tracking-tighter leading-none">00:00:00</h3>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 p-8 flex flex-col justify-center relative">
+                <div id="roleBadge" class="bg-white/50 border border-white w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4">Verifying...</div>
+                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight">Hello, <br><span class="text-blue-600 italic" id="hiName">User</span></h2>
+                <p class="text-slate-600 mt-4 font-semibold italic">Sistem Aktif. Pilih modul operasional harian Anda.</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
-                
-                <a href="toolbox.html" class="menu-card group bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-yellow-500 flex flex-col justify-between overflow-hidden relative">
-                    <div class="relative z-10">
-                        <div class="w-14 h-14 md:w-20 md:h-20 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-yellow-500 transition-all duration-500">
-                            <svg class="w-8 h-8 md:w-10 md:h-10 text-yellow-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
-                        </div>
-                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Toolbox Pro</h3>
-                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Inspeksi kelayakan alat kerja dan monitoring inventory.</p>
-                    </div>
-                    <div class="mt-10 flex items-center text-yellow-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
-                        Akses Modul <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </div>
-                </a>
-
-                <a href="daily-activity.html" class="menu-card group bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-blue-500 flex flex-col justify-between overflow-hidden relative">
-                    <div class="relative z-10">
-                        <div class="w-14 h-14 md:w-20 md:h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-500 transition-all duration-500">
-                            <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                        </div>
-                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Activity Report</h3>
-                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Laporan harian maintenance dan progres troubleshooting.</p>
-                    </div>
-                    <div class="mt-10 flex items-center text-blue-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
-                        Akses Modul <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </div>
-                </a>
-
+            <div class="glass-ice rounded-[3rem] p-8 flex flex-col items-center justify-center text-center">
+                <p id="liveDate" class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2">DATE</p>
+                <h3 id="liveTime" class="digital-clock text-4xl font-bold text-slate-800">00:00:00</h3>
+                <div class="mt-4 px-4 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase">Live Terminal</div>
             </div>
         </div>
-    </main>
 
-    <footer class="p-8 text-center text-slate-400 text-[10px] md:text-xs uppercase font-bold tracking-[0.3em]">
-        © 2026 PT HEXINDO ADARO PROJECT | DIGITAL SERVICE TERMINAL
-    </footer>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <a href="toolbox.html" class="menu-card glass-ice p-10 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+                <div class="flex flex-col">
+                    <div class="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform group-hover:rotate-12">
+                        <svg class="w-8 h-8 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 uppercase italic">Toolbox <span class="text-yellow-600">Pro</span></h3>
+                    <p class="text-slate-500 mt-2 text-sm">Inventory & Tool Condition Check.</p>
+                </div>
+                <div class="mt-8 text-[10px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3"/></svg></div>
+            </a>
+
+            <a href="daily-activity.html" class="menu-card glass-ice p-10 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+                <div class="flex flex-col">
+                    <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform group-hover:-rotate-12">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 uppercase italic">Activity <span class="text-blue-600">Report</span></h3>
+                    <p class="text-slate-500 mt-2 text-sm">Maintenance Log & Cloud Sync.</p>
+                </div>
+                <div class="mt-8 text-[10px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3"/></svg></div>
+            </a>
+        </div>
+
+        <footer class="text-center pt-8">
+            <p class="text-slate-500 text-[8px] uppercase font-black tracking-[0.5em] opacity-60">© 2026 PT HEXINDO ADARO PROJECT | DIGITAL TERMINAL</p>
+        </footer>
+    </div>
 
     <script>
-        // PROTEKSI LOGIN
-        if (localStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'login.html';
+        // ENGINE HUJAN ES KRISTAL TAJAM
+        function createIceRain() {
+            const container = document.getElementById('ice-container');
+            const iceCount = 60; 
+            for (let i = 0; i < iceCount; i++) {
+                const ice = document.createElement('div');
+                ice.className = 'crystal-ice';
+                ice.style.left = Math.random() * 100 + 'vw';
+                ice.style.animationDuration = (Math.random() * 0.5 + 0.8) + 's';
+                ice.style.animationDelay = (Math.random() * 4) + 's';
+                container.appendChild(ice);
+            }
+        }
+        createIceRain();
+
+        // EFEK PECAHAN ES (SHATTER)
+        function triggerShatter(e) {
+            for (let i = 0; i < 10; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'shatter-piece';
+                const size = Math.random() * 6 + 2;
+                piece.style.width = size + 'px';
+                piece.style.height = size + 'px';
+                piece.style.left = e.clientX + 'px';
+                piece.style.top = e.clientY + 'px';
+                piece.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+                piece.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
+                piece.style.setProperty('--dr', (Math.random() * 360) + 'deg');
+                document.body.appendChild(piece);
+                setTimeout(() => piece.remove(), 600);
+            }
         }
 
-        // AMBIL DATA SESSION
-        const name = localStorage.getItem('userName') || 'User';
+        // DATA SESSION
+        if (localStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'login.html';
+        const name = localStorage.getItem('userName') || 'Commander';
+        const nik = localStorage.getItem('userNRP') || '---';
         const role = localStorage.getItem('userRole') || 'technician';
 
-        // UPDATE UI
         document.getElementById('userNameDisplay').innerText = name;
-        document.getElementById('hiName').innerText = name;
+        document.getElementById('userNikDisplay').innerText = `NIK: ${nik}`;
+        document.getElementById('hiName').innerText = name.split(' ')[0];
+        document.getElementById('roleBadge').innerText = (role === 'admin') ? '🛡️ Admin Access' : '🔧 Tech Access';
 
-        // LOGIKA BADGE AKSES
-const badge = document.getElementById('roleBadge');
-if (role === 'admin') {
-    badge.innerText = '🛡️ Full Access Admin';
-    badge.classList.add('bg-yellow-500/20', 'text-yellow-500', 'admin-glow');
-} else {
-    badge.innerText = '🔧 Technician Access';
-    badge.classList.add('bg-blue-500/20', 'text-blue-500', 'tech-glow');
-}
-
-
-        // LIVE CLOCK
         function updateTime() {
             const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('liveTime').innerText = `${hours}:${minutes}:${seconds}`;
-
-            const days = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
-            const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
-            document.getElementById('liveDate').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+            document.getElementById('liveTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('liveDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
         }
-        setInterval(updateTime, 1000);
-        updateTime();
+        setInterval(updateTime, 1000); updateTime();
 
-        function handleLogout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
+        function handleLogout() { localStorage.clear(); window.location.href = 'login.html'; }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(() => {
-      console.log('Aplikasi Siap Digunakan Offline');
-    });
-  }
-</script>
-
 </body>
 </html>
