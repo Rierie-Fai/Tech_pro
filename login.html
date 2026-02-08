@@ -17,15 +17,3 @@ async function handleLogin() {
     }
 }
 </script></body></html>
-            if (data) {
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userName', data.full_name);
-                localStorage.setItem('userNRP', data.nrp);
-                window.location.href = 'index.html';
-            } else {
-                alert("NRP atau Password Salah!");
-            }
-        }
-    </script>
-</body>
-</html>
