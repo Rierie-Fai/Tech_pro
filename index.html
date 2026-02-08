@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Portal Utama | Hexindo Fleet</title>
@@ -128,14 +132,15 @@
         document.getElementById('hiName').innerText = name;
 
         // LOGIKA BADGE AKSES
-        const badge = document.getElementById('roleBadge');
-        if (role === 'admin') {
-            badge.innerText = '🛡️ Full Access Admin';
-            badge.className += ' bg-yellow-500/20 text-yellow-500 admin-glow';
-        } else {
-            badge.innerText = '🔧 Technician Access';
-            badge.className += ' bg-blue-500/20 text-blue-500 tech-glow';
-        }
+const badge = document.getElementById('roleBadge');
+if (role === 'admin') {
+    badge.innerText = '🛡️ Full Access Admin';
+    badge.classList.add('bg-yellow-500/20', 'text-yellow-500', 'admin-glow');
+} else {
+    badge.innerText = '🔧 Technician Access';
+    badge.classList.add('bg-blue-500/20', 'text-blue-500', 'tech-glow');
+}
+
 
         // LIVE CLOCK
         function updateTime() {
@@ -157,5 +162,13 @@
             window.location.href = 'login.html';
         }
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(() => {
+      console.log('Aplikasi Siap Digunakan Offline');
+    });
+  }
+</script>
+
 </body>
 </html>
