@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hexindo-fleet-v1';
+const CACHE_NAME = 'hexindo-fleet-v1.1';
 // Masukkan semua file penting yang dibutuhkan teknisi
 const assets = [
   '/',
