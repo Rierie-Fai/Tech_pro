@@ -16,10 +16,9 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .input-group-custom:focus-within {
-            border-color: #eab308;
-            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+            border: 2px solid #eab308;
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
         }
-        /* Style untuk menghilangkan panah pada input type password di beberapa browser */
         input::-ms-reveal, input::-ms-clear { display: none; }
     </style>
 </head>
@@ -27,23 +26,32 @@
 
     <div class="max-w-md w-full">
         <div class="text-center mb-10">
-            <div class="inline-block w-20 h-20 bg-yellow-500 rounded-3xl mb-6 flex items-center justify-center text-slate-900 text-4xl font-black italic shadow-2xl shadow-yellow-500/20">H</div>
-            <h1 class="text-3xl font-black text-white tracking-tighter italic">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
-            <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-2">Digital Service Terminal</p>
+            <div class="inline-block w-20 h-20 bg-yellow-500 rounded-3xl mb-6 flex items-center justify-center text-slate-900 text-4xl font-black italic shadow-2xl">H</div>
+            <h1 class="text-3xl font-black text-white tracking-tighter italic uppercase">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
+            <p class="text-slate-400 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Digital Service Terminal</p>
         </div>
 
         <div class="glass-login p-8 rounded-[2.5rem] shadow-2xl border-t-4 border-t-yellow-500">
             <h2 class="text-xl font-black text-white mb-8 border-l-4 border-yellow-500 pl-4 uppercase italic">Sistem Autentikasi</h2>
             
-            <form id="loginForm" class="space-y-6">
+            <form id="loginForm" class="space-y-5">
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NIK / NRP Teknisi</label>
-                    <div class="relative input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl flex items-center transition-all overflow-hidden">
-                        <input type="password" id="nikInput" required
-                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest"
+                    <div class="input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl transition-all overflow-hidden">
+                        <input type="text" id="nikInput" required
+                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest uppercase placeholder:text-slate-600"
                             placeholder="MASUKKAN NIK">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
+                    <div class="relative input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl flex items-center transition-all overflow-hidden">
+                        <input type="password" id="passInput" required
+                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest placeholder:text-slate-600"
+                            placeholder="••••••••">
                         
-                        <button type="button" onclick="toggleNIK()" class="p-4 text-slate-500 hover:text-yellow-500 transition-colors">
+                        <button type="button" onclick="togglePass()" class="p-4 text-slate-500 hover:text-yellow-500 transition-colors">
                             <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -54,28 +62,22 @@
 
                 <div class="pt-4">
                     <button type="submit" id="btnLogin"
-                        class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-5 rounded-2xl uppercase text-xs tracking-[0.2em] shadow-xl shadow-yellow-500/10 transition-all active:scale-95 flex justify-center items-center">
+                        class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-5 rounded-2xl uppercase text-xs tracking-[0.2em] shadow-xl transition-all active:scale-95 flex justify-center items-center">
                         <span id="btnText">Masuk Ke Portal</span>
                     </button>
                 </div>
             </form>
             <p id="errorMsg" class="text-red-400 text-[10px] font-bold mt-4 text-center hidden uppercase tracking-widest"></p>
         </div>
-
-        <p class="text-center text-slate-500 text-[10px] font-bold mt-10 uppercase tracking-widest">
-            Adaro Project - South Kalimantan
-        </p>
     </div>
 
     <script>
-        // CONFIG SUPABASE
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
         const sbClient = supabase.createClient(SB_URL, SB_KEY);
 
-        // FITUR LIHAT PASSWORD
-        function toggleNIK() {
-            const input = document.getElementById('nikInput');
+        function togglePass() {
+            const input = document.getElementById('passInput');
             const icon = document.getElementById('eyeIcon');
             if (input.type === "password") {
                 input.type = "text";
@@ -86,52 +88,39 @@
             }
         }
 
-        // CEK SESSION
-        if (localStorage.getItem('isLoggedIn') === 'true') {
-            window.location.href = 'index.html';
-        }
-
-        // HANDLE LOGIN
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const nikInput = document.getElementById('nikInput');
-            const val = nikInput.value.trim().toUpperCase();
-            const btn = document.getElementById('btnLogin');
+            const passInput = document.getElementById('passInput');
             const btnText = document.getElementById('btnText');
             const errorMsg = document.getElementById('errorMsg');
 
-            // Reset UI
             errorMsg.classList.add('hidden');
-            btn.disabled = true;
             btnText.innerText = "AUTENTIFICATION..."; 
 
             try {
                 const { data, error } = await sbClient
                     .from('users')
                     .select('*')
-                    .eq('nik', val)
+                    .eq('nik', nikInput.value.trim().toUpperCase())
+                    .eq('password', passInput.value)
                     .single();
 
-                if (error || !data) throw new Error("NIK TIDAK TERDAFTAR!");
+                if (error || !data) throw new Error("NIK ATAU PASSWORD SALAH!");
 
-                // SIMPAN SESSION
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userNRP', data.nik);
                 localStorage.setItem('userName', data.full_name);
                 localStorage.setItem('userRole', data.role);
 
                 window.location.href = 'index.html';
-
             } catch (err) {
-                // TAMPILKAN ERROR & BERSIHKAN INPUT
                 errorMsg.innerText = "⚠️ " + err.message;
                 errorMsg.classList.remove('hidden');
                 
-                nikInput.value = ""; // Bersihkan inputan
-                nikInput.focus(); // Fokus ulang agar mudah input kembali
-                
-                btn.disabled = false;
+                // BERSIHKAN PASSWORD SAJA
+                passInput.value = ""; 
+                passInput.focus();
                 btnText.innerText = "Masuk Ke Portal";
             }
         });
