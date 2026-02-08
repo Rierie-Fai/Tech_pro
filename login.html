@@ -1,19 +1,98 @@
-<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Login | Hexindo</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body class="bg-[#0f172a] min-h-screen flex items-center justify-center p-4 font-sans"><div class="w-full max-w-[360px] bg-white/5 border border-white/10 p-8 rounded-[2rem] text-center backdrop-blur-md shadow-2xl"><div class="mb-8"><h1 class="text-3xl font-black text-white italic tracking-tighter">HEXINDO <span class="text-yellow-500">FLEET</span></h1><p class="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-2">Secure Access Terminal</p></div><div class="space-y-4 text-left"><div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">NRP / Username</label><input type="text" id="nrpInput" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-all placeholder:text-slate-600" placeholder="Masukkan NRP"></div><div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Password</label><input type="password" id="passInput" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-all placeholder:text-slate-600" placeholder="••••••••"></div><button onclick="handleLogin()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-4 rounded-xl transition-all active:scale-95 uppercase text-xs tracking-widest mt-2">Masuk Sekarang</button></div><div class="mt-8 text-[9px] text-slate-600 font-bold uppercase">© 2026 PT Hexindo Adaro Project</div></div><script>
-const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-const sb = supabase.createClient(SB_URL, SB_KEY);
-async function handleLogin() {
-    const nrp = document.getElementById('nrpInput').value;
-    const pass = document.getElementById('passInput').value;
-    if(!nrp || !pass) return alert("Isi NRP dan Password!");
-    const { data, error } = await sb.from('users').select('*').eq('nrp', nrp).eq('password', pass).single();
-    if (data) {
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('userName', data.full_name);
-        localStorage.setItem('userNRP', data.nrp);
-        window.location.href = 'index.html';
-    } else {
-        alert("NRP atau Password Salah!");
-    }
-}
-</script></body></html>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Hexindo Fleet Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+        /* Animasi halusan saat hover */
+        .login-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="login-card w-full max-w-[380px] md:max-w-[460px] bg-white/5 border border-white/10 p-8 md:p-12 rounded-[2.5rem] text-center backdrop-blur-xl shadow-2xl">
+        
+        <div class="mb-10">
+            <h1 class="text-3xl md:text-4xl font-black text-white italic tracking-tighter uppercase">
+                Hexindo <span class="text-yellow-500 not-italic">Fleet</span>
+            </h1>
+            <p class="text-[10px] md:text-xs text-slate-400 font-bold tracking-[0.3em] uppercase mt-3">
+                Secure Access Terminal
+            </p>
+        </div>
+
+        <div class="space-y-6 text-left">
+            <div>
+                <label class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase mb-2 ml-1">NRP / Username</label>
+                <input type="text" id="nrpInput" 
+                    class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-4 md:py-5 text-white text-base focus:outline-none focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all placeholder:text-slate-700" 
+                    placeholder="Masukkan NRP">
+            </div>
+
+            <div>
+                <label class="block text-[10px] md:text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Password</label>
+                <input type="password" id="passInput" 
+                    class="w-full bg-slate-900/50 border border-white/10 rounded-2xl px-5 py-4 md:py-5 text-white text-base focus:outline-none focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/10 transition-all placeholder:text-slate-700" 
+                    placeholder="••••••••">
+            </div>
+
+            <button onclick="handleLogin()" 
+                class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-4 md:py-5 rounded-2xl transition-all active:scale-95 uppercase text-sm tracking-widest mt-4 shadow-xl shadow-yellow-500/20">
+                Masuk Sekarang
+            </button>
+        </div>
+
+        <div class="mt-12 text-[10px] md:text-xs text-slate-600 font-bold uppercase tracking-widest">
+            © 2026 PT Hexindo Adaro Project<br>
+            <span class="text-slate-700">Authorized Personnel Only</span>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        async function handleLogin() {
+            const nrp = document.getElementById('nrpInput').value;
+            const pass = document.getElementById('passInput').value;
+
+            if(!nrp || !pass) return alert("Isi NRP dan Password!");
+
+            try {
+                const { data, error } = await sb.from('users')
+                    .select('*')
+                    .eq('nrp', nrp)
+                    .eq('password', pass)
+                    .single();
+                
+                if (data) {
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userName', data.full_name);
+                    localStorage.setItem('userNRP', data.nrp);
+                    localStorage.setItem('userRole', data.role || 'technician');
+                    window.location.href = 'index.html';
+                } else {
+                    alert("NRP atau Password Salah!");
+                }
+            } catch (err) {
+                alert("Koneksi Database Error!");
+            }
+        }
+
+        // Fitur tekan Enter untuk Login
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') { handleLogin(); }
+        });
+    </script>
+</body>
+</html>
