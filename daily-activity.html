@@ -130,9 +130,28 @@
             document.getElementById('dateInp').valueAsDate = new Date();
             document.getElementById('nameInp').value = userName;
             document.getElementById('nikInp').value = userNrp;
+            
+            // 1. Refresh dari Lokal
             refreshTable();
             if(!document.getElementById('detailRowsContainer').children.length) addDetailRow();
+
+            // 2. AUTO PULL FROM CLOUD
+            autoFetchFromCloud();
         });
+
+        async function autoFetchFromCloud() {
+            try {
+                let query = sb.from('tech_logs').select('log_data');
+                if (role !== 'admin') { query = query.eq('nik', userNrp); }
+                const { data, error } = await query;
+                if(error) throw error;
+                if(data && data.length > 0) {
+                    const cloudLogs = data.map(item => item.log_data);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudLogs));
+                    refreshTable();
+                }
+            } catch (err) { console.log("Auto-pull skip (Offline or Error)"); }
+        }
 
         function addDetailRow(timeF = '', timeT = '', desc = '') {
             const container = document.getElementById('detailRowsContainer');
@@ -219,7 +238,7 @@
                 sn: document.getElementById('snInp').value.toUpperCase(),
                 hm: document.getElementById('hmInp').value, 
                 job: document.getElementById('jobDescInp').value.toUpperCase(),
-                isSynced: isEditMode ? false : false, // Reset status sinkron jika diedit
+                isSynced: false,
                 detailData: details
             };
 
@@ -236,10 +255,10 @@
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             
             logs.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id).forEach(obj => {
-                // FITUR INDIKATOR AWAN
+                // STATUS AWAN
                 const syncStatus = obj.isSynced 
-                    ? '<span class="text-emerald-600 flex items-center gap-1">✅ <span class="hidden md:inline">Synced to Cloud</span></span>' 
-                    : '<span class="text-slate-400 flex items-center gap-1">☁️ <span class="hidden md:inline">Local Only</span></span>';
+                    ? '<span class="text-emerald-600 flex items-center gap-1 font-black">✅ <span class="hidden md:inline">Synced</span></span>' 
+                    : '<span class="text-slate-400 flex items-center gap-1 font-black">☁️ <span class="hidden md:inline">Local Only</span></span>';
 
                 let chronoRows = (obj.detailData || []).map(item => `
                     <div class="chrono-row">
@@ -254,11 +273,11 @@
                     <div class="no-print bg-slate-100 p-4 flex justify-between items-center border-b">
                         <div class="flex items-center gap-4">
                             <span class="font-black text-[10px] text-slate-400 tracking-widest uppercase italic">ID: ${obj.id}</span>
-                            <div class="text-[10px] font-black uppercase tracking-tighter">${syncStatus}</div>
+                            <div class="text-[10px] uppercase">${syncStatus}</div>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editLog(${obj.id})" class="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg hover:bg-red-500 transition-colors">DELETE</button>
+                            <button onclick="editLog(${obj.id})" class="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">DELETE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto p-6 md:p-8">
@@ -296,7 +315,6 @@
             if(!logs.length) return alert("Tidak ada data untuk disinkron.");
             btn.innerText = "Processing..."; btn.disabled = true;
             try {
-                // Tambahkan tanda isSynced ke payload
                 const payload = logs.map(l => ({ 
                     id: l.id, 
                     nik: l.nik, 
@@ -305,10 +323,8 @@
                 const { error } = await sb.from('tech_logs').upsert(payload);
                 if(error) throw error;
                 
-                // Update Lokal: Tandai semua data sebagai SUDAH SINKRON
                 const updatedLogs = logs.map(l => ({ ...l, isSynced: true }));
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
-                
                 refreshTable();
                 alert("✅ Cloud Sync Success!");
             } catch (err) { alert("❌ Error: " + err.message); }
@@ -316,19 +332,8 @@
         }
 
         async function fetchFromCloud() {
-            if(!confirm("Pull data dari Cloud? Data lokal Anda akan digabungkan/diperbarui.")) return;
-            try {
-                let query = sb.from('tech_logs').select('log_data');
-                if (role !== 'admin') { query = query.eq('nik', userNrp); }
-                const { data, error } = await query;
-                if(error) throw error;
-                if(data) {
-                    const cloudLogs = data.map(item => item.log_data);
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudLogs));
-                    refreshTable();
-                    alert("✅ Success pulling data from Cloud!");
-                }
-            } catch (err) { alert("❌ Failed: " + err.message); }
+            if(!confirm("Pull data dari Cloud?")) return;
+            autoFetchFromCloud();
         }
 
         function exportToExcel() {
@@ -365,7 +370,7 @@
         }
 
         function deleteLog(id) {
-            if(confirm("Permanently delete this report?")) {
+            if(confirm("Permanently delete locally? (Cloud data stays safe)")) {
                 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)).filter(l => l.id !== id);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
                 refreshTable();
