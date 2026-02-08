@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Hexindo Fleet Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --hex-yellow: #ffc107;
             --hex-dark: #1a1d20;
-            --hex-dark-soft: #2d3436;
-            --error: #ff7675;
+            --hex-bg: #0f172a;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
             margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--hex-bg);
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background: radial-gradient(circle at top left, #343a40, #1a1d20);
             color: white;
             overflow: hidden;
         }
@@ -28,12 +28,116 @@
         .login-card {
             width: 100%;
             max-width: 380px;
-            padding: 40px;
+            padding: 40px 30px;
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border-radius: 28px;
+            border-radius: 24px;
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .brand-area { margin-bottom: 35px; }
+        .brand-area h1 { 
+            margin: 0; font-size: 30px; font-weight: 800; 
+            letter-spacing: -1.5px; text-transform: uppercase; 
+        }
+        .brand-area h1 span { color: var(--hex-yellow); }
+        .brand-area p { 
+            color: #94a3b8; font-size: 11px; margin-top: 8px; 
+            letter-spacing: 2px; font-weight: 600; text-transform: uppercase;
+        }
+
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { 
+            display: block; font-size: 11px; margin-bottom: 8px; 
+            color: #94a3b8; font-weight: 700; text-transform: uppercase; 
+        }
+
+        input { 
+            width: 100%; padding: 15px; 
+            background: rgba(255, 255, 255, 0.07); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 14px; color: white; font-size: 14px; 
+            box-sizing: border-box; transition: all 0.3s; 
+        }
+
+        input:focus { 
+            outline: none; border-color: var(--hex-yellow); 
+            background: rgba(255, 255, 255, 0.12); 
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1); 
+        }
+
+        .btn-login { 
+            width: 100%; padding: 16px; 
+            background: var(--hex-yellow); color: var(--hex-dark); 
+            border: none; border-radius: 14px; font-size: 15px; 
+            font-weight: 800; cursor: pointer; transition: all 0.3s; 
+            margin-top: 10px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .btn-login:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        .footer-note { margin-top: 25px; font-size: 10px; color: #64748b; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="brand-area">
+            <h1>HEXINDO <span>FLEET</span></h1>
+            <p>Secure Access Terminal</p>
+        </div>
+
+        <div class="form-group">
+            <label>NRP / USERNAME</label>
+            <input type="text" id="nrpInput" placeholder="Masukkan NRP">
+        </div>
+
+        <div class="form-group">
+            <label>PASSWORD</label>
+            <input type="password" id="passInput" placeholder="••••••••">
+        </div>
+
+        <button class="btn-login" onclick="handleLogin()">Masuk Sekarang</button>
+
+        <div class="footer-note">
+            © 2026 PT Hexindo Adaro Project<br>
+            Authorized Personnel Only
+        </div>
+    </div>
+
+    <script>
+        // Gunakan Supabase Client Bapak di sini
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        async function handleLogin() {
+            const nrp = document.getElementById('nrpInput').value;
+            const pass = document.getElementById('passInput').value;
+
+            if(!nrp || !pass) return alert("Isi NRP dan Password!");
+
+            // Logika cek ke tabel 'users' (sesuaikan dengan nama tabel Bapak)
+            const { data, error } = await sb
+                .from('users')
+                .select('*')
+                .eq('nrp', nrp)
+                .eq('password', pass)
+                .single();
+
+            if (data) {
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userName', data.full_name);
+                localStorage.setItem('userNRP', data.nrp);
+                window.location.href = 'index.html';
+            } else {
+                alert("NRP atau Password Salah!");
+            }
+        }
+    </script>
+</body>
+</html>
             text-align: center;
             transition: transform 0.3s ease;
         }
