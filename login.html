@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Hexindo Fleet Pro</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -14,6 +15,12 @@
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .input-group-custom:focus-within {
+            border-color: #eab308;
+            box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+        }
+        /* Style untuk menghilangkan panah pada input type password di beberapa browser */
+        input::-ms-reveal, input::-ms-clear { display: none; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-6">
@@ -25,15 +32,24 @@
             <p class="text-slate-400 text-xs font-bold uppercase tracking-[0.3em] mt-2">Digital Service Terminal</p>
         </div>
 
-        <div class="glass-login p-8 rounded-[2.5rem] shadow-2xl">
+        <div class="glass-login p-8 rounded-[2.5rem] shadow-2xl border-t-4 border-t-yellow-500">
             <h2 class="text-xl font-black text-white mb-8 border-l-4 border-yellow-500 pl-4 uppercase italic">Sistem Autentikasi</h2>
             
             <form id="loginForm" class="space-y-6">
                 <div>
                     <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">NIK / NRP Teknisi</label>
-                    <input type="text" id="nikInput" required
-                        class="w-full bg-slate-800/50 border border-slate-700 text-white p-4 rounded-2xl outline-none focus:border-yellow-500 transition-all font-bold tracking-widest"
-                        placeholder="MASUKKAN NIK ANDA">
+                    <div class="relative input-group-custom bg-slate-800/50 border border-slate-700 rounded-2xl flex items-center transition-all overflow-hidden">
+                        <input type="password" id="nikInput" required
+                            class="w-full bg-transparent text-white p-4 outline-none font-bold tracking-widest"
+                            placeholder="MASUKKAN NIK">
+                        
+                        <button type="button" onclick="toggleNIK()" class="p-4 text-slate-500 hover:text-yellow-500 transition-colors">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="pt-4">
@@ -45,23 +61,42 @@
             </form>
             <p id="errorMsg" class="text-red-400 text-[10px] font-bold mt-4 text-center hidden uppercase tracking-widest"></p>
         </div>
+
+        <p class="text-center text-slate-500 text-[10px] font-bold mt-10 uppercase tracking-widest">
+            Adaro Project - South Kalimantan
+        </p>
     </div>
 
     <script>
-        // KONFIGURASI SUPABASE
+        // CONFIG SUPABASE
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
         const sbClient = supabase.createClient(SB_URL, SB_KEY);
 
-        // PROTEKSI: Jika sudah login, lempar ke dashboard
+        // FITUR LIHAT PASSWORD
+        function toggleNIK() {
+            const input = document.getElementById('nikInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />';
+            } else {
+                input.type = "password";
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        }
+
+        // CEK SESSION
         if (localStorage.getItem('isLoggedIn') === 'true') {
             window.location.href = 'index.html';
         }
 
+        // HANDLE LOGIN
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const nikInput = document.getElementById('nikInput').value.trim().toUpperCase();
+            const nikInput = document.getElementById('nikInput');
+            const val = nikInput.value.trim().toUpperCase();
             const btn = document.getElementById('btnLogin');
             const btnText = document.getElementById('btnText');
             const errorMsg = document.getElementById('errorMsg');
@@ -69,37 +104,37 @@
             // Reset UI
             errorMsg.classList.add('hidden');
             btn.disabled = true;
-            btnText.innerText = "MENGECEK DATABASE...";
+            btnText.innerText = "AUTENTIFICATION..."; 
 
             try {
-                // QUERY KE TABEL USERS
                 const { data, error } = await sbClient
                     .from('users')
                     .select('*')
-                    .eq('nik', nikInput)
+                    .eq('nik', val)
                     .single();
 
-                if (error || !data) {
-                    throw new Error("NIK tidak terdaftar atau koneksi bermasalah!");
-                }
+                if (error || !data) throw new Error("NIK TIDAK TERDAFTAR!");
 
-                // JIKA NIK DITEMUKAN, SIMPAN SESSION
+                // SIMPAN SESSION
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userNRP', data.nik); // Menyimpan NIK sebagai identitas
+                localStorage.setItem('userNRP', data.nik);
                 localStorage.setItem('userName', data.full_name);
-                localStorage.setItem('userRole', data.role); // 'admin' atau 'technician'
+                localStorage.setItem('userRole', data.role);
 
-                // Berhasil login
                 window.location.href = 'index.html';
 
             } catch (err) {
+                // TAMPILKAN ERROR & BERSIHKAN INPUT
                 errorMsg.innerText = "⚠️ " + err.message;
                 errorMsg.classList.remove('hidden');
+                
+                nikInput.value = ""; // Bersihkan inputan
+                nikInput.focus(); // Fokus ulang agar mudah input kembali
+                
                 btn.disabled = false;
                 btnText.innerText = "Masuk Ke Portal";
             }
         });
     </script>
-
 </body>
 </html>
