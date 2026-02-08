@@ -10,9 +10,8 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
         .menu-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .menu-card:hover { transform: translateY(-5px); }
+        .menu-card:hover { transform: translateY(-8px); }
         
-        /* Gaya khusus untuk angka jam agar tidak goyang saat berganti detik */
         .digital-clock { font-family: 'JetBrains Mono', monospace; }
         
         .glass-widget {
@@ -20,19 +19,35 @@
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
+
+        /* Badge Glow Effect */
+        .admin-glow { box-shadow: 0 0 15px rgba(234, 179, 8, 0.3); }
+        .tech-glow { box-shadow: 0 0 15px rgba(59, 130, 246, 0.2); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <header class="bg-[#1a1d20] text-white p-4 md:px-10 md:py-6 shadow-lg border-b-4 border-yellow-500">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-xl md:text-2xl font-black tracking-tighter italic">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
-                <p class="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">Portal Service Adaro Project</p>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:block w-12 h-12 bg-yellow-500 rounded-xl flex items-center justify-center text-slate-900 font-black text-xl italic shadow-lg shadow-yellow-500/20">H</div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black tracking-tighter italic leading-none">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
+                    <p class="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1.5">Portal Service Adaro Project</p>
+                </div>
             </div>
-            <div class="text-right">
-                <p id="userNameDisplay" class="text-sm md:text-base font-bold text-yellow-500 italic">User Name</p>
-                <button onclick="handleLogout()" class="text-[9px] uppercase font-black bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md mt-1 transition-all">Logout</button>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="userNameDisplay" class="text-sm md:text-base font-bold text-white italic">User Name</p>
+                    <div id="roleBadge" class="inline-block mt-1 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter">
+                        Loading Access...
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 p-2.5 md:px-4 md:py-2 rounded-xl transition-all shadow-lg active:scale-90">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
@@ -46,53 +61,47 @@
                         Selamat Bekerja, <br> 
                         <span class="text-yellow-600 italic" id="hiName">User</span>!
                     </h2>
-                    <p class="text-slate-500 text-sm md:text-lg mt-3">Silakan pilih modul laporan di bawah ini.</p>
+                    <p class="text-slate-500 text-sm md:text-lg mt-3">Sistem terhubung ke server. Pilih modul aplikasi:</p>
                 </div>
 
-                <div class="glass-widget p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 min-w-[280px] border-l-8 border-l-yellow-500">
-                    <div class="flex items-center gap-4">
+                <div class="glass-widget p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 min-w-[280px] border-l-8 border-l-yellow-500 relative overflow-hidden">
+                    <div class="flex items-center gap-4 relative z-10">
                         <div class="bg-yellow-500 text-slate-900 p-3 rounded-2xl">
                             <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         </div>
                         <div>
                             <p id="liveDate" class="text-xs md:text-sm font-black text-slate-400 uppercase tracking-tighter">Memuat Tanggal...</p>
-                            <h3 id="liveTime" class="digital-clock text-2xl md:text-4xl font-bold text-slate-800 tracking-tighter">00:00:00</h3>
+                            <h3 id="liveTime" class="digital-clock text-2xl md:text-4xl font-bold text-slate-800 tracking-tighter leading-none">00:00:00</h3>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10">
                 
-                <a href="toolbox.html" class="menu-card group bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-yellow-500 flex flex-col justify-between overflow-hidden relative">
+                <a href="toolbox.html" class="menu-card group bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-yellow-500 flex flex-col justify-between overflow-hidden relative">
                     <div class="relative z-10">
                         <div class="w-14 h-14 md:w-20 md:h-20 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-yellow-500 transition-all duration-500">
                             <svg class="w-8 h-8 md:w-10 md:h-10 text-yellow-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
                         </div>
                         <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Toolbox Pro</h3>
-                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Inspeksi kelayakan alat kerja dan monitoring inventory toolbox teknisi.</p>
+                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Inspeksi kelayakan alat kerja dan monitoring inventory.</p>
                     </div>
                     <div class="mt-10 flex items-center text-yellow-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
-                        Buka Aplikasi <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </div>
-                    <div class="absolute -right-10 -bottom-10 text-slate-50 opacity-[0.03] group-hover:opacity-[0.07] transition-all">
-                        <svg width="200" height="200" fill="currentColor" viewBox="0 0 24 24"><path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                        Akses Modul <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                     </div>
                 </a>
 
-                <a href="daily-activity.html" class="menu-card group bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-blue-500 flex flex-col justify-between overflow-hidden relative">
+                <a href="daily-activity.html" class="menu-card group bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-blue-500 flex flex-col justify-between overflow-hidden relative">
                     <div class="relative z-10">
                         <div class="w-14 h-14 md:w-20 md:h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-500 transition-all duration-500">
                             <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         </div>
-                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Daily Activity</h3>
-                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Laporan harian maintenance, unit breakdown, dan progres troubleshooting.</p>
+                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Activity Report</h3>
+                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Laporan harian maintenance dan progres troubleshooting.</p>
                     </div>
                     <div class="mt-10 flex items-center text-blue-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
-                        Buka Aplikasi <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </div>
-                    <div class="absolute -right-10 -bottom-10 text-slate-50 opacity-[0.03] group-hover:opacity-[0.07] transition-all">
-                        <svg width="200" height="200" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        Akses Modul <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                     </div>
                 </a>
 
@@ -110,33 +119,36 @@
             window.location.href = 'login.html';
         }
 
-        // TAMPILKAN NAMA
+        // AMBIL DATA SESSION
         const name = localStorage.getItem('userName') || 'User';
+        const role = localStorage.getItem('userRole') || 'technician';
+
+        // UPDATE UI
         document.getElementById('userNameDisplay').innerText = name;
         document.getElementById('hiName').innerText = name;
 
-        // FUNGSI JAM LIVE & TANGGAL
+        // LOGIKA BADGE AKSES
+        const badge = document.getElementById('roleBadge');
+        if (role === 'admin') {
+            badge.innerText = '🛡️ Full Access Admin';
+            badge.className += ' bg-yellow-500/20 text-yellow-500 admin-glow';
+        } else {
+            badge.innerText = '🔧 Technician Access';
+            badge.className += ' bg-blue-500/20 text-blue-500 tech-glow';
+        }
+
+        // LIVE CLOCK
         function updateTime() {
             const now = new Date();
-            
-            // Format Jam (HH:MM:SS)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             document.getElementById('liveTime').innerText = `${hours}:${minutes}:${seconds}`;
 
-            // Format Tanggal (MINGGU, 08 FEB 2026)
             const days = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
             const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
-            
-            const dayName = days[now.getDay()];
-            const date = now.getDate();
-            const monthName = months[now.getMonth()];
-            const year = now.getFullYear();
-            
-            document.getElementById('liveDate').innerText = `${dayName}, ${date} ${monthName} ${year}`;
+            document.getElementById('liveDate').innerText = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
         }
-
         setInterval(updateTime, 1000);
         updateTime();
 
