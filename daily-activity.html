@@ -123,7 +123,7 @@
 
         window.addEventListener('load', () => { 
             setTimeout(() => { document.getElementById('splash-screen').classList.add('fade-out'); }, 800); 
-            document.getElementById('roleBadge').innerText = (role === 'admin') ? "Access: Administrator (Full Fleet View)" : `Access: Technician (NRP: ${userNrp})`;
+            document.getElementById('roleBadge').innerText = (role === 'admin') ? "Access: Administrator (Full Fleet View)" : `Access: Technician (NIK: ${userNrp})`;
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -135,30 +135,29 @@
         });
 
         function addDetailRow(timeF = '', timeT = '', desc = '') {
-    const container = document.getElementById('detailRowsContainer');
-    const div = document.createElement('div');
-    // MENGGUNAKAN GRID: 2 kolom di mobile, flex berjejer di desktop
-    div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative transition-all";
-    div.innerHTML = `
-        <div class="col-span-1 md:w-32">
-            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">From</label>
-            <input type="time" class="input-box" value="${timeF}" oninput="validateOverlap()">
-        </div>
-        <div class="col-span-1 md:w-32">
-            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">To</label>
-            <input type="time" class="input-box" value="${timeT}" oninput="validateOverlap()">
-        </div>
-        <div class="col-span-2 md:flex-1">
-            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">Detailed Progress Description</label>
-            <textarea class="input-area w-full" placeholder="Describe what you did...">${desc}</textarea>
-        </div>
-        <button onclick="this.parentElement.remove(); validateOverlap();" 
-            class="absolute -top-2 -right-2 md:static md:mt-8 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm">
-            &times;
-        </button>
-    `;
-    container.appendChild(div);
-    validateOverlap();
+            const container = document.getElementById('detailRowsContainer');
+            const div = document.createElement('div');
+            div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative transition-all";
+            div.innerHTML = `
+                <div class="col-span-1 md:w-32">
+                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">From</label>
+                    <input type="time" class="input-box" value="${timeF}" oninput="validateOverlap()">
+                </div>
+                <div class="col-span-1 md:w-32">
+                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">To</label>
+                    <input type="time" class="input-box" value="${timeT}" oninput="validateOverlap()">
+                </div>
+                <div class="col-span-2 md:flex-1">
+                    <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">Detailed Progress Description</label>
+                    <textarea class="input-area w-full" placeholder="Describe what you did...">${desc}</textarea>
+                </div>
+                <button onclick="this.parentElement.remove(); validateOverlap();" 
+                    class="absolute -top-2 -right-2 md:static md:mt-8 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm">
+                    &times;
+                </button>
+            `;
+            container.appendChild(div);
+            validateOverlap();
         }
 
         function smartAddTask() {
@@ -220,6 +219,7 @@
                 sn: document.getElementById('snInp').value.toUpperCase(),
                 hm: document.getElementById('hmInp').value, 
                 job: document.getElementById('jobDescInp').value.toUpperCase(),
+                isSynced: isEditMode ? false : false, // Reset status sinkron jika diedit
                 detailData: details
             };
 
@@ -236,6 +236,11 @@
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             
             logs.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id).forEach(obj => {
+                // FITUR INDIKATOR AWAN
+                const syncStatus = obj.isSynced 
+                    ? '<span class="text-emerald-600 flex items-center gap-1">✅ <span class="hidden md:inline">Synced to Cloud</span></span>' 
+                    : '<span class="text-slate-400 flex items-center gap-1">☁️ <span class="hidden md:inline">Local Only</span></span>';
+
                 let chronoRows = (obj.detailData || []).map(item => `
                     <div class="chrono-row">
                         <div class="col-from cell-time">${item.f || '--:--'}</div>
@@ -244,13 +249,16 @@
                     </div>`).join('');
 
                 const section = document.createElement('div');
-                section.className = "report-wrapper bg-white shadow-xl rounded-3xl overflow-hidden border border-slate-200";
+                section.className = "report-wrapper bg-white shadow-xl rounded-3xl overflow-hidden border border-slate-200 mb-8";
                 section.innerHTML = `
                     <div class="no-print bg-slate-100 p-4 flex justify-between items-center border-b">
-                        <span class="font-black text-[10px] text-slate-400 tracking-widest uppercase italic">Report Unit ID: ${obj.id}</span>
+                        <div class="flex items-center gap-4">
+                            <span class="font-black text-[10px] text-slate-400 tracking-widest uppercase italic">ID: ${obj.id}</span>
+                            <div class="text-[10px] font-black uppercase tracking-tighter">${syncStatus}</div>
+                        </div>
                         <div class="flex gap-2">
-                            <button onclick="editLog(${obj.id})" class="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg">DELETE</button>
+                            <button onclick="editLog(${obj.id})" class="bg-blue-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg hover:bg-blue-500 transition-colors">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="bg-red-600 text-white text-[10px] font-bold px-4 py-2 rounded-lg hover:bg-red-500 transition-colors">DELETE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto p-6 md:p-8">
@@ -284,13 +292,24 @@
 
         async function syncToCloud() {
             const btn = document.getElementById('btnSync');
-            const logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             if(!logs.length) return alert("Tidak ada data untuk disinkron.");
             btn.innerText = "Processing..."; btn.disabled = true;
             try {
-                const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: l }));
+                // Tambahkan tanda isSynced ke payload
+                const payload = logs.map(l => ({ 
+                    id: l.id, 
+                    nik: l.nik, 
+                    log_data: { ...l, isSynced: true } 
+                }));
                 const { error } = await sb.from('tech_logs').upsert(payload);
                 if(error) throw error;
+                
+                // Update Lokal: Tandai semua data sebagai SUDAH SINKRON
+                const updatedLogs = logs.map(l => ({ ...l, isSynced: true }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLogs));
+                
+                refreshTable();
                 alert("✅ Cloud Sync Success!");
             } catch (err) { alert("❌ Error: " + err.message); }
             finally { btn.innerText = "☁️ Sync Cloud"; btn.disabled = false; }
@@ -300,9 +319,7 @@
             if(!confirm("Pull data dari Cloud? Data lokal Anda akan digabungkan/diperbarui.")) return;
             try {
                 let query = sb.from('tech_logs').select('log_data');
-                // FILTER: Hanya admin yang bisa tarik semua data
                 if (role !== 'admin') { query = query.eq('nik', userNrp); }
-                
                 const { data, error } = await query;
                 if(error) throw error;
                 if(data) {
