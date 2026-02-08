@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hexindo Toolbox Pro - Dashboard Modern</title>
+    <title>Toolbox Pro | Hexindo Fleet</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
@@ -13,8 +13,11 @@
             --success: #198754; 
             --warning: #ffc107; 
             --danger: #dc3545;
-            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
+
+        /* Proteksi layar sebelum cek login */
+        html { display: none; }
 
         body { 
             font-family: 'Inter', -apple-system, sans-serif; 
@@ -29,52 +32,63 @@
         /* Header Modern */
         .top-bar { 
             background: var(--hex-dark); color: white; 
-            padding: 15px 20px; border-radius: 12px; 
+            padding: 12px 20px; border-radius: 14px; 
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 20px; box-shadow: var(--card-shadow);
+            border-bottom: 3px solid var(--hex-yellow);
+        }
+
+        .brand-section { display: flex; align-items: center; gap: 12px; }
+        
+        /* Tombol Home Baru */
+        .btn-home {
+            background: var(--hex-yellow); border: none; padding: 8px;
+            border-radius: 8px; cursor: pointer; display: flex; align-items: center;
         }
 
         .month-badge { 
-            background: var(--hex-yellow); color: var(--hex-dark); 
-            padding: 5px 15px; border-radius: 8px; font-weight: 800; font-size: 12px;
+            background: rgba(255,255,255,0.1); color: white; 
+            padding: 5px 12px; border-radius: 6px; font-weight: 800; font-size: 11px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         /* Summary Cards */
         .summary-grid { 
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; 
         }
         .s-card { 
-            background: white; padding: 15px; border-radius: 12px; text-align: center;
+            background: white; padding: 12px; border-radius: 12px; text-align: center;
             box-shadow: var(--card-shadow); border-bottom: 4px solid #ddd;
         }
         .s-card.baik { border-color: var(--success); }
         .s-card.rusak { border-color: var(--warning); }
         .s-card.hilang { border-color: var(--danger); }
         
-        .s-val { font-size: 22px; font-weight: 800; display: block; }
-        .s-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; }
+        .s-val { font-size: 20px; font-weight: 800; display: block; }
+        .s-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #64748b; }
 
         /* Meta Info Form */
         .meta-card { 
             background: white; padding: 15px; border-radius: 12px; 
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
             gap: 15px; margin-bottom: 20px; box-shadow: var(--card-shadow);
         }
-        .input-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #475569; }
+        .input-group label { display: block; margin-bottom: 5px; font-weight: 700; color: #475569; font-size: 10px; text-transform: uppercase; }
         input { 
-            width: 100%; padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 6px; 
-            box-sizing: border-box; transition: 0.2s;
+            width: 100%; padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; 
+            box-sizing: border-box; transition: 0.2s; font-size: 12px;
         }
-        input:focus { outline: none; border-color: var(--hex-yellow); }
+        input:focus { outline: none; border-color: var(--hex-yellow); background: #fffdf5; }
+        .readonly-bg { background: #f8fafc; color: #64748b; font-weight: 700; }
 
         /* Action Buttons */
-        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        button { 
-            flex: 1; padding: 12px; border: none; border-radius: 8px; 
-            font-weight: 700; cursor: pointer; transition: 0.2s; color: white;
-            text-transform: uppercase; font-size: 10px;
+        .btn-group { display: flex; gap: 8px; margin-bottom: 20px; }
+        .btn-group button { 
+            flex: 1; padding: 14px; border: none; border-radius: 10px; 
+            font-weight: 800; cursor: pointer; transition: 0.2s; color: white;
+            text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;
         }
-        .btn-save { background: var(--success); }
+        .btn-save { background: var(--hex-dark); border: 2px solid var(--hex-yellow) !important; color: var(--hex-yellow) !important; }
         .btn-new { background: #64748b; }
         .btn-check { background: #0ea5e9; }
         button:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -85,7 +99,7 @@
             flex: 1; background: white; border-radius: 12px; overflow: hidden; 
             box-shadow: var(--card-shadow); border: 1px solid #e2e8f0;
         }
-        .scroll-area { height: 400px; overflow-y: scroll; }
+        .scroll-area { height: 450px; overflow-y: scroll; }
         
         table { width: 100%; border-collapse: collapse; }
         th { background: #f8fafc; color: #475569; padding: 12px; font-weight: 700; border-bottom: 2px solid #e2e8f0; text-align: left; }
@@ -96,14 +110,11 @@
         .row-rusak { background-color: #fffbeb !important; }
         .row-hilang { background-color: #fef2f2 !important; }
 
-        /* History */
-        .history-card { background: white; padding: 20px; border-radius: 12px; box-shadow: var(--card-shadow); }
-        .hist-table { width: 100%; margin-top: 10px; }
-        .hist-table td { padding: 8px; font-size: 10px; }
+        .btn-edit { background: #0ea5e9; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; }
 
         @media (max-width: 768px) {
             .main-grid { flex-direction: column; }
-            .summary-grid { grid-template-columns: 1fr 1fr 1fr; }
+            .summary-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -111,7 +122,12 @@
 
 <div class="container">
     <div class="top-bar">
-        <h2 style="margin:0; font-size: 18px;">HEXINDO <span style="color:var(--hex-yellow)">TOOLBOX</span></h2>
+        <div class="brand-section">
+            <button class="btn-home" onclick="window.location.href='index.html'">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            </button>
+            <h2 style="margin:0; font-size: 16px; font-weight: 900;">TOOLBOX <span style="color:var(--hex-yellow)">INSPECTION</span></h2>
+        </div>
         <div class="month-badge" id="currentMonthBadge">FEB 2026</div>
     </div>
 
@@ -124,16 +140,16 @@
     <input type="hidden" id="editingId" value="">
 
     <div class="meta-card">
-        <div class="input-group"><label>Asset No</label><input type="text" id="asset" value="101602010004"></div>
-        <div class="input-group"><label>PIC Name</label><input type="text" id="pic" value="M. IRVAN RIFAI"></div>
-        <div class="input-group"><label>Check Date</label><input type="date" id="tgl" onchange="updateMonthBadge()"></div>
-        <div class="input-group"><label>Branch</label><input type="text" id="branch" value="ADARO PROJECT"></div>
+        <div class="input-group"><label>NRP / ID</label><input type="text" id="asset" class="readonly-bg" readonly></div>
+        <div class="input-group"><label>PIC Name</label><input type="text" id="pic" class="readonly-bg" readonly></div>
+        <div class="input-group"><label>Inspection Date</label><input type="date" id="tgl" onchange="updateMonthBadge()"></div>
+        <div class="input-group"><label>Project Site</label><input type="text" id="branch" value="ADARO PROJECT"></div>
     </div>
 
     <div class="btn-group">
-        <button class="btn-save" onclick="prosesSimpan()" id="btnSubmit">🚀 Simpan ke Cloud</button>
-        <button class="btn-check" onclick="checkAllBaik()">✅ Check All B</button>
-        <button class="btn-new" onclick="resetForm()">➕ Input Baru</button>
+        <button class="btn-save" onclick="prosesSimpan()" id="btnSubmit">☁️ Sinkron Cloud</button>
+        <button class="btn-check" onclick="checkAllBaik()">✅ All B</button>
+        <button class="btn-new" onclick="resetForm()">➕ Reset</button>
     </div>
 
     <div class="main-grid">
@@ -155,16 +171,22 @@
         </div>
     </div>
 
-    <div class="history-card">
-        <h3 style="margin-top:0">📋 Riwayat Sinkronisasi</h3>
-        <table class="hist-table">
+    <div class="history-card" style="background:white; padding:15px; border-radius:12px; box-shadow:var(--card-shadow)">
+        <h3 style="margin-top:0; font-size:12px; text-transform:uppercase; color:#64748b">📋 Recent Sync</h3>
+        <table class="hist-table" style="width:100%; font-size:10px;">
             <tbody id="histBody"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // [LOGIKA SCRIPT TETAP SAMA SEPERTI SEBELUMNYA AGAR FUNGSI TIDAK RUSAK]
+    // 1. SECURITY CHECK (DARI LOGIN)
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+        window.location.href = 'login.html';
+    } else {
+        document.documentElement.style.display = 'block';
+    }
+
     const listAlat = ["Adjustable wrench L=12\"", "Adjustable wrench pipe L=10\"", "Allen key 12mm", "Allen key 14mm", "Allen key 17mm", "Allen key set 2-10mm", "Brush steel W=30mm", "Catridge belt wrench 125mm", "Chisel plate W=11 L=140mm", "Combination wrench 24mm", "Combination wrench 27mm", "Combination wrench 30mm", "Combination wrench 32mm", "Combination wrench 36mm", "Combination wrench 41mm", "Extention socket 1/2\" L=10\"", "Extention socket 1/2\" L=5\"", "Extention socket 3/4\" L=18\"", "Extention socket 3/4\" L=8\"", "Extention socket 1/2\" U-joint", "Feeler gauge set", "Files set (5 pcs) 150mm", "Files plate type 250mm", "Files round type 250mm", "Haksaw iron & blade", "Half moon wrench 14x17", "Half moon wrench 19x22", "Hammer besi 0.5kg", "Hammer karet 0.5kg", "Hammer plastik 0.5kg", "Handle socket T 1/2\"", "Handle socket T 3/4\"", "Handle rachet 1/2\"", "Handle rachet 3/4\"", "Magnetic stick L=50cm", "Multitester CD 800", "Open end 6x7", "Open end 8x9", "Open end 10x11", "Open end 12x13", "Open end 14x15", "Open end 16x17", "Open end 18x19", "Open end 20x22", "Open end 24x26", "Open end 36x41", "Paint brush", "Pliers combination 200mm", "Pliers side cutting 200mm", "Pliers water pump", "Pliers viece grip", "Pliers snap ring (in)", "Pliers snap ring (out)", "Pry bar L=40cm", "Punch drift 150mm", "Punch center 130mm", "Ring spanner 6x7", "Ring spanner 8x9", "Ring spanner 10x11", "Ring spanner 12x13", "Ring spanner 14x15", "Ring spanner 16x17", "Ring spanner 18x19", "Ring spanner 20x22", "Ring spanner 24x26", "Scale meter roll 2.5m", "Scrape blade W=25mm", "Screw drive plus 75mm", "Screw drive plus 100mm", "Screw drive plus 125mm", "Screw drive plus 150mm", "Screw drive plate 75mm", "Screw drive plate 100mm", "Screw drive plate 150mm", "Screw drive plate 200mm", "Socket (12) 1/2\" 10mm", "Socket (12) 1/2\" 11mm", "Socket (12) 1/2\" 12mm", "Socket (12) 1/2\" 13mm", "Socket (12) 1/2\" 14mm", "Socket (12) 1/2\" 15mm", "Socket (12) 1/2\" 16mm", "Socket (12) 1/2\" 17mm", "Socket (12) 1/2\" 18mm", "Socket (12) 1/2\" 19mm", "Socket (12) 1/2\" 20mm", "Socket (12) 1/2\" 21mm", "Socket (12) 1/2\" 22mm", "Socket (12) 3/4\" 22mm", "Socket (12) 3/4\" 23mm", "Socket (12) 3/4\" 24mm", "Socket (12) 3/4\" 27mm", "Socket (12) 3/4\" 28mm", "Socket (12) 3/4\" 29mm", "Socket (12) 3/4\" 30mm", "Socket (12) 3/4\" 32mm", "Socket (12) 3/4\" 36mm", "Socket (12) 3/4\" 38mm", "Socket (12) 3/4\" 41mm", "Socket (12) 3/4\" 46mm", "Stop watch digital", "Thermometer 0-200C", "Treeds gauge set", "Tools box 3 step", "Test pen DC", "Vernier caliper 150mm"];
 
     function refreshSummary() {
@@ -191,11 +213,14 @@
     }
 
     function updateMonthBadge() {
-        const d = new Date(document.getElementById('tgl').value);
+        const tglInput = document.getElementById('tgl').value;
+        if(!tglInput) return;
+        const d = new Date(tglInput);
         const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
         document.getElementById('currentMonthBadge').innerText = months[d.getMonth()] + " " + d.getFullYear();
     }
 
+    // Render Table
     const area1 = document.getElementById('area1'), area2 = document.getElementById('area2');
     listAlat.forEach((name, i) => {
         const no = i + 1;
@@ -203,10 +228,10 @@
         if(no <= 53) area1.innerHTML += html; else area2.innerHTML += html;
     });
 
-    // SUPABASE CONFIG
+    // Supabase
     const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-    const sbClient = window.supabase.createClient(SB_URL, SB_KEY);
+    const sbClient = supabase.createClient(SB_URL, SB_KEY);
 
     async function prosesSimpan() {
         const values = listAlat.map((_, i) => {
@@ -229,7 +254,7 @@
         else res = await sbClient.from('toolbox_reports').insert([payload]);
 
         if(res.error) alert(res.error.message);
-        else { alert("Sukses Tersimpan!"); fetchHistory(); resetForm(); }
+        else { alert("Sukses Tersimpan ke Cloud!"); fetchHistory(); resetForm(); }
     }
 
     async function fetchHistory() {
@@ -241,8 +266,8 @@
                 const b = row.items_data.filter(x => x==='B').length;
                 const r = row.items_data.filter(x => x==='R').length;
                 const h = row.items_data.filter(x => x==='H').length;
-                histBody.innerHTML += `<tr>
-                    <td><b>${row.check_date}</b></td>
+                histBody.innerHTML += `<tr style="border-bottom:1px solid #eee">
+                    <td style="padding:8px"><b>${row.check_date}</b></td>
                     <td>${row.asset_no}</td>
                     <td>B:${b} R:${r} H:${h}</td>
                     <td style="text-align:right"><button class="btn-edit" onclick='loadData(${JSON.stringify(row)})'>Edit</button></td>
@@ -260,8 +285,7 @@
             const rad = document.querySelector(`input[name="t-${i+1}"][value="${val}"]`);
             if(rad) rad.checked = true;
         });
-        document.getElementById('btnSubmit').innerText = "🔄 Perbarui Revisi";
-        document.getElementById('btnSubmit').style.background = "#0ea5e9";
+        document.getElementById('btnSubmit').innerText = "🔄 Update Revisi";
         refreshSummary();
         updateMonthBadge();
         window.scrollTo({top: 0, behavior: 'smooth'});
@@ -269,8 +293,10 @@
 
     function resetForm() {
         document.getElementById('editingId').value = "";
-        document.getElementById('btnSubmit').innerText = "🚀 Simpan ke Cloud";
-        document.getElementById('btnSubmit').style.background = "var(--success)";
+        document.getElementById('btnSubmit').innerText = "☁️ Sinkron Cloud";
+        // Kembalikan ke data login default
+        document.getElementById('asset').value = localStorage.getItem('userNRP');
+        document.getElementById('pic').value = localStorage.getItem('userName');
         document.querySelectorAll('input[type="radio"]').forEach(r => {
             r.checked = false;
             r.closest('tr').className = "";
@@ -278,7 +304,11 @@
         refreshSummary();
     }
 
+    // INIT
     document.getElementById('tgl').valueAsDate = new Date();
+    document.getElementById('asset').value = localStorage.getItem('userNRP');
+    document.getElementById('pic').value = localStorage.getItem('userName');
+    
     updateMonthBadge();
     fetchHistory();
 </script>
