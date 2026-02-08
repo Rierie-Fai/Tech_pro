@@ -3,37 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal | Hexindo Fleet Pro</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Portal Utama | Hexindo Fleet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root {
-            --hex-yellow: #ffc107;
-            --hex-dark: #1a1d20;
-            --bg-body: #f0f2f5;
-            --success: #28a745;
-            --danger: #dc3545;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        .menu-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .menu-card:hover { transform: translateY(-5px); }
+        
+        /* Gaya khusus untuk angka jam agar tidak goyang saat berganti detik */
+        .digital-clock { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass-widget {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="bg-[#1a1d20] text-white p-4 md:px-10 md:py-6 shadow-lg border-b-4 border-yellow-500">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-xl md:text-2xl font-black tracking-tighter italic">HEXINDO <span class="text-yellow-500 not-italic">FLEET</span></h1>
+                <p class="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-1">Portal Service Adaro Project</p>
+            </div>
+            <div class="text-right">
+                <p id="userNameDisplay" class="text-sm md:text-base font-bold text-yellow-500 italic">User Name</p>
+                <button onclick="handleLogout()" class="text-[9px] uppercase font-black bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md mt-1 transition-all">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow p-4 md:p-10">
+        <div class="max-w-7xl mx-auto">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
+                <div>
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-slate-800 tracking-tight leading-tight">
+                        Selamat Bekerja, <br> 
+                        <span class="text-yellow-600 italic" id="hiName">User</span>!
+                    </h2>
+                    <p class="text-slate-500 text-sm md:text-lg mt-3">Silakan pilih modul laporan di bawah ini.</p>
+                </div>
+
+                <div class="glass-widget p-6 rounded-[2rem] shadow-xl shadow-slate-200/50 min-w-[280px] border-l-8 border-l-yellow-500">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-yellow-500 text-slate-900 p-3 rounded-2xl">
+                            <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <div>
+                            <p id="liveDate" class="text-xs md:text-sm font-black text-slate-400 uppercase tracking-tighter">Memuat Tanggal...</p>
+                            <h3 id="liveTime" class="digital-clock text-2xl md:text-4xl font-bold text-slate-800 tracking-tighter">00:00:00</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-10">
+                
+                <a href="toolbox.html" class="menu-card group bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-yellow-500 flex flex-col justify-between overflow-hidden relative">
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 md:w-20 md:h-20 bg-yellow-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-yellow-500 transition-all duration-500">
+                            <svg class="w-8 h-8 md:w-10 md:h-10 text-yellow-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Toolbox Pro</h3>
+                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Inspeksi kelayakan alat kerja dan monitoring inventory toolbox teknisi.</p>
+                    </div>
+                    <div class="mt-10 flex items-center text-yellow-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
+                        Buka Aplikasi <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </div>
+                    <div class="absolute -right-10 -bottom-10 text-slate-50 opacity-[0.03] group-hover:opacity-[0.07] transition-all">
+                        <svg width="200" height="200" fill="currentColor" viewBox="0 0 24 24"><path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                    </div>
+                </a>
+
+                <a href="daily-activity.html" class="menu-card group bg-white p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-slate-200 hover:shadow-2xl hover:border-blue-500 flex flex-col justify-between overflow-hidden relative">
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 md:w-20 md:h-20 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-500 transition-all duration-500">
+                            <svg class="w-8 h-8 md:w-10 md:h-10 text-blue-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-black text-slate-800 uppercase italic">Daily Activity</h3>
+                        <p class="text-slate-500 text-sm md:text-lg mt-3 leading-relaxed">Laporan harian maintenance, unit breakdown, dan progres troubleshooting.</p>
+                    </div>
+                    <div class="mt-10 flex items-center text-blue-600 font-black text-xs md:text-sm uppercase tracking-[0.2em] relative z-10">
+                        Buka Aplikasi <svg class="w-5 h-5 ml-3 group-hover:translate-x-2 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </div>
+                    <div class="absolute -right-10 -bottom-10 text-slate-50 opacity-[0.03] group-hover:opacity-[0.07] transition-all">
+                        <svg width="200" height="200" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-8 text-center text-slate-400 text-[10px] md:text-xs uppercase font-bold tracking-[0.3em]">
+        © 2026 PT HEXINDO ADARO PROJECT | DIGITAL SERVICE TERMINAL
+    </footer>
+
+    <script>
+        // PROTEKSI LOGIN
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
         }
 
-        /* Proteksi agar konten tidak berkedip sebelum cek login */
-        html { display: none; }
+        // TAMPILKAN NAMA
+        const name = localStorage.getItem('userName') || 'User';
+        document.getElementById('userNameDisplay').innerText = name;
+        document.getElementById('hiName').innerText = name;
 
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background: var(--bg-body);
-            color: var(--hex-dark);
+        // FUNGSI JAM LIVE & TANGGAL
+        function updateTime() {
+            const now = new Date();
+            
+            // Format Jam (HH:MM:SS)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('liveTime').innerText = `${hours}:${minutes}:${seconds}`;
+
+            // Format Tanggal (MINGGU, 08 FEB 2026)
+            const days = ["MINGGU", "SENIN", "SELASA", "RABU", "KAMIS", "JUMAT", "SABTU"];
+            const months = ["JAN", "FEB", "MAR", "APR", "MEI", "JUN", "JUL", "AGU", "SEP", "OKT", "NOV", "DES"];
+            
+            const dayName = days[now.getDay()];
+            const date = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            document.getElementById('liveDate').innerText = `${dayName}, ${date} ${monthName} ${year}`;
         }
 
-        .portal-container {
-            width: 100%;
-            max-width: 420px;
-            padding: 20px;
-            text-align: center;
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        function handleLogout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
+    </script>
+</body>
+</html>
 
         /* Branding */
         .logo-area { margin-bottom: 20px; }
