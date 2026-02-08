@@ -1,0 +1,15 @@
+{
+  "name": "Hexindo Technician Pro",
+  "short_name": "HAP Tech.Pro",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#1a1d20",
+  "theme_color": "#ffc107",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1055/1055644.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
