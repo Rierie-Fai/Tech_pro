@@ -147,35 +147,3 @@
     </script>
 </body>
 </html>
-
-    // 4. UPDATE STATUS KONEKSI
-    function updateConnectionStatus() {
-        const statusBox = document.getElementById('statusBox');
-        const statusText = document.getElementById('statusText');
-        if (navigator.onLine) {
-            statusBox.className = "conn-status online";
-            statusText.innerText = "System Online";
-        } else {
-            statusBox.className = "conn-status offline";
-            statusText.innerText = "System Offline";
-        }
-    }
-
-    // 5. FUNGSI LOGOUT
-    function handleLogout() {
-        if(confirm("Apakah Anda yakin ingin keluar?")) {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
-    }
-
-    // Inisialisasi
-    window.addEventListener('online', updateConnectionStatus);
-    window.addEventListener('offline', updateConnectionStatus);
-    setInterval(updateClock, 1000);
-    updateClock();
-    updateConnectionStatus();
-</script>
-
-</body>
-</html>
