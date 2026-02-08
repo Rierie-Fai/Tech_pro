@@ -1,64 +1,22 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Hexindo Fleet Pro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#0f172a] min-h-screen flex items-center justify-center p-4">
-
-    <div class="w-full max-w-[380px] bg-white/5 backdrop-blur-lg border border-white/10 p-10 rounded-[2rem] text-center shadow-2xl">
-        <div class="mb-8">
-            <h1 class="text-3xl font-black text-white tracking-tighter">HEXINDO <span class="text-yellow-500">FLEET</span></h1>
-            <p class="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-2">Secure Access Terminal</p>
-        </div>
-
-        <div class="space-y-5 text-left">
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">NRP / Username</label>
-                <input type="text" id="nrpInput" class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="Masukkan NRP">
-            </div>
-
-            <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Password</label>
-                <input type="password" id="passInput" class="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" placeholder="••••••••">
-            </div>
-
-            <button onclick="handleLogin()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-extrabold py-4 rounded-xl transition-all active:scale-95 uppercase text-sm tracking-wider shadow-lg shadow-yellow-500/20">
-                Masuk Sekarang
-            </button>
-        </div>
-
-        <div class="mt-8 text-[10px] text-slate-500 leading-relaxed uppercase font-semibold">
-            © 2026 PT Hexindo Adaro Project<br>
-            <span class="text-slate-600">Authorized Personnel Only</span>
-        </div>
-    </div>
-
-    <script>
-        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        const sb = supabase.createClient(SB_URL, SB_KEY);
-
-        async function handleLogin() {
-            const nrp = document.getElementById('nrpInput').value;
-            const pass = document.getElementById('passInput').value;
-
-            if(!nrp || !pass) return alert("Isi NRP dan Password!");
-
-            const { data, error } = await sb
-                .from('users')
-                .select('*')
-                .eq('nrp', nrp)
-                .eq('password', pass)
-                .single();
-
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Login | Hexindo</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script></head><body class="bg-[#0f172a] min-h-screen flex items-center justify-center p-4 font-sans"><div class="w-full max-w-[360px] bg-white/5 border border-white/10 p-8 rounded-[2rem] text-center backdrop-blur-md shadow-2xl"><div class="mb-8"><h1 class="text-3xl font-black text-white italic tracking-tighter">HEXINDO <span class="text-yellow-500">FLEET</span></h1><p class="text-[10px] text-slate-400 font-bold tracking-[0.2em] uppercase mt-2">Secure Access Terminal</p></div><div class="space-y-4 text-left"><div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">NRP / Username</label><input type="text" id="nrpInput" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-all placeholder:text-slate-600" placeholder="Masukkan NRP"></div><div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1.5 ml-1">Password</label><input type="password" id="passInput" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-all placeholder:text-slate-600" placeholder="••••••••"></div><button onclick="handleLogin()" class="w-full bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-black py-4 rounded-xl transition-all active:scale-95 uppercase text-xs tracking-widest mt-2">Masuk Sekarang</button></div><div class="mt-8 text-[9px] text-slate-600 font-bold uppercase">© 2026 PT Hexindo Adaro Project</div></div><script>
+const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+const sb = supabase.createClient(SB_URL, SB_KEY);
+async function handleLogin() {
+    const nrp = document.getElementById('nrpInput').value;
+    const pass = document.getElementById('passInput').value;
+    if(!nrp || !pass) return alert("Isi NRP dan Password!");
+    const { data, error } = await sb.from('users').select('*').eq('nrp', nrp).eq('password', pass).single();
+    if (data) {
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userName', data.full_name);
+        localStorage.setItem('userNRP', data.nrp);
+        window.location.href = 'index.html';
+    } else {
+        alert("NRP atau Password Salah!");
+    }
+}
+</script></body></html>
             if (data) {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('userName', data.full_name);
