@@ -134,17 +134,32 @@
         });
 
         function addDetailRow(timeF = '', timeT = '', desc = '') {
-            const container = document.getElementById('detailRowsContainer');
-            const div = document.createElement('div');
-            div.className = "flex gap-4 items-start bg-white p-5 rounded-2xl border border-slate-200 shadow-sm transition-all";
-            div.innerHTML = `
-                <div class="w-32"><label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">From</label><input type="time" class="input-box" value="${timeF}" oninput="validateOverlap()"></div>
-                <div class="w-32"><label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">To</label><input type="time" class="input-box" value="${timeT}" oninput="validateOverlap()"></div>
-                <div class="flex-1"><label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">Detailed Progress Description</label><textarea class="input-area" placeholder="Describe what you did...">${desc}</textarea></div>
-                <button onclick="this.parentElement.remove(); validateOverlap();" class="mt-8 text-slate-300 hover:text-red-500 transition-colors p-2 text-2xl">&times;</button>
-            `;
-            container.appendChild(div);
-            validateOverlap();
+    const container = document.getElementById('detailRowsContainer');
+    const div = document.createElement('div');
+    // MENGGUNAKAN GRID: 2 kolom di mobile, flex berjejer di desktop
+    div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative transition-all";
+    div.innerHTML = `
+        <div class="col-span-1 md:w-32">
+            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">From</label>
+            <input type="time" class="input-box" value="${timeF}" oninput="validateOverlap()">
+        </div>
+        <div class="col-span-1 md:w-32">
+            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">To</label>
+            <input type="time" class="input-box" value="${timeT}" oninput="validateOverlap()">
+        </div>
+        <div class="col-span-2 md:flex-1">
+            <label class="text-[8px] block mb-2 font-black text-slate-400 uppercase tracking-widest">Detailed Progress Description</label>
+            <textarea class="input-area w-full" placeholder="Describe what you did...">${desc}</textarea>
+        </div>
+        <button onclick="this.parentElement.remove(); validateOverlap();" 
+            class="absolute -top-2 -right-2 md:static md:mt-8 bg-red-100 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center transition-all shadow-sm">
+            &times;
+        </button>
+    `;
+    container.appendChild(div);
+    validateOverlap();
+}
+
         }
 
         function smartAddTask() {
