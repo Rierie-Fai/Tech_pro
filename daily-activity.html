@@ -342,5 +342,15 @@
             XLSX.writeFile(wb, "Activity_Report.xlsx");
         }
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Glacier Service Worker: Active', reg))
+        .catch(err => console.log('Glacier Service Worker: Failed', err));
+    });
+  }
+</script>
+
 </body>
 </html>
