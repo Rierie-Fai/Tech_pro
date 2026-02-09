@@ -10,30 +10,35 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
 
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
-            min-height: 100vh;
-            color: #1e293b;
-            overflow-x: hidden;
-            position: relative;
+            min-height: 100vh; color: #1e293b; overflow-x: hidden; position: relative;
+            visibility: hidden; /* Sembunyikan sampai divalidasi Supabase */
         }
 
-        /* 1. EFEK HUJAN KRISTAL ES (DI-UPGRADE) */
+        #loadingOverlay {
+            visibility: visible !important;
+            position: fixed; inset: 0; background: #e0eafc; z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
         .crystal-ice {
-            position: fixed;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
-            width: 3px; /* Lebih tebal */
-            height: 25px; /* Lebih panjang */
-            top: -50px;
-            z-index: 1;
-            pointer-events: none;
-            animation: iceRain linear infinite;
-            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); /* Efek menyala */
+            position: fixed; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
+            width: 3px; height: 25px; top: -50px; z-index: 1; pointer-events: none;
+            animation: iceRain linear infinite; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
         }
         @keyframes iceRain {
             0% { transform: translateY(0) rotate(15deg); opacity: 0; }
@@ -41,7 +46,6 @@
             100% { transform: translateY(110vh) rotate(15deg); opacity: 0; }
         }
 
-        /* 2. EFEK PECAHAN ES SAAT HOVER */
         .shatter-piece {
             position: absolute; background: white; pointer-events: none;
             z-index: 50; box-shadow: 0 0 10px white;
@@ -52,32 +56,24 @@
             100% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); opacity: 0; }
         }
 
-        /* UI ELEMENTS */
         .glass-ice {
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
-            position: relative; z-index: 10;
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12); position: relative; z-index: 10;
         }
 
-        .logo-blend { mix-blend-mode: multiply; filter: contrast(1.2); }
-
-        .menu-card {
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border-radius: 2.5rem;
-        }
-        .menu-card:hover {
-            transform: translateY(-8px);
-            background: rgba(255, 255, 255, 0.8);
-            border-color: #3b82f6;
-        }
-
+        .menu-card { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); border-radius: 2.5rem; }
+        .menu-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.8); border-color: #3b82f6; }
         .digital-clock { font-family: 'JetBrains Mono', monospace; }
+        .logo-blend { mix-blend-mode: multiply; filter: contrast(1.2); }
     </style>
 </head>
 <body class="p-4 md:p-8 flex justify-center">
+
+    <div id="loadingOverlay">
+        <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 font-black text-slate-500 text-[10px] tracking-widest uppercase italic">Authenticating NIK Access...</p>
+    </div>
 
     <div id="ice-container" class="fixed inset-0 pointer-events-none"></div>
 
@@ -96,10 +92,10 @@
             
             <div class="flex items-center gap-4 bg-white/60 p-2 pr-4 rounded-3xl border border-white/80">
                 <div class="text-right pl-3">
-                    <p id="userNameDisplay" class="text-sm font-black text-slate-800 italic leading-none">Commander</p>
+                    <p id="userNameDisplay" class="text-sm font-black text-slate-800 italic leading-none">Loading...</p>
                     <p id="userNikDisplay" class="text-[10px] text-blue-600 font-bold mt-1">NIK: ------</p>
                 </div>
-                <button onclick="handleLogout()" class="bg-white/80 hover:bg-red-500 hover:text-white p-3 rounded-2xl transition-all">
+                <button onclick="handleLogout()" class="bg-white/80 hover:bg-red-500 hover:text-white p-3 rounded-2xl transition-all shadow-sm">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                 </button>
             </div>
@@ -109,37 +105,48 @@
             <div class="lg:col-span-2 p-8 flex flex-col justify-center relative">
                 <div id="roleBadge" class="bg-white/50 border border-white w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4">Verifying...</div>
                 <h2 class="text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight">Hello, <br><span class="text-blue-600 italic" id="hiName">User</span></h2>
-                <p class="text-slate-600 mt-4 font-semibold italic">Sistem Aktif. Pilih modul operasional harian Anda.</p>
+                <p class="text-slate-600 mt-4 font-semibold italic">Terminal Operasional Aktif. Silakan pilih modul.</p>
             </div>
 
             <div class="glass-ice rounded-[3rem] p-8 flex flex-col items-center justify-center text-center">
-                <p id="liveDate" class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2">DATE</p>
+                <p id="liveDate" class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2">---</p>
                 <h3 id="liveTime" class="digital-clock text-4xl font-bold text-slate-800">00:00:00</h3>
-                <div class="mt-4 px-4 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase">Live Terminal</div>
+                <div class="mt-4 px-4 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase">Live Sync Active</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <a href="toolbox.html" class="menu-card glass-ice p-10 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a href="daily-activity.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-16 h-16 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform group-hover:rotate-12">
-                        <svg class="w-8 h-8 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                    <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-800 uppercase italic">Toolbox <span class="text-yellow-600">Pro</span></h3>
-                    <p class="text-slate-500 mt-2 text-sm">Inventory & Tool Condition Check.</p>
+                    <h3 class="text-xl font-black text-slate-800 uppercase italic">Activity <span class="text-blue-600">Report</span></h3>
+                    <p class="text-slate-500 mt-2 text-xs font-semibold">Maintenance Log & Cloud Sync.</p>
                 </div>
-                <div class="mt-8 text-[10px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3"/></svg></div>
+                <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
 
-            <a href="daily-activity.html" class="menu-card glass-ice p-10 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+            <a href="undercarriage.html" class="menu-card glass-ice p-8 flex flex-col justify-between group border-2 border-blue-100" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform group-hover:-rotate-12">
-                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m10 0a2 2 0 100-4m0 4a2 2 0 110-4M6 20v-2m10 2v-2m-7-4h4"></path></svg>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-800 uppercase italic">Activity <span class="text-blue-600">Report</span></h3>
-                    <p class="text-slate-500 mt-2 text-sm">Maintenance Log & Cloud Sync.</p>
+                    <h3 class="text-xl font-black text-slate-800 uppercase italic">UC <span class="text-blue-600">Inspection</span></h3>
+                    <p class="text-slate-500 mt-2 text-xs font-semibold">Wear Analysis & Measurement.</p>
                 </div>
-                <div class="mt-8 text-[10px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7l5 5m0 0l-5 5m5-5H6" stroke-width="3"/></svg></div>
+                <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
+            </a>
+
+            <a href="toolbox.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+                <div class="flex flex-col">
+                    <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 uppercase italic">Toolbox <span class="text-yellow-600">Pro</span></h3>
+                    <p class="text-slate-500 mt-2 text-xs font-semibold">Inventory & Condition Check.</p>
+                </div>
+                <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
         </div>
 
@@ -149,11 +156,49 @@
     </div>
 
     <script>
-        // ENGINE HUJAN ES KRISTAL TAJAM
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        // A. VALIDASI REAL-TIME DENGAN SUPABASE
+        async function initSession() {
+            const nrp = localStorage.getItem('userNRP'); // Mengambil NIK tersimpan
+            
+            if (!nrp) return handleLogout();
+
+            try {
+                const { data: user, error } = await sb.from('users').select('*').eq('nik', nrp).single();
+                
+                if (error || !user) throw new Error("Invalid Session");
+
+                // Update UI secara akurat dari Database
+                document.getElementById('userNameDisplay').innerText = user.full_name;
+                document.getElementById('userNikDisplay').innerText = `NIK: ${user.nik}`;
+                document.getElementById('hiName').innerText = user.full_name.split(' ')[0];
+                
+                const badge = document.getElementById('roleBadge');
+                if(user.role === 'admin') {
+                    badge.innerText = '🛡️ Admin Access';
+                    badge.className = "bg-red-600/10 text-red-600 border border-red-200 w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4";
+                } else {
+                    badge.innerText = '🔧 Tech Access';
+                    badge.className = "bg-blue-600/10 text-blue-600 border border-blue-200 w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4";
+                }
+
+                // Tampilkan Body & Sembunyikan Overlay
+                document.body.style.visibility = 'visible';
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+            } catch (err) {
+                console.error("Auth Fail:", err);
+                handleLogout();
+            }
+        }
+
+        // B. VISUAL ENGINE (Rain & Shatter)
         function createIceRain() {
             const container = document.getElementById('ice-container');
-            const iceCount = 60; 
-            for (let i = 0; i < iceCount; i++) {
+            for (let i = 0; i < 60; i++) {
                 const ice = document.createElement('div');
                 ice.className = 'crystal-ice';
                 ice.style.left = Math.random() * 100 + 'vw';
@@ -162,45 +207,42 @@
                 container.appendChild(ice);
             }
         }
-        createIceRain();
 
-        // EFEK PECAHAN ES (SHATTER)
         function triggerShatter(e) {
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 8; i++) {
                 const piece = document.createElement('div');
                 piece.className = 'shatter-piece';
-                const size = Math.random() * 6 + 2;
+                const size = Math.random() * 5 + 2;
                 piece.style.width = size + 'px';
                 piece.style.height = size + 'px';
                 piece.style.left = e.clientX + 'px';
                 piece.style.top = e.clientY + 'px';
-                piece.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
-                piece.style.setProperty('--dy', (Math.random() - 0.5) * 200 + 'px');
+                piece.style.setProperty('--dx', (Math.random() - 0.5) * 150 + 'px');
+                piece.style.setProperty('--dy', (Math.random() - 0.5) * 150 + 'px');
                 piece.style.setProperty('--dr', (Math.random() * 360) + 'deg');
                 document.body.appendChild(piece);
                 setTimeout(() => piece.remove(), 600);
             }
         }
 
-        // DATA SESSION
-        if (localStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'login.html';
-        const name = localStorage.getItem('userName') || 'Commander';
-        const nik = localStorage.getItem('userNRP') || '---';
-        const role = localStorage.getItem('userRole') || 'technician';
-
-        document.getElementById('userNameDisplay').innerText = name;
-        document.getElementById('userNikDisplay').innerText = `NIK: ${nik}`;
-        document.getElementById('hiName').innerText = name.split(' ')[0];
-        document.getElementById('roleBadge').innerText = (role === 'admin') ? '🛡️ Admin Access' : '🔧 Tech Access';
-
+        // C. UTILITIES
         function updateTime() {
             const now = new Date();
             document.getElementById('liveTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false });
             document.getElementById('liveDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase();
         }
-        setInterval(updateTime, 1000); updateTime();
 
-        function handleLogout() { localStorage.clear(); window.location.href = 'login.html'; }
+        function handleLogout() {
+            localStorage.clear();
+            window.location.replace('login.html');
+        }
+
+        window.onload = () => {
+            initSession();
+            createIceRain();
+            setInterval(updateTime, 1000);
+            updateTime();
+        };
     </script>
 </body>
 </html>
