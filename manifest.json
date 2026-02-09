@@ -2,7 +2,7 @@
   "name": "Hexindo Fleet Pro - Glacier",
   "short_name": "FleetPro",
   "description": "Terminal Aktivitas Digital Hexindo Fleet Pro - Arctic Edition",
-  "start_url": "/login.html",
+  "start_url": "login.html",
   "display": "standalone",
   "background_color": "#d1e3ff",
   "theme_color": "#2563eb",
