@@ -3,85 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UC System | Hexindo Fleet Pro</title>
+    <title>UC Glacial Pro | Hexindo Fleet</title>
+    
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.autotable.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; color: #1e293b; overflow-x: hidden; }
         
-        /* Snow Animation */
-        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        .snowflake { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.8; animation: fall linear infinite; }
-        @keyframes fall { to { transform: translateY(100vh) translateX(20px); } }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh; color: #0f172a; overflow-x: hidden; visibility: hidden; 
+        }
 
-        .glass-frost { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .snowflake { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.6; filter: blur(1px); animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; } }
+
+        .glass-glacial { 
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); 
+        }
+
+        .inspection-table th { background: rgba(15, 23, 42, 0.9); font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 12px 4px; }
+        .inspection-table td { border: 1px solid rgba(255,255,255,0.2); padding: 6px; font-size: 11px; font-weight: 600; }
         
-        .inspection-table th { background: #0f172a; font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid #1e293b; padding: 12px 4px; }
-        .inspection-table td { border: 1px solid #e2e8f0; padding: 6px; font-size: 11px; font-weight: 600; }
-        
-        .input-measure { width: 100%; background: #f0fdf4; text-align: center; font-weight: 800; padding: 8px; border-radius: 10px; outline: none; border: 1px solid transparent; transition: 0.2s; }
-        .input-measure:focus { border-color: #22c55e; background: white; box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1); }
-        
+        .input-glacial { 
+            width: 100%; background: rgba(255,255,255,0.3); text-align: center; font-weight: 800; padding: 8px; border-radius: 12px; 
+            outline: none; border: 1px solid rgba(255,255,255,0.5); transition: 0.3s; 
+        }
+        .input-glacial:focus { border-color: #0ea5e9; background: white; box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
+
         .worn-output { font-weight: 800; text-align: center; font-family: 'Fira Code', monospace; }
-        .worn-danger { color: #ef4444; background: rgba(239, 68, 68, 0.1); border-radius: 6px; padding: 2px 4px; }
+        .worn-danger { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-radius: 8px; padding: 4px; border: 1px solid rgba(239,68,68,0.2); }
         
-        .header-label { font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
-        .header-val { border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 700; width: 100%; padding: 10px 14px; background: white; transition: 0.3s; font-size: 13px; }
-        .btn-action { transition: all 0.2s; cursor: pointer; }
-        .btn-action:active { transform: scale(0.95); }
+        .header-label { font-size: 9px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
+        .header-val { border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; font-weight: 700; width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.5); font-size: 13px; }
     </style>
 </head>
 <body class="p-2 md:p-6">
+
+    <div id="authLoader" class="fixed inset-0 bg-[#e0f2fe] z-[100] flex flex-col items-center justify-center" style="visibility: visible;">
+        <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-6 font-black text-sky-700 text-[10px] tracking-widest uppercase italic">Initializing Glacial Terminal...</p>
+    </div>
 
     <div class="snow-container" id="snow-box"></div>
 
     <div class="max-w-6xl mx-auto space-y-6 relative z-10">
         
-        <header class="glass-frost p-6 rounded-[2.5rem] flex flex-wrap justify-between items-center gap-4">
+        <header class="glass-glacial p-6 rounded-[3rem] flex flex-wrap justify-between items-center gap-4">
             <div class="flex items-center gap-4">
-                <a href="index.html" class="h-12 w-12 bg-white rounded-2xl flex items-center justify-center text-slate-800 shadow-lg hover:bg-slate-100 transition-all border border-slate-200">
+                <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 shadow-sm hover:bg-white transition-all border border-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
                 <div>
-                    <h1 class="text-xl font-black italic text-slate-900 leading-none tracking-tighter">UC INSPECTION</h1>
-                    <p class="text-[9px] font-black text-blue-600 tracking-widest uppercase mt-1">Terminal System</p>
+                    <h1 class="text-xl font-black italic text-sky-950 leading-none tracking-tighter">UC GLACIAL <span class="text-sky-600">PRO</span></h1>
+                    <p class="text-[9px] font-black text-sky-500 tracking-widest uppercase mt-1">EX3600-6 Standard System</p>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="fetchHistory()" class="btn-action bg-slate-100 text-slate-700 px-4 py-2 rounded-xl font-bold text-[10px] uppercase">🔄 Refresh</button>
-                <button onclick="syncToCloud()" id="btnSync" class="btn-action bg-blue-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-500/30">☁️ Sync Cloud</button>
-                <button onclick="exportToPDF()" class="btn-action bg-red-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase">📄 PDF</button>
+                <button onclick="fetchHistory()" class="bg-white/40 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">🔄 Sync</button>
+                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-sky-500/40">☁️ Cloud Save</button>
             </div>
         </header>
 
-        <div class="glass-frost p-8 rounded-[3rem]">
+        <div class="glass-glacial p-8 rounded-[3.5rem]">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="header-label">Technician & NIK</label>
+                <div><label class="header-label">Technician & NIK</label>
                     <div class="flex gap-2">
-                        <input type="text" id="techName" class="header-val bg-slate-50" readonly>
-                        <input type="text" id="techNik" class="header-val w-28 text-center font-mono bg-slate-50" readonly>
+                        <input type="text" id="techName" class="header-val bg-white/20" readonly>
+                        <input type="text" id="techNik" class="header-val w-28 text-center font-mono bg-white/20" readonly>
                     </div>
                 </div>
-                <div><label class="header-label">Customer Name</label><input type="text" id="custName" class="header-val" placeholder="PT ADARO INDONESIA"></div>
+                <div><label class="header-label">Customer Name</label><input type="text" id="custName" class="header-val" placeholder="PT Adaro Service"></div>
                 <div><label class="header-label">Date</label><input type="date" id="inspDate" class="header-val"></div>
-                <div><label class="header-label">Location</label><input type="text" id="locInp" class="header-val" placeholder="Wara Site"></div>
-                <div><label class="header-label">Hour Meter (HM)</label><input type="number" id="unitHM" class="header-val" placeholder="0"></div>
+                <div><label class="header-label">Location</label><input type="text" id="locInp" class="header-val" placeholder="North"></div>
+                <div><label class="header-label">Hour Meter </label><input type="number" id="unitHM" class="header-val" placeholder="0"></div>
                 <div><label class="header-label">Unit Model & SN</label>
                     <div class="flex gap-2">
                         <input type="text" id="unitModel" class="header-val" value="EX3600-6">
-                        <input type="text" id="unitSN" class="header-val" placeholder="SN...">
+                        <input type="text" id="unitSN" class="header-val" placeholder="EX350-002A">
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="glass-frost rounded-[3rem] overflow-hidden">
-            <div class="bg-yellow-400 p-4 font-black text-center uppercase tracking-wider text-slate-900">Measurement Data</div>
+        <div class="glass-glacial rounded-[3.5rem] overflow-hidden">
+            <div class="bg-sky-500/20 p-4 font-black text-center uppercase tracking-wider text-sky-900 border-b border-white/50">Inspection Data (Hitachi EX3600-6)</div>
             <div class="overflow-x-auto">
                 <table class="w-full inspection-table border-collapse min-w-[1000px]">
                     <thead>
@@ -89,56 +105,49 @@
                             <th rowspan="2" class="w-1/3">Item Description</th>
                             <th rowspan="2" class="w-24">Std (mm)</th>
                             <th rowspan="2" class="w-24">Limit (mm)</th>
-                            <th colspan="2" class="bg-slate-800">Actual (mm)</th>
-                            <th colspan="2" class="bg-blue-800">Worn (%)</th>
+                            <th colspan="2" class="bg-sky-900">Actual (mm)</th>
+                            <th colspan="2" class="bg-blue-900">Worn (%)</th>
                         </tr>
                         <tr class="text-[9px]">
-                            <th class="bg-slate-700 italic">Left</th><th class="bg-slate-700 italic">Right</th>
-                            <th class="bg-blue-700 italic">Left</th><th class="bg-blue-700 italic">Right</th>
+                            <th class="bg-sky-800 italic">Left</th><th class="bg-sky-800 italic">Right</th>
+                            <th class="bg-blue-800 italic">Left</th><th class="bg-blue-800 italic">Right</th>
                         </tr>
                     </thead>
-                    <tbody id="inspectionBody" class="bg-white/40"></tbody>
+                    <tbody id="inspectionBody" class="bg-white/10"></tbody>
                 </table>
             </div>
         </div>
 
-        <div class="glass-frost p-8 rounded-[3rem]">
-            <label class="header-label text-blue-600">Inspection Note / Recommendation</label>
-            <textarea id="commentInp" class="header-val w-full min-h-[100px] mb-6" placeholder="Example: Link pitch already max..."></textarea>
-            <button onclick="syncToCloud()" class="w-full bg-slate-900 text-white font-black py-5 rounded-[2rem] uppercase tracking-[0.3em] shadow-2xl hover:bg-black transition-all">Submit Final Report</button>
+        <div class="glass-glacial p-8 rounded-[3.5rem]">
+            <label class="header-label text-sky-700">Coment / Recommendation</label>
+            <textarea id="commentInp" class="header-val w-full min-h-[100px] mb-6" placeholder="X : Can't measuring by Condition..."></textarea>
+            <button onclick="syncToCloud()" class="w-full bg-sky-950 text-white font-black py-5 rounded-[2.5rem] uppercase tracking-[0.4em] shadow-2xl hover:bg-black transition-all">Authorize & Submit</button>
         </div>
 
-        <div class="glass-frost p-8 rounded-[3rem]">
+        <div class="glass-glacial p-8 rounded-[3.5rem]">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-sm font-black uppercase text-slate-800 flex items-center gap-2">
-                    <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span> Cloud Repository
-                </h3>
-                <div id="adminBadge" class="hidden bg-blue-100 text-blue-600 text-[10px] font-black px-3 py-1 rounded-full uppercase italic">Admin Master Access</div>
+                <h3 class="text-sm font-black uppercase text-sky-900">Cloud Repository</h3>
+                <div id="adminBadge" class="hidden bg-sky-100 text-sky-700 text-[10px] font-black px-4 py-1.5 rounded-full uppercase border border-sky-200">Admin Control</div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs">
                     <thead>
-                        <tr class="text-slate-400 uppercase font-black border-b border-slate-100">
-                            <th class="py-4">Info / NIK</th>
-                            <th>Unit SN</th>
-                            <th>Hour Meter</th>
-                            <th>Customer</th>
-                            <th class="text-right">Manage</th>
+                        <tr class="text-sky-700 uppercase font-black border-b border-white/50">
+                            <th class="py-4">Date / NIK</th><th>Unit SN</th><th>HM</th><th>Customer</th><th class="text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="historyBody">
-                        <tr><td colspan="5" class="py-8 text-center text-slate-400 italic">Syncing with Supabase...</td></tr>
-                    </tbody>
+                    <tbody id="historyBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
 
+        // ITEMS DATA AS PER EX3600-6 REPORT IMAGE
         const items = [
             { name: "TRACK SHOE TOOTH LENGTH", std: 0, limit: 35 },
             { name: "TRACK SHOE TREAD", std: 21.5, limit: 31.5 },
@@ -160,25 +169,34 @@
             { name: "LOWER ROLLER 8 TREAD DIA", std: 490, limit: 460 }
         ];
 
-        window.onload = () => {
-            document.getElementById('techName').value = localStorage.getItem('userName') || "USER";
-            document.getElementById('techNik').value = localStorage.getItem('userNRP') || "0000";
-            if(localStorage.getItem('userRole') === 'admin') document.getElementById('adminBadge').classList.remove('hidden');
-            document.getElementById('inspDate').valueAsDate = new Date();
-            renderTable();
-            createSnow();
-            fetchHistory();
-        };
+        async function validateAndInit() {
+            const nrp = localStorage.getItem('userNRP');
+            if(!nrp) return window.location.replace('login.html');
+            try {
+                const { data: user, error } = await sb.from('users').select('*').eq('nik', nrp).single();
+                if (error || !user) throw new Error("Unauthorized");
+                document.getElementById('techName').value = user.full_name;
+                document.getElementById('techNik').value = user.nik;
+                if(user.role === 'admin') document.getElementById('adminBadge').classList.remove('hidden');
+                document.body.style.visibility = 'visible';
+                document.getElementById('authLoader').style.display = 'none';
+                renderTable();
+                fetchHistory();
+                createSnow();
+            } catch (err) {
+                localStorage.clear(); window.location.replace('login.html');
+            }
+        }
 
         function renderTable() {
             const tbody = document.getElementById('inspectionBody');
             tbody.innerHTML = items.map((item, idx) => `
-                <tr class="hover:bg-slate-50/50 transition-all">
-                    <td class="pl-4 italic text-slate-800">${item.name}</td>
-                    <td class="text-center text-slate-400">${item.std}</td>
-                    <td class="text-center text-slate-400">${item.limit}</td>
-                    <td class="p-1"><input type="number" step="0.1" class="input-measure" id="lh_${idx}" oninput="calcWorn(this, ${item.std}, ${item.limit}, 'wL_${idx}')"></td>
-                    <td class="p-1"><input type="number" step="0.1" class="input-measure" id="rh_${idx}" oninput="calcWorn(this, ${item.std}, ${item.limit}, 'wR_${idx}')"></td>
+                <tr class="hover:bg-white/10 transition-all">
+                    <td class="pl-4 italic text-sky-950">${item.name}</td>
+                    <td class="text-center text-sky-600/60">${item.std}</td>
+                    <td class="text-center text-sky-600/60">${item.limit}</td>
+                    <td class="p-1"><input type="number" step="0.1" class="input-glacial" id="lh_${idx}" oninput="calcWorn(this, ${item.std}, ${item.limit}, 'wL_${idx}')"></td>
+                    <td class="p-1"><input type="number" step="0.1" class="input-glacial" id="rh_${idx}" oninput="calcWorn(this, ${item.std}, ${item.limit}, 'wR_${idx}')"></td>
                     <td id="wL_${idx}" class="worn-output">-</td>
                     <td id="wR_${idx}" class="worn-output">-</td>
                 </tr>`).join('');
@@ -189,100 +207,90 @@
             const target = document.getElementById(targetId);
             if(isNaN(val)) { target.innerText = "-"; target.className="worn-output"; return; }
             let worn = std > limit ? ((std - val) / (std - limit)) * 100 : (val / limit) * 100;
-            let final = Math.round(worn);
+            let final = Math.max(0, Math.round(worn));
             target.innerText = final + "%";
-            target.className = final >= 100 ? "worn-output worn-danger" : "worn-output text-blue-600";
+            target.className = final >= 100 ? "worn-output worn-danger" : "worn-output text-sky-700";
         }
 
         async function syncToCloud() {
             const btn = document.getElementById('btnSync');
-            btn.innerText = "WAIT..."; btn.disabled = true;
-            
+            btn.innerText = "Syncing..."; btn.disabled = true;
             const payload = {
                 id: Date.now(),
                 nik: document.getElementById('techNik').value,
-                customer_name: document.getElementById('custName').value.toUpperCase(),
-                unit_no: document.getElementById('unitSN').value.toUpperCase(),
+                customer_name: document.getElementById('custName').value.toUpperCase() || "ADARO",
+                unit_no: document.getElementById('unitSN').value.toUpperCase() || "SN-EMPTY",
                 inspection_date: document.getElementById('inspDate').value,
                 report_data: {
-                    header: { hm: document.getElementById('unitHM').value, loc: document.getElementById('locInp').value, model: document.getElementById('unitModel').value },
+                    header: { HM: document.getElementById('unitHM').value, loc: document.getElementById('locInp').value, model: document.getElementById('unitModel').value },
                     measurements: items.map((_, i) => ({ lh: document.getElementById(`lh_${i}`).value, rh: document.getElementById(`rh_${i}`).value })),
                     comments: document.getElementById('commentInp').value
                 }
             };
-
             const { error } = await sb.from('uc_reports').upsert([payload]);
-            if(error) alert(error.message);
-            else { alert("Success! Laporan Tersimpan."); fetchHistory(); }
-            btn.innerText = "☁️ Sync Cloud"; btn.disabled = false;
+            if(error) alert("Error: " + error.message);
+            else { alert("Report Sync Successful!"); fetchHistory(); }
+            btn.innerText = "☁️ Cloud Save"; btn.disabled = false;
         }
 
         async function fetchHistory() {
-            const nik = document.getElementById('techNik').value;
+            const currentNik = localStorage.getItem('userNRP');
             const role = localStorage.getItem('userRole');
-            
-            let query = sb.from('uc_reports').select('*');
-            if(role !== 'admin') query = query.eq('nik', nik);
-
-            const { data } = await query.order('id', { ascending: false });
+            const { data } = await sb.from('uc_reports').select('*').order('id', { ascending: false });
             const tbody = document.getElementById('historyBody');
-            
             tbody.innerHTML = data.map(row => {
-                const isOwnerOrAdmin = (role === 'admin' || row.nik === nik);
-                const delBtn = (role === 'admin') ? `<button onclick="deleteData(${row.id})" class="bg-red-50 text-red-600 p-2 rounded-lg hover:bg-red-600 hover:text-white transition-all">Del</button>` : '';
-
+                const isAuthorized = (role === 'admin' || row.nik === currentNik);
                 return `
-                <tr class="border-b border-slate-50 hover:bg-slate-50 transition-all">
+                <tr class="border-b border-white/20 hover:bg-white/20 transition-all">
                     <td class="py-4">
-                        <div class="font-bold">${row.inspection_date}</div>
-                        <div class="text-[9px] text-slate-400 font-mono italic">NIK: ${row.nik}</div>
+                        <div class="font-bold text-sky-900">${row.inspection_date}</div>
+                        <div class="text-[9px] ${row.nik === currentNik ? 'text-blue-600 font-black' : 'text-sky-400'} italic">ID: ${row.nik}</div>
                     </td>
-                    <td class="font-bold text-blue-600">${row.unit_no}</td>
-                    <td class="font-mono">${row.report_data.header.hm} HM</td>
-                    <td class="text-slate-500 uppercase font-semibold text-[10px]">${row.customer_name}</td>
-                    <td class="text-right flex gap-2 justify-end">
-                        <button onclick='editData(${JSON.stringify(row)})' class="bg-blue-50 text-blue-600 p-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all">Edit</button>
-                        ${delBtn}
+                    <td class="font-black text-sky-800">${row.unit_no}</td>
+                    <td class="font-mono text-sky-700">${row.report_data.header.HM} HM</td>
+                    <td class="text-sky-600 uppercase font-semibold text-[9px]">${row.customer_name}</td>
+                    <td class="text-right py-4">
+                        ${isAuthorized ? `<button onclick='editData(${JSON.stringify(row)})' class="bg-sky-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">EDIT</button>
+                        <button onclick="deleteData(${row.id})" class="bg-red-500/10 text-red-600 px-3 py-1.5 rounded-lg text-[10px] font-bold ml-1 border border-red-200">DEL</button>` 
+                        : `<span class="text-[9px] text-sky-400 italic">Protected</span>`}
                     </td>
                 </tr>`;
             }).join('');
+        }
+
+        async function deleteData(id) {
+            if(!confirm("⚠️ Delete record?")) return;
+            await sb.from('uc_reports').delete().eq('id', id);
+            fetchHistory();
         }
 
         function editData(row) {
             document.getElementById('custName').value = row.customer_name;
             document.getElementById('unitSN').value = row.unit_no;
             document.getElementById('unitHM').value = row.report_data.header.hm;
-            document.getElementById('locInp').value = row.report_data.header.loc;
             document.getElementById('inspDate').value = row.inspection_date;
             document.getElementById('commentInp').value = row.report_data.comments;
             row.report_data.measurements.forEach((m, i) => {
                 const elL = document.getElementById(`lh_${i}`);
                 const elR = document.getElementById(`rh_${i}`);
-                elL.value = m.lh; elR.value = m.rh;
-                calcWorn(elL, items[i].std, items[i].limit, `wL_${i}`);
-                calcWorn(elR, items[i].std, items[i].limit, `wR_${i}`);
+                if(elL) { elL.value = m.lh; calcWorn(elL, items[i].std, items[i].limit, `wL_${i}`); }
+                if(elR) { elR.value = m.rh; calcWorn(elR, items[i].std, items[i].limit, `wR_${i}`); }
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function deleteData(id) {
-            if(!confirm("⚠️ PERINGATAN ADMIN: Hapus permanen data ini?")) return;
-            const { error } = await sb.from('uc_reports').delete().eq('id', id);
-            if(error) alert(error.message); else fetchHistory();
-        }
-
         function createSnow() {
             const box = document.getElementById('snow-box');
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<40; i++) {
                 let s = document.createElement('div');
                 s.className = 'snowflake';
-                let size = Math.random() * 4 + 2 + 'px';
-                s.style.width = size; s.style.height = size;
+                s.style.width = s.style.height = Math.random() * 5 + 2 + 'px';
                 s.style.left = Math.random() * 100 + 'vw';
-                s.style.animationDuration = Math.random() * 3 + 2 + 's';
+                s.style.animationDuration = Math.random() * 5 + 3 + 's';
                 box.appendChild(s);
             }
         }
+        window.onload = validateAndInit;
     </script>
 </body>
 </html>

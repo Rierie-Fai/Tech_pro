@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snowstorm Terminal | Hexindo Fleet Pro</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Activity Glacial Pro | Hexindo Fleet</title>
+    
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -16,71 +22,48 @@
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: #f8fafc; 
-            min-height: 100vh;
-            color: #1e293b;
-            overflow-x: hidden;
-            position: relative;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            min-height: 100vh; color: #0f172a; overflow-x: hidden;
         }
 
-        /* SNOWSTORM ENGINE */
-        .snow-container {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
-            background: linear-gradient(to bottom, #e2e8f0, #ffffff);
+        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .snowflake { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.6; filter: blur(1px); animation: fall linear infinite; }
+        @keyframes fall { to { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; } }
+
+        .glass-glacial { 
+            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); 
         }
 
-        .snowflake {
-            position: absolute;
-            top: -10px;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.8;
-            animation: fall linear infinite;
-        }
+        .header-label { font-size: 9px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
+        .header-val { border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; font-weight: 700; width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.5); font-size: 13px; outline: none; transition: 0.3s; }
+        .header-val:focus { border-color: #0ea5e9; background: white; }
 
-        @keyframes fall {
-            to { transform: translateY(100vh) translateX(20px); }
-        }
+        /* TABLE CORE ALIGNMENT */
+        th { background: rgba(15, 23, 42, 0.9); font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 12px; }
+        
+        /* Kolom Utama Rata Atas */
+        .td-main { border: 1px solid rgba(255,255,255,0.2); padding: 12px 10px; font-size: 11px; vertical-align: top !important; background: rgba(255,255,255,0.1); }
 
-        .glass-frost {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-            color: #1e293b; position: relative; z-index: 10;
-        }
-
-        .input-frost {
-            background: rgba(255, 255, 255, 0.8) !important;
-            border: 1px solid #cbd5e1 !important;
-            border-radius: 12px; font-size: 0.85rem; transition: 0.3s;
-        }
-        .input-frost:focus { border-color: #38bdf8 !important; outline: none; }
-
-        th { font-size: 10px; background: #f1f5f9; text-align: left; color: #64748b; text-transform: uppercase; padding: 12px; border: 1px solid #e2e8f0; }
-        td { border: 1px solid #e2e8f0; font-size: 11px; vertical-align: top !important; padding: 12px 8px; }
-
+        /* JAM PROGRESS (DIPERKECIL) */
         .cell-time { 
-            font-family: 'Fira Code', monospace; 
-            color: #0369a1; 
-            font-weight: bold; 
-            text-align: center !important; 
-            vertical-align: middle !important;
-            background: #f8fafc;
-            width: 110px;
+            font-family: 'Fira Code', monospace; color: #0369a1; font-weight: 700; 
+            text-align: center !important; vertical-align: middle !important; 
+            background: rgba(255,255,255,0.4); width: 100px; border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-right: 1px solid rgba(255,255,255,0.2);
+            font-size: 9px; /* Huruf diperkecil */
         }
         
+        /* DETAIL KERJA (DIPERKECIL & MULTILINE) */
         .description-text { 
-            word-wrap: break-word; 
-            white-space: pre-wrap; 
-            line-height: 1.5; 
-            color: #334155;
+            word-wrap: break-word; white-space: pre-wrap; line-height: 1.5; 
+            color: #0f172a; font-weight: 600; padding: 8px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            font-size: 10px; /* Huruf diperkecil */
         }
 
         #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #e0f2fe;
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
         .fade-out { opacity: 0; visibility: hidden; transition: 1s; }
@@ -91,88 +74,74 @@
     <div class="snow-container no-print" id="snow-box"></div>
 
     <div id="splash-screen">
-        <div class="text-4xl mb-4">❄️</div>
-        <h2 class="font-black tracking-[0.3em] uppercase italic text-slate-800 text-lg">SNOW <span class="text-sky-500">TERMINAL</span></h2>
+        <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-6 font-black text-sky-700 text-[10px] tracking-widest uppercase italic">Initializing Glacial Terminal...</p>
     </div>
 
     <div class="max-w-[1600px] mx-auto space-y-6 relative z-10">
         
-        <header class="glass-frost p-5 rounded-3xl flex flex-wrap justify-between items-center no-print gap-4">
+        <header class="glass-glacial p-6 rounded-[3rem] flex flex-wrap justify-between items-center no-print gap-4">
             <div class="flex items-center gap-4">
-                <button onclick="window.location.href='index.html'" class="h-10 w-10 bg-slate-100 hover:bg-sky-500 hover:text-white rounded-xl flex items-center justify-center transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 v-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                </button>
+                <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 shadow-sm hover:bg-white transition-all border border-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight uppercase italic leading-none text-slate-800">Activity Report</h1>
-                    <p id="roleBadge" class="text-[9px] text-sky-600 font-bold uppercase mt-1 tracking-widest">Snow System Active</p>
+                    <h1 class="text-xl font-black italic text-sky-950 leading-none tracking-tighter uppercase">ACTIVITY <span class="text-sky-600">REPORT</span></h1>
+                    <p id="roleBadge" class="text-[9px] font-black text-sky-500 tracking-widest uppercase mt-1">Glacial Pro System Active</p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
-                <button onclick="pullFromCloud()" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase">🔄 Pull</button>
-                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase shadow-lg shadow-sky-500/20">❄️ Sync</button>
-                <button onclick="exportToPDF()" class="bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase">📄 PDF</button>
-                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase">📊 Excel</button>
+                <button onclick="pullFromCloud()" class="bg-white/40 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">🔄 Pull</button>
+                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-sky-500/40">❄️ Sync</button>
+                <button onclick="exportToPDF()" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase">📄 PDF</button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase">📊 Excel</button>
             </div>
         </header>
 
-        <div class="glass-frost p-6 rounded-[2rem] no-print">
+        <div class="glass-glacial p-8 rounded-[3.5rem] no-print">
             <input type="hidden" id="editId">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="md:col-span-1">
-                    <label class="text-[9px] font-black uppercase text-slate-500 block mb-1">Technician / NIK</label>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div>
+                    <label class="header-label">Technician & NIK</label>
                     <div class="flex gap-2">
-                        <input type="text" id="nameInp" class="input-frost w-full p-2 text-xs font-bold uppercase" readonly>
-                        <input type="text" id="nikInp" class="input-frost w-24 p-2 text-xs font-mono text-center" readonly>
+                        <input type="text" id="nameInp" class="header-val bg-white/20" readonly>
+                        <input type="text" id="nikInp" class="header-val w-28 text-center font-mono bg-white/20" readonly>
                     </div>
                 </div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">Customer</label><input type="text" id="customerInp" class="input-frost w-full p-2 text-xs uppercase font-bold"></div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">Location</label><input type="text" id="locationInp" class="input-frost w-full p-2 text-xs uppercase"></div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">Date</label><input type="date" id="dateInp" class="input-frost w-full p-2 text-xs"></div>
+                <div><label class="header-label">Customer</label><input type="text" id="customerInp" class="header-val" placeholder="PT ADARO"></div>
+                <div><label class="header-label">Location</label><input type="text" id="locationInp" class="header-val" placeholder="NORTH"></div>
+                <div><label class="header-label">Date</label><input type="date" id="dateInp" class="header-val"></div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">Model</label><input type="text" id="modelInp" class="input-frost w-full p-2 text-xs uppercase font-bold text-sky-600"></div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">S/N</label><input type="text" id="snInp" class="input-frost w-full p-2 text-xs uppercase"></div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">HM</label><input type="number" step="0.1" id="hmInp" class="input-frost w-full p-2 text-xs font-bold"></div>
-                <div><label class="text-[9px] font-black uppercase text-slate-500 block mb-1">General Job</label><input type="text" id="jobDescInp" class="input-frost w-full p-2 text-xs uppercase"></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+                <div><label class="header-label">Model</label><input type="text" id="modelInp" class="header-val text-sky-600" placeholder="EX3600-6"></div>
+                <div><label class="header-label">S/N</label><input type="text" id="snInp" class="header-val" placeholder="SN12345"></div>
+                <div><label class="header-label">HM</label><input type="number" step="0.1" id="hmInp" class="header-val" placeholder="0.0"></div>
+                <div><label class="header-label">General Job</label><input type="text" id="jobDescInp" class="header-val" placeholder="OVERHAUL"></div>
             </div>
 
-            <div id="detailRowsContainer" class="space-y-3 mb-6"></div>
+            <div id="detailRowsContainer" class="space-y-4 mb-8"></div>
             
-            <div class="flex gap-3">
-                <button onclick="smartAddTask()" class="bg-sky-50 text-sky-600 px-6 py-3 rounded-xl font-black text-[10px] uppercase border border-sky-100">+ Add Progress</button>
-                <button id="submitBtn" onclick="submitLog()" class="flex-1 bg-slate-800 text-white font-black py-3 rounded-xl uppercase text-[10px] tracking-widest hover:bg-slate-900 transition-all">Save Report</button>
+            <div class="flex gap-4">
+                <button onclick="smartAddTask()" class="bg-white/60 text-sky-700 px-8 py-4 rounded-[1.5rem] font-black text-[11px] uppercase border border-white hover:bg-white transition-all">+ Add Progress</button>
+                <button id="submitBtn" onclick="submitLog()" class="flex-1 bg-sky-950 text-white font-black py-4 rounded-[1.5rem] uppercase text-[11px] tracking-[0.4em] shadow-xl hover:bg-black transition-all">Authorize & Submit</button>
             </div>
         </div>
 
-        <div id="masterList" class="space-y-6 pb-20"></div>
+        <div id="masterList" class="space-y-8 pb-20"></div>
     </div>
 
     <script>
-        const userNrp = localStorage.getItem('userNRP') || 'Unknown';
-        const userName = localStorage.getItem('userName') || 'Technician';
-        const STORAGE_KEY = 'techLogs_v4_snow';
         const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const STORAGE_KEY = 'techLogs_v4_snow';
         let isEditMode = false;
+        const userNrp = localStorage.getItem('userNRP');
+        const userName = localStorage.getItem('userName');
 
-        function createSnow() {
-            const snowBox = document.getElementById('snow-box');
-            for(let i=0; i<40; i++) {
-                let div = document.createElement('div');
-                div.className = 'snowflake';
-                let size = Math.random() * 4 + 2 + 'px';
-                div.style.width = size; div.style.height = size;
-                div.style.left = Math.random() * 100 + 'vw';
-                div.style.animationDuration = Math.random() * 3 + 2 + 's';
-                div.style.opacity = Math.random();
-                snowBox.appendChild(div);
-            }
-        }
-
-        window.onload = () => {
+        window.onload = async () => {
             createSnow();
             setTimeout(() => document.getElementById('splash-screen').classList.add('fade-out'), 1200);
             document.getElementById('nameInp').value = userName;
@@ -186,12 +155,12 @@
         function addDetailRow(timeF = '', timeT = '', desc = '') {
             const container = document.getElementById('detailRowsContainer');
             const div = document.createElement('div');
-            div.className = "grid grid-cols-2 md:flex gap-3 items-start bg-white p-4 rounded-2xl border border-slate-200 shadow-sm";
+            div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white/40 p-5 rounded-[2.5rem] border border-white shadow-sm";
             div.innerHTML = `
-                <div class="md:w-32"><input type="time" class="input-frost w-full p-2 text-xs" value="${timeF}"></div>
-                <div class="md:w-32"><input type="time" class="input-frost w-full p-2 text-xs" value="${timeT}"></div>
-                <div class="col-span-2 md:flex-1"><textarea class="input-frost w-full p-2 text-xs min-h-[60px]">${desc}</textarea></div>
-                <button onclick="this.parentElement.remove()" class="text-red-400 font-bold p-2">&times;</button>
+                <div class="md:w-32"><input type="time" class="header-val text-center !p-2" value="${timeF}"></div>
+                <div class="md:w-32"><input type="time" class="header-val text-center !p-2" value="${timeT}"></div>
+                <div class="col-span-2 md:flex-1"><textarea class="header-val !p-3 min-h-[70px] text-[10px]" placeholder="Input Detail...">${desc}</textarea></div>
+                <button onclick="this.parentElement.remove()" class="text-red-400 font-black p-3 hover:scale-110 transition-transform">&times;</button>
             `;
             container.appendChild(div);
         }
@@ -204,12 +173,12 @@
 
         function submitLog() {
             const dateVal = document.getElementById('dateInp').value;
-            if(!dateVal) return alert("Required: Date");
-
             const details = Array.from(document.querySelectorAll('#detailRowsContainer > div')).map(row => {
                 const t = row.querySelectorAll('input[type="time"]');
                 return { f: t[0].value, t: t[1].value, d: row.querySelector('textarea').value.trim() };
             }).filter(item => item.d !== "");
+
+            if(!dateVal || details.length === 0) return alert("Required: Date & Progress!");
 
             const logEntry = {
                 id: isEditMode ? parseInt(document.getElementById('editId').value) : Date.now(),
@@ -226,7 +195,7 @@
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             isEditMode ? logs = logs.map(l => l.id === logEntry.id ? logEntry : l) : logs.push(logEntry);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-            clearForm(); refreshTable(); alert("✅ Saved Locally");
+            clearForm(); refreshTable(); alert("✅ Recorded Locally");
         }
 
         function refreshTable() {
@@ -236,45 +205,72 @@
             
             logs.sort((a,b) => b.id - a.id).forEach(obj => {
                 let chronoRows = (obj.detailData || []).map(item => `
-                    <tr class="border-b border-slate-100 last:border-0">
-                        <td class="cell-time p-2">${item.f} - ${item.t}</td>
-                        <td class="description-text p-3">${item.d}</td>
+                    <tr>
+                        <td class="cell-time">${item.f} - ${item.t}</td>
+                        <td class="description-text">${item.d}</td>
                     </tr>`).join('');
 
                 const section = document.createElement('div');
-                section.className = "glass-frost rounded-3xl overflow-hidden mb-6";
+                section.className = "glass-glacial rounded-[3.5rem] overflow-hidden mb-8";
                 section.innerHTML = `
-                    <div class="bg-slate-50/50 p-3 flex justify-between items-center border-b border-slate-100">
-                        <span class="text-[9px] font-black text-sky-600 uppercase tracking-widest">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
-                        <div class="flex gap-4">
-                            <button onclick="editLog(${obj.id})" class="text-sky-600 text-[9px] font-bold">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="text-red-400 text-[9px] font-bold">DELETE</button>
+                    <div class="bg-sky-500/20 p-4 flex justify-between items-center border-b border-white/50">
+                        <span class="text-[9px] font-black text-sky-900 uppercase tracking-widest italic ml-4">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
+                        <div class="flex gap-6 mr-4">
+                            <button onclick="editLog(${obj.id})" class="text-sky-700 text-[10px] font-black hover:text-sky-500 transition-colors">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="text-red-500 text-[10px] font-black hover:text-red-700 transition-colors">DELETE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[1000px] border-collapse">
+                        <table class="w-full min-w-[1200px] border-collapse bg-white/5 table-fixed">
                             <thead>
                                 <tr>
-                                    <th class="w-24">Tanggal</th>
-                                    <th class="w-48">Detail Technician</th>
-                                    <th class="w-48">Cust & Lokasi</th>
-                                    <th class="w-48">Detail Unit</th>
-                                    <th>Detail Pekerjaan</th>
+                                    <th style="width: 100px">Date</th>
+                                    <th style="width: 150px">Technician</th>
+                                    <th style="width: 150px">Client</th>
+                                    <th style="width: 150px">Unit</th>
+                                    <th style="width: auto">Activities Progress</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="font-bold text-slate-800">${obj.date}</td>
-                                    <td><b>${obj.name}</b><br><span class="text-sky-600">NIK: ${obj.nik}</span></td>
-                                    <td><b>${obj.customer}</b><br>${obj.location}</td>
-                                    <td><b class="text-sky-600">${obj.model}</b><br>SN: ${obj.sn} | HM: ${obj.hm}</td>
-                                    <td class="p-0"><table class="w-full border-none">${chronoRows}</table></td>
+                                    <td class="td-main font-black text-sky-950 text-center">${obj.date}</td>
+                                    <td class="td-main"><b class="text-sky-900">${obj.name}</b><br><span class="text-[10px] italic">NIK: ${obj.nik}</span></td>
+                                    <td class="td-main"><b class="text-sky-900">${obj.customer}</b><br><span class="text-[10px] uppercase font-bold text-sky-600">${obj.location}</span></td>
+                                    <td class="td-main"><b class="text-sky-700">${obj.model}</b><br>SN: ${obj.sn} |HM: ${obj.hm}</td>
+                                    <td class="p-0">
+                                        <table class="w-full border-none">
+                                            ${chronoRows}
+                                        </table>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>`;
                 masterList.appendChild(section);
             });
+        }
+
+        async function syncToCloud() {
+            const btn = document.getElementById('btnSync');
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            btn.innerText = "Syncing..."; btn.disabled = true;
+            try {
+                const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: { ...l, isSynced: true } }));
+                await sb.from('tech_logs').upsert(payload);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
+                refreshTable(); alert("❄️ Cloud Sync Success!");
+            } catch (err) { alert(err.message); }
+            finally { btn.innerText = "❄️ Sync"; btn.disabled = false; }
+        }
+
+        async function pullFromCloud() {
+            try {
+                const { data } = await sb.from('tech_logs').select('log_data').eq('nik', userNrp).order('id', { ascending: false });
+                if(data) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.map(item => item.log_data)));
+                    refreshTable();
+                }
+            } catch (err) { console.error(err); }
         }
 
         function editLog(id) {
@@ -291,74 +287,24 @@
             document.getElementById('jobDescInp').value = log.job;
             document.getElementById('detailRowsContainer').innerHTML = '';
             log.detailData.forEach(d => addDetailRow(d.f, d.t, d.d));
-            document.getElementById('submitBtn').innerText = "Update Report";
+            document.getElementById('submitBtn').innerText = "Authorize & Update";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        async function syncToCloud() {
-            const btn = document.getElementById('btnSync');
-            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            btn.innerText = "WAIT..."; btn.disabled = true;
-            try {
-                const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: { ...l, isSynced: true } }));
-                await sb.from('tech_logs').upsert(payload);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
-                refreshTable(); alert("❄️ Sync Success!");
-            } catch (err) { alert(err.message); }
-            finally { btn.innerText = "❄️ Sync"; btn.disabled = false; }
-        }
-
-        async function pullFromCloud() {
-            try {
-                const { data } = await sb.from('tech_logs').select('log_data').eq('nik', userNrp).order('id', { ascending: false });
-                if(data) {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.map(item => item.log_data)));
-                    refreshTable();
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        function exportToPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            
-            let flatData = [];
-            logs.forEach(l => {
-                l.detailData.forEach((d, i) => {
-                    flatData.push([
-                        i === 0 ? l.date : '',
-                        i === 0 ? `${l.name}\n${l.nik}` : '',
-                        i === 0 ? `${l.customer}\n${l.location}` : '',
-                        i === 0 ? `${l.model}\nSN: ${l.sn}\nHM: ${l.hm}` : '',
-                        `${d.f}-${d.t}`,
-                        d.d
-                    ]);
-                });
-            });
-
-            doc.text("HEXINDO ACTIVITY REPORT - SNOW TERMINAL", 14, 15);
-            doc.autoTable({
-                head: [['TGL', 'TECHNICIAN', 'CUSTOMER', 'UNIT INFO', 'JAM', 'PEKERJAAN']],
-                body: flatData,
-                startY: 20,
-                styles: { fontSize: 7, cellPadding: 2, overflow: 'linebreak' },
-                columnStyles: { 4: { halign: 'center' } }
-            });
-            doc.save(`Activity_Report_${userNrp}.pdf`);
-        }
-
-        function exportToExcel() {
-            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            let flat = logs.flatMap(l => l.detailData.map(d => ({ Tgl: l.date, Tech: l.name, NIK: l.nik, Cust: l.customer, Unit: l.model, Jam: `${d.f}-${d.t}`, Detail: d.d })));
-            const ws = XLSX.utils.json_to_sheet(flat);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Logs");
-            XLSX.writeFile(wb, `Report_${userNrp}.xlsx`);
+        function createSnow() {
+            const box = document.getElementById('snow-box');
+            for(let i=0; i<45; i++) {
+                let s = document.createElement('div');
+                s.className = 'snowflake';
+                s.style.width = s.style.height = Math.random() * 5 + 2 + 'px';
+                s.style.left = Math.random() * 100 + 'vw';
+                s.style.animationDuration = Math.random() * 4 + 3 + 's';
+                box.appendChild(s);
+            }
         }
 
         function deleteLog(id) {
-            if(confirm("Hapus?")) {
+            if(confirm("Delete record?")) {
                 let logs = JSON.parse(localStorage.getItem(STORAGE_KEY)).filter(l => l.id !== id);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
                 refreshTable();
@@ -370,7 +316,30 @@
             ['customerInp','locationInp','modelInp','snInp','hmInp','jobDescInp'].forEach(id => document.getElementById(id).value = '');
             document.getElementById('detailRowsContainer').innerHTML = '';
             addDetailRow();
-            document.getElementById('submitBtn').innerText = "Save Report";
+            document.getElementById('submitBtn').innerText = "Authorize & Submit";
+        }
+
+        function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            let flatData = [];
+            logs.forEach(l => {
+                l.detailData.forEach((d, i) => {
+                    flatData.push([i === 0 ? l.date : '', i === 0 ? l.name : '', i === 0 ? l.customer : '', i === 0 ? l.model : '', `${d.f}-${d.t}`, d.d]);
+                });
+            });
+            doc.autoTable({ head: [['DATE', 'TECH', 'CLIENT', 'UNIT', 'TIME', 'JOB']], body: flatData, headStyles: { fillColor: [15, 23, 42] } });
+            doc.save("Activity_Report.pdf");
+        }
+
+        function exportToExcel() {
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            let flat = logs.flatMap(l => l.detailData.map(d => ({ Tgl: l.date, Tech: l.name, Unit: l.model, Jam: `${d.f}-${d.t}`, Detail: d.d })));
+            const ws = XLSX.utils.json_to_sheet(flat);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Logs");
+            XLSX.writeFile(wb, "Activity_Report.xlsx");
         }
     </script>
 </body>

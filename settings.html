@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glacier Settings | Hexindo Fleet Pro</title>
+    
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            /* Background transparan agar menyatu dengan portal utama */
+            background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
+            min-height: 100vh; color: #1e293b;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Ultra Transparan */
+        .glass-ice { 
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(25px) saturate(150%);
+            -webkit-backdrop-filter: blur(25px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+            border-radius: 2.5rem;
+            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.1);
+        }
+
+        .input-glacier {
+            background: rgba(255, 255, 255, 0.5); 
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1.25rem; padding: 14px 18px; width: 100%; color: #1e293b; 
+            outline: none; transition: 0.3s;
+        }
+        .input-glacier:focus { 
+            border-color: #3b82f6; 
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-glacier { 
+            background: #2563eb;
+            font-weight: 800; padding: 14px; border-radius: 1.5rem; 
+            text-transform: uppercase; font-size: 11px; tracking-widest: 0.15em; 
+            transition: 0.3s; color: white; border: none;
+            cursor: pointer;
+        }
+        .btn-glacier:hover { 
+            transform: scale(1.02) translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+
+        .shard {
+            position: absolute; background: white; pointer-events: none;
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            opacity: 0.8; animation: shatter 0.7s ease-out forwards;
+            z-index: 100;
+        }
+        @keyframes shatter {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(0); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center">
+
+    <div class="max-w-4xl w-full space-y-6 relative z-10">
+        
+        <header class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="h-12 w-12 glass-ice flex items-center justify-center hover:bg-white/60 transition-all">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+                <h1 class="text-xl font-black italic tracking-tighter uppercase text-slate-800">NIK <span class="text-blue-600">Settings</span></h1>
+            </div>
+            <div id="roleBadge" class="px-6 py-2 glass-ice text-[10px] font-black uppercase tracking-widest text-blue-600">Loading...</div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <section class="glass-ice p-8">
+                <h2 class="text-xs font-black uppercase text-blue-600 mb-6 tracking-widest italic">Personal Frost</h2>
+                <form id="changePassForm" class="space-y-4">
+                    <input type="password" id="newPass" class="input-glacier" placeholder="New Password" required>
+                    <input type="password" id="confirmPass" class="input-glacier" placeholder="Confirm Password" required>
+                    <button type="submit" class="btn-glacier w-full mt-4 ice-trigger">Freeze New Password</button>
+                </form>
+            </section>
+
+            <section id="adminPanel" class="glass-ice p-8 hidden border-red-200">
+                <h2 class="text-xs font-black uppercase text-red-600 mb-6 tracking-widest italic">Technician Matrix</h2>
+                <form id="addUserForm" class="space-y-4">
+                    <input type="text" id="regNik" class="input-glacier" placeholder="NIK Baru" required>
+                    <input type="text" id="regName" class="input-glacier" placeholder="Full Name" required>
+                    <button type="submit" class="btn-glacier w-full bg-slate-800 !text-white mt-4 ice-trigger">Deploy Technician</button>
+                </form>
+            </section>
+        </div>
+
+        <section id="userListPanel" class="glass-ice p-8 hidden">
+            <h2 class="text-xs font-black uppercase text-slate-500 mb-6 tracking-widest italic">All NIK Records</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left">
+                    <thead>
+                        <tr class="text-slate-400 border-b border-black/5 uppercase font-black">
+                            <th class="pb-4">NIK</th><th class="pb-4">Name</th><th class="pb-4">Role</th><th class="pb-4 text-right">Control</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" class="divide-y divide-black/5"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE: ICE CLICK ---
+        const playIceSound = () => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1200, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.start();
+            osc.stop(ctx.currentTime + 0.1);
+        };
+
+        // --- SHATTER EFFECT ---
+        const iceShatter = (e) => {
+            playIceSound();
+            for (let i = 0; i < 10; i++) {
+                const shard = document.createElement('div');
+                shard.className = 'shard';
+                const size = Math.random() * 6 + 2;
+                shard.style.width = size + 'px';
+                shard.style.height = size + 'px';
+                shard.style.left = e.clientX + 'px';
+                shard.style.top = e.clientY + 'px';
+                shard.style.setProperty('--x', (Math.random() - 0.5) * 150 + 'px');
+                shard.style.setProperty('--y', (Math.random() - 0.5) * 150 + 'px');
+                shard.style.setProperty('--r', Math.random() * 360 + 'deg');
+                document.body.appendChild(shard);
+                setTimeout(() => shard.remove(), 700);
+            }
+        };
+
+        // Global event listener for buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('ice-trigger') || e.target.tagName === 'BUTTON') {
+                iceShatter(e);
+            }
+        });
+
+        // --- SUPABASE LOGIC ---
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const currentNik = localStorage.getItem('userNRP');
+        const userRole = localStorage.getItem('userRole');
+
+        const sb = supabase.createClient(SB_URL, SB_KEY, {
+            global: { headers: { 'x-user-nik': currentNik } }
+        });
+
+        window.onload = () => {
+            const badge = document.getElementById('roleBadge');
+            badge.innerText = (userRole || 'TECH').toUpperCase() + " ACCESS";
+            
+            if (userRole === 'admin') {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                document.getElementById('userListPanel').classList.remove('hidden');
+                fetchUsers();
+            }
+        };
+
+        document.getElementById('changePassForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const nPass = document.getElementById('newPass').value;
+            if (nPass !== document.getElementById('confirmPass').value) return alert("Mismatch!");
+
+            const { error } = await sb.from('users').update({ password: nPass }).eq('nik', currentNik);
+            if (!error) { alert("Frozen!"); document.getElementById('changePassForm').reset(); }
+        };
+
+        async function fetchUsers() {
+            const { data } = await sb.from('users').select('*').order('full_name');
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = data.map(u => `
+                <tr class="hover:bg-white/20 transition-all">
+                    <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
+                    <td class="font-bold uppercase italic">${u.full_name}</td>
+                    <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
+                    <td class="text-right">
+                        <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function resetUserPass(targetNik) {
+            const newPass = prompt("New Password for " + targetNik, "hexindo123");
+            if (newPass) await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+        }
+    </script>
+</body>
+</html>
