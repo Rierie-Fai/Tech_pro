@@ -19,13 +19,11 @@
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            /* Background transparan agar menyatu dengan portal utama */
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
             min-height: 100vh; color: #1e293b;
             overflow-x: hidden;
         }
 
-        /* Glassmorphism Ultra Transparan */
         .glass-ice { 
             background: rgba(255, 255, 255, 0.4); 
             backdrop-filter: blur(25px) saturate(150%);
@@ -123,37 +121,30 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE: ICE CLICK ---
+        // --- AUDIO ENGINE ---
         const playIceSound = () => {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(1200, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-            
-            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-            
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
-            osc.start();
-            osc.stop(ctx.currentTime + 0.1);
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.1);
+            } catch (e) { console.log("Audio not supported"); }
         };
 
-        // --- SHATTER EFFECT ---
         const iceShatter = (e) => {
             playIceSound();
             for (let i = 0; i < 10; i++) {
                 const shard = document.createElement('div');
                 shard.className = 'shard';
                 const size = Math.random() * 6 + 2;
-                shard.style.width = size + 'px';
-                shard.style.height = size + 'px';
-                shard.style.left = e.clientX + 'px';
-                shard.style.top = e.clientY + 'px';
+                shard.style.width = size + 'px'; shard.style.height = size + 'px';
+                shard.style.left = e.clientX + 'px'; shard.style.top = e.clientY + 'px';
                 shard.style.setProperty('--x', (Math.random() - 0.5) * 150 + 'px');
                 shard.style.setProperty('--y', (Math.random() - 0.5) * 150 + 'px');
                 shard.style.setProperty('--r', Math.random() * 360 + 'deg');
@@ -162,9 +153,8 @@
             }
         };
 
-        // Global event listener for buttons
         document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('ice-trigger') || e.target.tagName === 'BUTTON') {
+            if (e.target.tagName === 'BUTTON' || e.target.classList.contains('ice-trigger')) {
                 iceShatter(e);
             }
         });
@@ -180,9 +170,7 @@
         });
 
         window.onload = () => {
-            const badge = document.getElementById('roleBadge');
-            badge.innerText = (userRole || 'TECH').toUpperCase() + " ACCESS";
-            
+            document.getElementById('roleBadge').innerText = (userRole || 'TECH').toUpperCase() + " ACCESS";
             if (userRole === 'admin') {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 document.getElementById('userListPanel').classList.remove('hidden');
@@ -190,33 +178,61 @@
             }
         };
 
+        // GANTI PASSWORD SENDIRI
         document.getElementById('changePassForm').onsubmit = async (e) => {
             e.preventDefault();
             const nPass = document.getElementById('newPass').value;
-            if (nPass !== document.getElementById('confirmPass').value) return alert("Mismatch!");
+            if (nPass !== document.getElementById('confirmPass').value) return alert("❌ Password mismatch!");
 
             const { error } = await sb.from('users').update({ password: nPass }).eq('nik', currentNik);
-            if (!error) { alert("Frozen!"); document.getElementById('changePassForm').reset(); }
+            if (error) alert(error.message);
+            else { alert("✅ Password updated!"); document.getElementById('changePassForm').reset(); }
         };
 
+        // ADMIN: TAMBAH TEKNISI
+        document.getElementById('addUserForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const payload = {
+                nik: document.getElementById('regNik').value,
+                full_name: document.getElementById('regName').value,
+                password: 'hexindo123',
+                role: 'technician'
+            };
+
+            const { error } = await sb.from('users').insert([payload]);
+            if (error) alert("Gagal: " + error.message);
+            else {
+                alert("✅ Teknisi Berhasil Didaftarkan!");
+                document.getElementById('addUserForm').reset();
+                fetchUsers();
+            }
+        };
+
+        // FETCH DATA TABLE
         async function fetchUsers() {
-            const { data } = await sb.from('users').select('*').order('full_name');
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = data.map(u => `
-                <tr class="hover:bg-white/20 transition-all">
-                    <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
-                    <td class="font-bold uppercase italic">${u.full_name}</td>
-                    <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
-                    <td class="text-right">
-                        <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
-                    </td>
-                </tr>
-            `).join('');
+            const { data, error } = await sb.from('users').select('*').order('full_name');
+            if (!error) {
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = data.map(u => `
+                    <tr class="hover:bg-white/20 transition-all">
+                        <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
+                        <td class="font-bold uppercase italic">${u.full_name}</td>
+                        <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
+                        <td class="text-right">
+                            <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         }
 
+        // RESET PASS TEKNISI LAIN
         async function resetUserPass(targetNik) {
-            const newPass = prompt("New Password for " + targetNik, "hexindo123");
-            if (newPass) await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+            const newPass = prompt("Set password baru untuk NIK " + targetNik, "hexindo123");
+            if (newPass) {
+                const { error } = await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+                if (!error) alert("✅ NIK " + targetNik + " Reset!");
+            }
         }
     </script>
 </body>
