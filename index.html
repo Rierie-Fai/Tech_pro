@@ -6,6 +6,7 @@
     <title>Portal Utama | Hexindo Fleet Pro</title>
     <link rel="manifest" href="manifest.json">
     <script>
+        // Cek Login: Menggunakan key NIK sesuai preferensi Anda
         if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +35,7 @@
 
     <div id="ice-container" class="fixed inset-0 pointer-events-none"></div>
 
-    <div class="max-w-5xl w-full space-y-6 relative z-10">
+    <div class="max-w-6xl w-full space-y-6 relative z-10">
         
         <header class="glass-ice rounded-[2.5rem] p-6 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-5">
@@ -53,7 +54,7 @@
                     <p id="userNikDisplay" class="text-[10px] text-blue-600 font-bold mt-1">NIK: ------</p>
                 </div>
                 <a href="settings.html" class="bg-white/80 hover:bg-blue-500 hover:text-white p-3 rounded-2xl transition-all shadow-sm">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
                 </a>
                 <button onclick="handleLogout()" class="bg-white/80 hover:bg-red-500 hover:text-white p-3 rounded-2xl transition-all shadow-sm">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
@@ -61,7 +62,7 @@
             </div>
         </header>
 
-        <div id="adminSection" class="hidden animate-bounce-in">
+        <div id="adminSection" class="hidden">
             <a href="admin-dashboard.html" class="glass-ice rounded-[2.5rem] p-6 border-2 border-red-200 flex items-center justify-between group hover:bg-red-50 transition-all">
                 <div class="flex items-center gap-6">
                     <div class="w-16 h-16 bg-red-600 rounded-3xl flex items-center justify-center shadow-xl shadow-red-500/20">
@@ -89,7 +90,19 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <a href="hyd-test.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
+                <div class="flex flex-col">
+                    <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-slate-800 uppercase italic">Hydraulic <span class="text-blue-600">Test</span></h3>
+                    <p class="text-slate-500 mt-2 text-xs font-semibold">Pump Performance & Relief Pressure.</p>
+                </div>
+                <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
+            </a>
+
             <a href="daily-activity.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
                     <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
@@ -129,17 +142,28 @@
         </footer>
     </div>
 
+    <div id="offlineStatus" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-2xl glass-ice border-red-500/50 text-red-600 transform translate-y-32 transition-all duration-500 ease-out">
+        <div class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+        </div>
+        <div class="flex flex-col">
+            <p class="text-[10px] font-black uppercase tracking-widest leading-none">Connection Lost</p>
+            <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Working via Glacier Cache</p>
+        </div>
+    </div>
+
     <script>
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
         const sb = supabase.createClient(SB_URL, SB_KEY);
 
         async function initSession() {
-            const nrp = localStorage.getItem('userNRP');
-            if (!nrp) return handleLogout();
+            const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
+            if (!userNik) return handleLogout();
 
             try {
-                const { data: user, error } = await sb.from('users').select('*').eq('nik', nrp).single();
+                const { data: user, error } = await sb.from('users').select('*').eq('nik', userNik).single();
                 if (error || !user) throw new Error("Invalid Session");
 
                 document.getElementById('userNameDisplay').innerText = user.full_name;
@@ -150,7 +174,6 @@
                 if(user.role === 'admin') {
                     badge.innerText = '🛡️ Admin Access';
                     badge.className = "bg-red-600/10 text-red-600 border border-red-200 w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4";
-                    // TAMPILKAN MENU ADMIN
                     document.getElementById('adminSection').classList.remove('hidden');
                 } else {
                     badge.innerText = '🔧 Tech Access';
@@ -160,6 +183,17 @@
                 document.body.style.visibility = 'visible';
                 document.getElementById('loadingOverlay').style.display = 'none';
             } catch (err) { handleLogout(); }
+        }
+
+        function updateOnlineStatus() {
+            const indicator = document.getElementById('offlineStatus');
+            if (navigator.onLine) {
+                indicator.classList.add('translate-y-32');
+                indicator.classList.remove('translate-y-0');
+            } else {
+                indicator.classList.remove('translate-y-32');
+                indicator.classList.add('translate-y-0');
+            }
         }
 
         function createIceRain() {
@@ -199,16 +233,16 @@
 
         function handleLogout() { localStorage.clear(); window.location.replace('login.html'); }
 
-        window.onload = () => { initSession(); createIceRain(); setInterval(updateTime, 1000); updateTime(); };
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        window.onload = () => { 
+            initSession(); 
+            createIceRain(); 
+            setInterval(updateTime, 1000); 
+            updateTime(); 
+            updateOnlineStatus(); 
+        };
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('Glacier Service Worker: Active', reg))
-        .catch(err => console.log('Glacier Service Worker: Failed', err));
-    });
-  }
-</script>
 </body>
 </html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydraulic Test Pro | Hexindo Fleet</title>
+    
+    <script>
+        // Cek Login: Menggunakan key isLoggedIn dan NIK
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+            min-height: 100vh; color: #0f172a;
+        }
+
+        .glass-glacial { 
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
+        }
+
+        .header-label { font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
+        
+        .input-glacial { 
+            width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.6); 
+            border: 1px solid rgba(255,255,255,0.8); border-radius: 12px;
+            font-size: 13px; font-weight: 700; transition: 0.3s; outline: none;
+        }
+        .input-glacial:focus { background: white; border-color: #0ea5e9; box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+        .input-readonly { background: rgba(203, 213, 225, 0.4) !important; color: #475569; cursor: not-allowed; }
+
+        .is-valid-custom { border: 2px solid #10b981 !important; background-color: #ecfdf5 !important; }
+        .is-invalid-custom { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
+
+        th { background: #0f172a !important; color: white !important; font-size: 10px; text-transform: uppercase; padding: 12px !important; text-align: center; }
+        .std-text { color: #ef4444; font-weight: 800; font-size: 10px; }
+
+        @media print { .no-print { display: none; } .glass-glacial { background: white; border: none; backdrop-filter: none; } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-[1400px] mx-auto space-y-6">
+        
+        <header class="glass-glacial p-6 rounded-[2.5rem] flex flex-wrap justify-between items-center no-print gap-4">
+            <div class="flex items-center gap-4">
+                <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 border border-white hover:bg-white transition-all shadow-sm">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+                <div>
+                    <h1 class="text-xl font-black italic text-sky-950 uppercase tracking-tighter leading-none">Hydraulic <span class="text-sky-600">Test Pro</span></h1>
+                    <p class="text-[9px] font-bold text-sky-500 tracking-widest uppercase mt-1">Supabase Cloud Sync Active</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="window.print()" class="bg-white/60 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">Print PDF</button>
+                <button type="button" onclick="newForm()" class="bg-white/60 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">New Form</button>
+                <button type="button" id="btnSave" onclick="saveToCloud()" class="bg-sky-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-sky-500/40">Sync to Cloud</button>
+            </div>
+        </header>
+
+        <form id="pumpForm" class="space-y-6">
+            <input type="hidden" id="recordId">
+
+            <div class="glass-glacial p-8 rounded-[3rem]">
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                    <div><label class="header-label">Date</label><input type="date" id="test_date" class="input-glacial"></div>
+                    <div><label class="header-label">Nama PIC</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly placeholder="Loading..."></div>
+                    <div><label class="header-label">NIK</label><input type="text" id="nik" class="input-glacial font-mono input-readonly" readonly placeholder="Loading..."></div>
+                    <div><label class="header-label">Unit Model</label><input type="text" id="unit_model" class="input-glacial" placeholder="EX3600-6"></div>
+                    <div><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial" placeholder="S/N"></div>
+                    <div><label class="header-label">HM</label><input type="number" id="hour_meter" class="input-glacial" placeholder="Hour Meter"></div>
+                </div>
+            </div>
+
+            <div class="glass-glacial rounded-[2.5rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">1. Component & Oil History</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr><th style="width: 200px;">PART NAME</th><th>SERIAL NO.</th><th>LIFE HOURS</th><th>MODEL</th><th>REGULATOR</th></tr>
+                        </thead>
+                        <tbody class="bg-white/10">
+                            <tr><td class="p-3 font-bold">ENGINE</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp" value="-"></td></tr>
+                            <tr><td class="p-3 font-bold">PUMP 1-2</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
+                            <tr><td class="p-3 font-bold">PUMP 3-4</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
+                            <tr><td class="p-3 font-bold">PUMP 5-6</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
+                            <tr><td class="p-3 font-bold">PUMP 7-8</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-glacial rounded-[2.5rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">2. Main Relief Pressure (Kgf/cm²)</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center">
+                        <thead>
+                            <tr><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th><th>P7</th><th>P8</th><th class="std-text">Standard</th></tr>
+                        </thead>
+                        <tbody class="bg-white/10">
+                            <tr>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
+                                <td class="std-text">300-320</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-glacial rounded-[2.5rem] overflow-hidden col-span-1">
+                    <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">4. Engine Speed</h3></div>
+                    <table class="w-full text-sm">
+                        <tbody class="bg-white/10">
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold">Low Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="780" data-max="820"></td></tr>
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold">High Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1850" data-max="1950"></td></tr>
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold">Auto Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1350" data-max="1450"></td></tr>
+                            <tr><td class="p-3 font-bold">Relief Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1770" data-max="1830"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-glacial rounded-[2.5rem] overflow-hidden col-span-2">
+                    <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">5 & 6. Cycle Time</h3></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-center text-sm">
+                            <thead><tr><th>Action</th><th>Std</th><th>Before</th><th>After</th></tr></thead>
+                            <tbody class="bg-white/10">
+                                <tr class="border-b border-white/30"><td>Boom Raise</td><td class="std-text">8.2±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="8.2" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="8.2" data-tol="0.5"></td></tr>
+                                <tr class="border-b border-white/30"><td>Arm Roll-in</td><td class="std-text">7.0±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td></tr>
+                                <tr class="border-b border-white/30"><td>Arm Roll-out</td><td class="std-text">7.0±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td></tr>
+                                <tr class="border-b border-white/30"><td>Bucket Roll-in</td><td class="std-text">6.5±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td></tr>
+                                <tr class="border-b border-white/30"><td>Bucket Roll-out</td><td class="std-text">6.5±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td></tr>
+                                <tr class="border-b border-white/30"><td>Swing RH</td><td class="std-text">57±3</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td></tr>
+                                <tr><td>Swing LH</td><td class="std-text">57±3</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="glass-glacial rounded-[3rem] p-8 no-print">
+            <h3 class="header-label text-lg mb-6">Cloud Database (Supabase)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr><th>Date</th><th>Nama</th><th>NIK</th><th>Model</th><th>Serial</th><th>HM</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="dbTableBody" class="bg-white/10 text-center"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // FUNGSI PENGAMBILAN PROFIL SESUAI INDEX & DAILY-ACTIVITY
+        async function loadUserProfile() {
+            const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
+            if (!userNik) {
+                console.warn("No NIK found in storage");
+                return;
+            }
+
+            try {
+                const { data: user, error } = await sb
+                    .from('users')
+                    .select('full_name, nik')
+                    .eq('nik', userNik)
+                    .single();
+
+                if (error) throw error;
+
+                if (user) {
+                    document.getElementById('nama_pic').value = user.full_name;
+                    document.getElementById('nik').value = user.nik;
+                }
+            } catch (err) {
+                console.error("Error loading profile:", err.message);
+            }
+        }
+
+        window.onload = async () => {
+            await loadUserProfile();
+            document.getElementById('test_date').valueAsDate = new Date();
+            fetchData();
+        };
+
+        async function saveToCloud() {
+            const id = document.getElementById('recordId').value;
+            const btn = document.getElementById('btnSave');
+            btn.innerText = "❄️ SYNCING..."; btn.disabled = true;
+
+            const record = {
+                test_date: document.getElementById('test_date').value,
+                nama_pic: document.getElementById('nama_pic').value,
+                nik: document.getElementById('nik').value,
+                unit_model: document.getElementById('unit_model').value,
+                serial_number: document.getElementById('serial_num').value,
+                hour_meter: document.getElementById('hour_meter').value,
+                component_history: Array.from(document.querySelectorAll('.data-comp')).map(i => i.value),
+                pump_relief_values: Array.from(document.querySelectorAll('.data-pump')).map(i => i.value),
+                engine_speed_values: Array.from(document.querySelectorAll('.data-eng')).map(i => i.value),
+                cycle_time_values: Array.from(document.querySelectorAll('.data-cyc')).map(i => i.value)
+            };
+
+            let error;
+            if (!id) {
+                const { error: insErr } = await sb.from('pump_performance_reports').insert([record]);
+                error = insErr;
+            } else {
+                const { error: updErr } = await sb.from('pump_performance_reports').update(record).eq('id', id);
+                error = updErr;
+            }
+
+            btn.innerText = "Sync to Cloud"; btn.disabled = false;
+            if (error) { alert("Error: " + error.message); } 
+            else { alert("✅ Data Berhasil Sinkron!"); newForm(); fetchData(); }
+        }
+
+        async function fetchData() {
+            const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+            const tbody = document.getElementById('dbTableBody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="border-b border-white/20">
+                        <td class="p-3">${item.test_date}</td>
+                        <td>${item.nama_pic || '-'}</td>
+                        <td class="font-mono text-xs">${item.nik}</td>
+                        <td class="font-bold">${item.unit_model}</td>
+                        <td>${item.serial_number}</td>
+                        <td>${item.hour_meter || '-'}</td>
+                        <td class="p-2 flex gap-2 justify-center">
+                            <button class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
+                            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick="deleteRecord('${item.id}')">HAPUS</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function editRecord(item) {
+            document.getElementById('recordId').value = item.id;
+            document.getElementById('test_date').value = item.test_date;
+            document.getElementById('nama_pic').value = item.nama_pic || '';
+            document.getElementById('nik').value = item.nik;
+            document.getElementById('unit_model').value = item.unit_model;
+            document.getElementById('serial_num').value = item.serial_number;
+            document.getElementById('hour_meter').value = item.hour_meter || '';
+
+            const comp = document.querySelectorAll('.data-comp');
+            item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
+
+            const pump = document.querySelectorAll('.data-pump');
+            item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateRange(pump[i]); } });
+
+            const eng = document.querySelectorAll('.data-eng');
+            item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateRange(eng[i]); } });
+
+            const cyc = document.querySelectorAll('.data-cyc');
+            item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateTol(cyc[i]); } });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteRecord(id) {
+            if(confirm("Hapus data dari Cloud?")) {
+                await sb.from('pump_performance_reports').delete().eq('id', id);
+                fetchData();
+            }
+        }
+
+        function newForm() {
+            document.getElementById('pumpForm').reset();
+            document.getElementById('recordId').value = "";
+            loadUserProfile();
+            document.getElementById('test_date').valueAsDate = new Date();
+            document.querySelectorAll('input').forEach(i => i.classList.remove('is-valid-custom', 'is-invalid-custom'));
+        }
+
+        function validateRange(el) {
+            const val = parseFloat(el.value);
+            const min = parseFloat(el.dataset.min);
+            const max = parseFloat(el.dataset.max);
+            if (isNaN(val)) el.classList.remove('is-valid-custom', 'is-invalid-custom');
+            else {
+                el.classList.toggle('is-valid-custom', val >= min && val <= max);
+                el.classList.toggle('is-invalid-custom', val < min || val > max);
+            }
+        }
+
+        function validateTol(el) {
+            const val = parseFloat(el.value);
+            const target = parseFloat(el.dataset.target);
+            const tol = parseFloat(el.dataset.tol);
+            if (isNaN(val)) el.classList.remove('is-valid-custom', 'is-invalid-custom');
+            else {
+                const pass = val >= (target - tol) && val <= (target + tol);
+                el.classList.toggle('is-valid-custom', pass);
+                el.classList.toggle('is-invalid-custom', !pass);
+            }
+        }
+
+        document.querySelectorAll('.validate-range').forEach(i => i.addEventListener('input', () => validateRange(i)));
+        document.querySelectorAll('.validate-tol').forEach(i => i.addEventListener('input', () => validateTol(i)));
+    </script>
+</body>
+</html>
