@@ -2,31 +2,57 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280, initial-scale=1">
     <title>Portal Utama | Hexindo Fleet Pro</title>
     <link rel="manifest" href="manifest.json">
+    
     <script>
         // Cek Login: Menggunakan key NIK sesuai preferensi Anda
         if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%); min-height: 100vh; color: #1e293b; overflow-x: hidden; position: relative; visibility: hidden; }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%); 
+            min-height: 100vh; 
+            color: #1e293b; 
+            overflow-x: auto; /* Izinkan scroll horizontal jika layar HP terlalu kecil */
+            position: relative; 
+            visibility: hidden;
+            /* KUNCI LEBAR DESKTOP */
+            min-width: 1280px;
+        }
+
+        /* Container utama dikunci agar layout tetap lebar */
+        .main-wrapper {
+            width: 1280px !important;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
         #loadingOverlay { visibility: visible !important; position: fixed; inset: 0; background: #e0eafc; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
         .crystal-ice { position: fixed; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); width: 3px; height: 25px; top: -50px; z-index: 1; pointer-events: none; animation: iceRain linear infinite; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
         @keyframes iceRain { 0% { transform: translateY(0) rotate(15deg); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(110vh) rotate(15deg); opacity: 0; } }
+        
         .shatter-piece { position: absolute; background: white; pointer-events: none; z-index: 50; box-shadow: 0 0 10px white; animation: shatterOut 0.6s ease-out forwards; }
         @keyframes shatterOut { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); opacity: 0; } }
+        
         .glass-ice { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12); position: relative; z-index: 10; }
+        
         .menu-card { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); border-radius: 2.5rem; }
         .menu-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.8); border-color: #3b82f6; }
+        
         .digital-clock { font-family: 'JetBrains Mono', monospace; }
         .logo-blend { mix-blend-mode: multiply; filter: contrast(1.2); }
     </style>
 </head>
-<body class="p-4 md:p-8 flex justify-center">
+<body class="p-4 flex justify-center">
 
     <div id="loadingOverlay">
         <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -35,9 +61,9 @@
 
     <div id="ice-container" class="fixed inset-0 pointer-events-none"></div>
 
-    <div class="max-w-6xl w-full space-y-6 relative z-10">
+    <div class="main-wrapper space-y-6 relative z-10">
         
-        <header class="glass-ice rounded-[2.5rem] p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <header class="glass-ice rounded-[2.5rem] p-6 flex justify-between items-center gap-4">
             <div class="flex items-center gap-5">
                 <div class="w-16 h-16 bg-white/40 p-2 rounded-2xl flex items-center justify-center border border-white/60">
                     <img src="logo.png" alt="Logo" class="w-full h-full object-contain logo-blend">
@@ -77,10 +103,10 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2 p-8 flex flex-col justify-center relative">
+        <div class="grid grid-cols-3 gap-6">
+            <div class="col-span-2 p-8 flex flex-col justify-center relative">
                 <div id="roleBadge" class="bg-white/50 border border-white w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4">Verifying...</div>
-                <h2 class="text-4xl md:text-5xl font-extrabold text-slate-800 leading-tight">Hello, <br><span class="text-blue-600 italic" id="hiName">User</span></h2>
+                <h2 class="text-5xl font-extrabold text-slate-800 leading-tight">Hello, <br><span class="text-blue-600 italic" id="hiName">User</span></h2>
                 <p class="text-slate-600 mt-4 font-semibold italic">Terminal Operasional Aktif. Silakan pilih modul.</p>
             </div>
             <div class="glass-ice rounded-[3rem] p-8 flex flex-col items-center justify-center text-center">
@@ -90,7 +116,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-4 gap-6">
             
             <a href="hyd-test.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
@@ -142,17 +168,6 @@
         </footer>
     </div>
 
-    <div id="offlineStatus" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-3 rounded-2xl glass-ice border-red-500/50 text-red-600 transform translate-y-32 transition-all duration-500 ease-out">
-        <div class="relative flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
-        </div>
-        <div class="flex flex-col">
-            <p class="text-[10px] font-black uppercase tracking-widest leading-none">Connection Lost</p>
-            <p class="text-[9px] font-bold text-slate-500 uppercase mt-1">Working via Glacier Cache</p>
-        </div>
-    </div>
-
     <script>
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
@@ -183,17 +198,6 @@
                 document.body.style.visibility = 'visible';
                 document.getElementById('loadingOverlay').style.display = 'none';
             } catch (err) { handleLogout(); }
-        }
-
-        function updateOnlineStatus() {
-            const indicator = document.getElementById('offlineStatus');
-            if (navigator.onLine) {
-                indicator.classList.add('translate-y-32');
-                indicator.classList.remove('translate-y-0');
-            } else {
-                indicator.classList.remove('translate-y-32');
-                indicator.classList.add('translate-y-0');
-            }
         }
 
         function createIceRain() {
@@ -233,15 +237,11 @@
 
         function handleLogout() { localStorage.clear(); window.location.replace('login.html'); }
 
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
         window.onload = () => { 
             initSession(); 
             createIceRain(); 
             setInterval(updateTime, 1000); 
             updateTime(); 
-            updateOnlineStatus(); 
         };
     </script>
 </body>
