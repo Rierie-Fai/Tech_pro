@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Activity Glacial Pro | Hexindo Fleet</title>
     
     <script>
@@ -20,10 +20,29 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
         
+        :root {
+            --base-width: 720px;
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
-            min-height: 100vh; color: #0f172a; overflow-x: hidden;
+            min-height: 100vh; color: #0f172a; 
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
         }
 
         .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
@@ -35,26 +54,24 @@
             border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); 
         }
 
-        .header-label { font-size: 9px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
-        .header-val { border: 1px solid rgba(255,255,255,0.6); border-radius: 14px; font-weight: 700; width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.5); font-size: 13px; outline: none; transition: 0.3s; }
+        .header-label { font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
+        .header-val { border: 1px solid rgba(255,255,255,0.6); border-radius: 12px; font-weight: 700; width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.5); font-size: 13px; outline: none; transition: 0.3s; }
         .header-val:focus { border-color: #0ea5e9; background: white; }
 
-        th { background: rgba(15, 23, 42, 0.9); font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 12px; }
-        .td-main { border: 1px solid rgba(255,255,255,0.2); padding: 12px 10px; font-size: 11px; vertical-align: top !important; background: rgba(255,255,255,0.1); }
+        th { background: rgba(15, 23, 42, 0.9); font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 10px; }
+        .td-main { border: 1px solid rgba(255,255,255,0.2); padding: 10px; font-size: 11px; vertical-align: top !important; background: rgba(255,255,255,0.1); }
 
         .cell-time { 
             font-family: 'Fira Code', monospace; color: #0369a1; font-weight: 700; 
             text-align: center !important; vertical-align: middle !important; 
-            background: rgba(255,255,255,0.4); width: 100px; border-bottom: 1px solid rgba(255,255,255,0.2);
-            border-right: 1px solid rgba(255,255,255,0.2);
-            font-size: 9px;
+            background: rgba(255,255,255,0.4); width: 90px; border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-right: 1px solid rgba(255,255,255,0.2); font-size: 10px;
         }
         
         .description-text { 
             word-wrap: break-word; white-space: pre-wrap; line-height: 1.5; 
             color: #0f172a; font-weight: 600; padding: 8px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            font-size: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 11px;
         }
 
         #splash-screen {
@@ -62,9 +79,10 @@
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
         .fade-out { opacity: 0; visibility: hidden; transition: 1s; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="p-2 md:p-6">
+<body>
 
     <div class="snow-container no-print" id="snow-box"></div>
 
@@ -73,29 +91,29 @@
         <p class="mt-6 font-black text-sky-700 text-[10px] tracking-widest uppercase italic">Initializing Glacial Terminal...</p>
     </div>
 
-    <div class="max-w-[1600px] mx-auto space-y-6 relative z-10">
+    <div id="scaler-context" class="space-y-4">
         
-        <header class="glass-glacial p-6 rounded-[3rem] flex flex-wrap justify-between items-center no-print gap-4">
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 shadow-sm hover:bg-white transition-all border border-white">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <header class="glass-glacial p-5 rounded-[2.5rem] flex justify-between items-center no-print gap-3">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="h-10 w-10 bg-white/60 rounded-xl flex items-center justify-center text-sky-900 shadow-sm border border-white">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
                 <div>
-                    <h1 class="text-xl font-black italic text-sky-950 leading-none tracking-tighter uppercase">ACTIVITY <span class="text-sky-600">REPORT</span></h1>
-                    <p id="roleBadge" class="text-[9px] font-black text-sky-500 tracking-widest uppercase mt-1">Glacial Pro System Active</p>
+                    <h1 class="text-lg font-black italic text-sky-950 leading-none tracking-tighter uppercase">ACTIVITY <span class="text-sky-600">REPORT</span></h1>
+                    <p class="text-[8px] font-black text-sky-500 tracking-widest uppercase mt-1">Glacial Pro System Active</p>
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="pullFromCloud()" class="bg-white/40 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">🔄 Pull</button>
-                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-5 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-sky-500/40">❄️ Sync</button>
-                <button onclick="exportToPDF()" class="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase">📄 PDF</button>
-                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase">📊 Excel</button>
+            <div class="flex gap-2">
+                <button onclick="pullFromCloud()" class="bg-white/40 text-sky-900 px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-white">🔄 Pull</button>
+                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase shadow-lg">❄️ Sync</button>
+                <button onclick="exportToPDF()" class="bg-slate-900 text-white px-3 py-2 rounded-lg font-bold text-[9px] uppercase">📄 PDF</button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg font-bold text-[9px] uppercase">📊 Excel</button>
             </div>
         </header>
 
-        <div class="glass-glacial p-8 rounded-[3.5rem] no-print">
+        <div class="glass-glacial p-6 rounded-[3rem] no-print">
             <input type="hidden" id="editId">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-2 gap-4 mb-6">
                 <div>
                     <label class="header-label">Technician & NIK</label>
                     <div class="flex gap-2">
@@ -103,61 +121,81 @@
                         <input type="text" id="nikInp" class="header-val w-28 text-center font-mono bg-white/20" readonly>
                     </div>
                 </div>
+                <div><label class="header-label">Date</label><input type="date" id="dateInp" class="header-val"></div>
                 <div><label class="header-label">Customer</label><input type="text" id="customerInp" class="header-val" placeholder="PT ADARO"></div>
                 <div><label class="header-label">Location</label><input type="text" id="locationInp" class="header-val" placeholder="NORTH"></div>
-                <div><label class="header-label">Date</label><input type="date" id="dateInp" class="header-val"></div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-2 gap-4 mb-6">
                 <div><label class="header-label">Model</label><input type="text" id="modelInp" class="header-val text-sky-600" placeholder="EX3600-6"></div>
                 <div><label class="header-label">S/N</label><input type="text" id="snInp" class="header-val" placeholder="SN12345"></div>
                 <div><label class="header-label">HM</label><input type="number" step="0.1" id="hmInp" class="header-val" placeholder="0.0"></div>
                 <div><label class="header-label">General Job</label><input type="text" id="jobDescInp" class="header-val" placeholder="OVERHAUL"></div>
             </div>
 
-            <div id="detailRowsContainer" class="space-y-4 mb-8"></div>
+            <div id="detailRowsContainer" class="space-y-3 mb-6"></div>
             
-            <div class="flex gap-4">
-                <button onclick="smartAddTask()" class="bg-white/60 text-sky-700 px-8 py-4 rounded-[1.5rem] font-black text-[11px] uppercase border border-white hover:bg-white transition-all">+ Add Progress</button>
-                <button id="submitBtn" onclick="submitLog()" class="flex-1 bg-sky-950 text-white font-black py-4 rounded-[1.5rem] uppercase text-[11px] tracking-[0.4em] shadow-xl hover:bg-black transition-all">Authorize & Submit</button>
+            <div class="flex flex-col gap-3">
+                <button onclick="smartAddTask()" class="bg-white/60 text-sky-700 px-6 py-3 rounded-[1.2rem] font-black text-[10px] uppercase border border-white hover:bg-white transition-all">+ Add Progress</button>
+                <button id="submitBtn" onclick="submitLog()" class="bg-sky-950 text-white font-black py-4 rounded-[1.2rem] uppercase text-[10px] tracking-[0.3em] shadow-xl hover:bg-black transition-all">Authorize & Submit</button>
             </div>
         </div>
 
-        <div id="masterList" class="space-y-8 pb-20"></div>
+        <div id="masterList" class="space-y-6 pb-16"></div>
     </div>
 
     <script>
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const targetWidth = 720;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth / targetWidth;
+
+            if (windowWidth < targetWidth) {
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
+            } else {
+                scaler.style.transform = `scale(1)`;
+                scaler.style.marginBottom = `0px`;
+            }
+        }
+        window.addEventListener('resize', runAutoScale);
+
         const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const STORAGE_KEY = 'techLogs_v4_snow';
         let isEditMode = false;
-        const userNrp = localStorage.getItem('userNRP');
+        const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
         const userName = localStorage.getItem('userName');
 
         window.onload = async () => {
             createSnow();
             setTimeout(() => document.getElementById('splash-screen').classList.add('fade-out'), 1200);
             document.getElementById('nameInp').value = userName;
-            document.getElementById('nikInp').value = userNrp;
+            document.getElementById('nikInp').value = userNik;
             document.getElementById('dateInp').valueAsDate = new Date();
             if(!document.getElementById('detailRowsContainer').children.length) addDetailRow();
             refreshTable();
             pullFromCloud();
+            setTimeout(runAutoScale, 100);
         };
 
         function addDetailRow(timeF = '', timeT = '', desc = '') {
             const container = document.getElementById('detailRowsContainer');
             const div = document.createElement('div');
-            div.className = "grid grid-cols-2 md:flex gap-4 items-start bg-white/40 p-5 rounded-[2.5rem] border border-white shadow-sm";
+            div.className = "flex gap-3 items-start bg-white/40 p-4 rounded-[1.5rem] border border-white shadow-sm";
             div.innerHTML = `
-                <div class="md:w-32"><input type="time" class="header-val text-center !p-2" value="${timeF}"></div>
-                <div class="md:w-32"><input type="time" class="header-val text-center !p-2" value="${timeT}"></div>
-                <div class="col-span-2 md:flex-1"><textarea class="header-val !p-3 min-h-[70px] text-[10px]" placeholder="Input Detail...">${desc}</textarea></div>
-                <button onclick="this.parentElement.remove()" class="text-red-400 font-black p-3 hover:scale-110 transition-transform">&times;</button>
+                <div class="w-24 flex-shrink-0 flex flex-col gap-2">
+                    <input type="time" class="header-val text-center !p-1 text-[11px]" value="${timeF}">
+                    <input type="time" class="header-val text-center !p-1 text-[11px]" value="${timeT}">
+                </div>
+                <div class="flex-1"><textarea class="header-val !p-3 min-h-[60px] text-[11px]" placeholder="Input Detail...">${desc}</textarea></div>
+                <button onclick="this.parentElement.remove()" class="text-red-400 font-black p-1 text-xl">&times;</button>
             `;
             container.appendChild(div);
+            runAutoScale();
         }
 
         function smartAddTask() {
@@ -177,7 +215,7 @@
 
             const logEntry = {
                 id: isEditMode ? parseInt(document.getElementById('editId').value) : Date.now(),
-                date: dateVal, name: userName, nik: userNrp,
+                date: dateVal, name: userName, nik: userNik,
                 customer: document.getElementById('customerInp').value.toUpperCase(),
                 location: document.getElementById('locationInp').value.toUpperCase(),
                 model: document.getElementById('modelInp').value.toUpperCase(), 
@@ -201,45 +239,47 @@
             logs.sort((a,b) => b.id - a.id).forEach(obj => {
                 let chronoRows = (obj.detailData || []).map(item => `
                     <tr>
-                        <td class="cell-time">${item.f} - ${item.t}</td>
+                        <td class="cell-time">${item.f}-${item.t}</td>
                         <td class="description-text">${item.d}</td>
                     </tr>`).join('');
 
                 const section = document.createElement('div');
-                section.className = "glass-glacial rounded-[3.5rem] overflow-hidden mb-8";
+                section.className = "glass-glacial rounded-[2rem] overflow-hidden mb-6";
                 section.innerHTML = `
-                    <div class="bg-sky-500/20 p-4 flex justify-between items-center border-b border-white/50">
-                        <span class="text-[9px] font-black text-sky-900 uppercase tracking-widest italic ml-4">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
-                        <div class="flex gap-6 mr-4">
-                            <button onclick="editLog(${obj.id})" class="text-sky-700 text-[10px] font-black hover:text-sky-500 transition-colors">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="text-red-500 text-[10px] font-black hover:text-red-700 transition-colors">DELETE</button>
+                    <div class="bg-sky-500/20 p-3 flex justify-between items-center border-b border-white/50">
+                        <span class="text-[8px] font-black text-sky-900 uppercase italic ml-2">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
+                        <div class="flex gap-4 mr-2">
+                            <button onclick="editLog(${obj.id})" class="text-sky-700 text-[9px] font-black">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="text-red-500 text-[9px] font-black">DELETE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full min-w-[1200px] border-collapse bg-white/5 table-fixed">
+                        <table class="w-full border-collapse bg-white/5 table-fixed">
                             <thead>
                                 <tr>
-                                    <th style="width: 100px">Date</th>
-                                    <th style="width: 150px">Technician</th>
-                                    <th style="width: 150px">Client</th>
-                                    <th style="width: 150px">Unit</th>
-                                    <th style="width: auto">Activities Progress</th>
+                                    <th style="width: 85px">Date</th>
+                                    <th style="width: 130px">Tech & Client</th>
+                                    <th style="width: 130px">Unit Info</th>
+                                    <th style="width: auto">Progress</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="td-main font-black text-sky-950 text-center">${obj.date}</td>
-                                    <td class="td-main"><b class="text-sky-900">${obj.name}</b><br><span class="text-[10px] italic">NIK: ${obj.nik}</span></td>
-                                    <td class="td-main"><b class="text-sky-900">${obj.customer}</b><br><span class="text-[10px] uppercase font-bold text-sky-600">${obj.location}</span></td>
-                                    <td class="td-main"><b class="text-sky-700">${obj.model}</b><br>SN: ${obj.sn} | HM: ${obj.hm}</td>
+                                    <td class="td-main font-black text-sky-950 text-center text-[10px]">${obj.date}</td>
+                                    <td class="td-main">
+                                        <b class="text-sky-900">${obj.name}</b><br><span class="text-[9px]">NIK: ${obj.nik}</span>
+                                        <hr class="my-1 border-white/30">
+                                        <b class="text-sky-900">${obj.customer}</b><br><span class="text-[9px] text-sky-600 font-bold">${obj.location}</span>
+                                    </td>
+                                    <td class="td-main">
+                                        <span class="text-[9px] font-bold text-slate-800 uppercase block mb-1">${obj.job || '-'}</span>
+                                        <hr class="my-1 border-white/30">
+                                        <b class="text-sky-700 text-[10px]">${obj.model}</b><br>
+                                        <span class="text-[9px]">SN: ${obj.sn}</span><br>
+                                        <span class="text-[9px]">HM: ${obj.hm}</span>
+                                    </td>
                                     <td class="p-0">
-                                        <div class="bg-sky-100/50 p-2 px-4 border-b border-white/30">
-                                            <span class="text-[9px] font-extrabold text-sky-800 uppercase tracking-tighter">General Job:</span>
-                                            <div class="text-[11px] font-bold text-slate-800 uppercase">${obj.job || '-'}</div>
-                                        </div>
-                                        <table class="w-full border-none">
-                                            ${chronoRows}
-                                        </table>
+                                        <table class="w-full border-none">${chronoRows}</table>
                                     </td>
                                 </tr>
                             </tbody>
@@ -247,24 +287,25 @@
                     </div>`;
                 masterList.appendChild(section);
             });
+            runAutoScale();
         }
 
         async function syncToCloud() {
             const btn = document.getElementById('btnSync');
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            btn.innerText = "Syncing..."; btn.disabled = true;
+            btn.innerText = "..."; btn.disabled = true;
             try {
                 const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: { ...l, isSynced: true } }));
                 await sb.from('tech_logs').upsert(payload);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
-                refreshTable(); alert("❄️ Cloud Sync Success!");
+                refreshTable(); alert("❄️ Sync Success!");
             } catch (err) { alert(err.message); }
             finally { btn.innerText = "❄️ Sync"; btn.disabled = false; }
         }
 
         async function pullFromCloud() {
             try {
-                const { data } = await sb.from('tech_logs').select('log_data').eq('nik', userNrp).order('id', { ascending: false });
+                const { data } = await sb.from('tech_logs').select('log_data').eq('nik', userNik).order('id', { ascending: false });
                 if(data) {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(data.map(item => item.log_data)));
                     refreshTable();
@@ -292,10 +333,10 @@
 
         function createSnow() {
             const box = document.getElementById('snow-box');
-            for(let i=0; i<45; i++) {
+            for(let i=0; i<30; i++) {
                 let s = document.createElement('div');
                 s.className = 'snowflake';
-                s.style.width = s.style.height = Math.random() * 5 + 2 + 'px';
+                s.style.width = s.style.height = Math.random() * 4 + 2 + 'px';
                 s.style.left = Math.random() * 100 + 'vw';
                 s.style.animationDuration = Math.random() * 4 + 3 + 's';
                 box.appendChild(s);
@@ -326,18 +367,13 @@
             logs.forEach(l => {
                 l.detailData.forEach((d, i) => {
                     flatData.push([
-                        i === 0 ? l.date : '', 
-                        i === 0 ? l.name : '', 
-                        i === 0 ? l.customer : '', 
-                        i === 0 ? l.model : '', 
-                        i === 0 ? l.job : '', // General Job ditambahkan di sini
-                        `${d.f}-${d.t}`, 
-                        d.d
+                        i === 0 ? l.date : '', i === 0 ? l.name : '', i === 0 ? l.customer : '', 
+                        i === 0 ? l.model : '', i === 0 ? l.job : '', `${d.f}-${d.t}`, d.d
                     ]);
                 });
             });
             doc.autoTable({ 
-                head: [['DATE', 'TECH', 'CLIENT', 'UNIT', 'GENERAL JOB', 'TIME', 'DETAIL']], 
+                head: [['DATE', 'TECH', 'CLIENT', 'UNIT', 'JOB', 'TIME', 'DETAIL']], 
                 body: flatData, 
                 headStyles: { fillColor: [15, 23, 42] },
                 styles: { fontSize: 8 }
@@ -348,14 +384,8 @@
         function exportToExcel() {
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             let flat = logs.flatMap(l => l.detailData.map(d => ({ 
-                Tgl: l.date, 
-                Tech: l.name, 
-                NIK: l.nik,
-                Client: l.customer,
-                Unit: l.model, 
-                GeneralJob: l.job, // General Job ditambahkan di kolom Excel
-                Jam: `${d.f}-${d.t}`, 
-                DetailAktivitas: d.d 
+                Tgl: l.date, Tech: l.name, NIK: l.nik, Client: l.customer,
+                Unit: l.model, Job: l.job, Jam: `${d.f}-${d.t}`, Detail: d.d 
             })));
             const ws = XLSX.utils.json_to_sheet(flat);
             const wb = XLSX.utils.book_new();
