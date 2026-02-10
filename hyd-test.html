@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280, initial-scale=1">
     <title>Hydraulic Test Pro | Hexindo Fleet</title>
     
     <script>
-        // Cek Login: Menggunakan key isLoggedIn dan NIK
+        // Cek Login: Menggunakan key isLoggedIn
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.replace('login.html');
         }
@@ -21,7 +21,11 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            min-height: 100vh; color: #0f172a;
+            min-height: 100vh; 
+            color: #0f172a;
+            /* KUNCI LEBAR DESKTOP */
+            min-width: 1280px;
+            overflow-x: auto;
         }
 
         .glass-glacial { 
@@ -45,14 +49,21 @@
         th { background: #0f172a !important; color: white !important; font-size: 10px; text-transform: uppercase; padding: 12px !important; text-align: center; }
         .std-text { color: #ef4444; font-weight: 800; font-size: 10px; }
 
+        /* Memastikan container tidak mengecil di HP */
+        .main-container {
+            width: 1280px !important;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
         @media print { .no-print { display: none; } .glass-glacial { background: white; border: none; backdrop-filter: none; } }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div class="max-w-[1400px] mx-auto space-y-6">
+    <div class="main-container space-y-6">
         
-        <header class="glass-glacial p-6 rounded-[2.5rem] flex flex-wrap justify-between items-center no-print gap-4">
+        <header class="glass-glacial p-6 rounded-[2.5rem] flex justify-between items-center no-print gap-4">
             <div class="flex items-center gap-4">
                 <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 border border-white hover:bg-white transition-all shadow-sm">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -73,7 +84,7 @@
             <input type="hidden" id="recordId">
 
             <div class="glass-glacial p-8 rounded-[3rem]">
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
+                <div class="grid grid-cols-6 gap-4">
                     <div><label class="header-label">Date</label><input type="date" id="test_date" class="input-glacial"></div>
                     <div><label class="header-label">Nama PIC</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly placeholder="Loading..."></div>
                     <div><label class="header-label">NIK</label><input type="text" id="nik" class="input-glacial font-mono input-readonly" readonly placeholder="Loading..."></div>
@@ -125,7 +136,7 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-3 gap-6">
                 <div class="glass-glacial rounded-[2.5rem] overflow-hidden col-span-1">
                     <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">4. Engine Speed</h3></div>
                     <table class="w-full text-sm">
@@ -176,13 +187,10 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // FUNGSI PENGAMBILAN PROFIL SESUAI INDEX & DAILY-ACTIVITY
         async function loadUserProfile() {
+            // Mengambil NIK sesuai standar aplikasi Anda
             const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
-            if (!userNik) {
-                console.warn("No NIK found in storage");
-                return;
-            }
+            if (!userNik) return;
 
             try {
                 const { data: user, error } = await sb
@@ -191,15 +199,11 @@
                     .eq('nik', userNik)
                     .single();
 
-                if (error) throw error;
-
                 if (user) {
                     document.getElementById('nama_pic').value = user.full_name;
                     document.getElementById('nik').value = user.nik;
                 }
-            } catch (err) {
-                console.error("Error loading profile:", err.message);
-            }
+            } catch (err) { console.error(err); }
         }
 
         window.onload = async () => {
@@ -226,40 +230,32 @@
                 cycle_time_values: Array.from(document.querySelectorAll('.data-cyc')).map(i => i.value)
             };
 
-            let error;
-            if (!id) {
-                const { error: insErr } = await sb.from('pump_performance_reports').insert([record]);
-                error = insErr;
-            } else {
-                const { error: updErr } = await sb.from('pump_performance_reports').update(record).eq('id', id);
-                error = updErr;
-            }
+            const { error } = id 
+                ? await sb.from('pump_performance_reports').update(record).eq('id', id)
+                : await sb.from('pump_performance_reports').insert([record]);
 
             btn.innerText = "Sync to Cloud"; btn.disabled = false;
-            if (error) { alert("Error: " + error.message); } 
+            if (error) alert("Error: " + error.message);
             else { alert("✅ Data Berhasil Sinkron!"); newForm(); fetchData(); }
         }
 
         async function fetchData() {
             const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
-            if (error) return console.error(error);
+            if (error) return;
             const tbody = document.getElementById('dbTableBody');
-            tbody.innerHTML = '';
-            data.forEach(item => {
-                tbody.innerHTML += `
-                    <tr class="border-b border-white/20">
-                        <td class="p-3">${item.test_date}</td>
-                        <td>${item.nama_pic || '-'}</td>
-                        <td class="font-mono text-xs">${item.nik}</td>
-                        <td class="font-bold">${item.unit_model}</td>
-                        <td>${item.serial_number}</td>
-                        <td>${item.hour_meter || '-'}</td>
-                        <td class="p-2 flex gap-2 justify-center">
-                            <button class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
-                            <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick="deleteRecord('${item.id}')">HAPUS</button>
-                        </td>
-                    </tr>`;
-            });
+            tbody.innerHTML = data.map(item => `
+                <tr class="border-b border-white/20">
+                    <td class="p-3">${item.test_date}</td>
+                    <td>${item.nama_pic || '-'}</td>
+                    <td class="font-mono text-xs">${item.nik}</td>
+                    <td class="font-bold">${item.unit_model}</td>
+                    <td>${item.serial_number}</td>
+                    <td>${item.hour_meter || '-'}</td>
+                    <td class="p-2 flex gap-2 justify-center">
+                        <button class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
+                        <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick="deleteRecord('${item.id}')">HAPUS</button>
+                    </td>
+                </tr>`).join('');
         }
 
         function editRecord(item) {
@@ -305,8 +301,7 @@
             const val = parseFloat(el.value);
             const min = parseFloat(el.dataset.min);
             const max = parseFloat(el.dataset.max);
-            if (isNaN(val)) el.classList.remove('is-valid-custom', 'is-invalid-custom');
-            else {
+            if (!isNaN(val)) {
                 el.classList.toggle('is-valid-custom', val >= min && val <= max);
                 el.classList.toggle('is-invalid-custom', val < min || val > max);
             }
@@ -316,8 +311,7 @@
             const val = parseFloat(el.value);
             const target = parseFloat(el.dataset.target);
             const tol = parseFloat(el.dataset.tol);
-            if (isNaN(val)) el.classList.remove('is-valid-custom', 'is-invalid-custom');
-            else {
+            if (!isNaN(val)) {
                 const pass = val >= (target - tol) && val <= (target + tol);
                 el.classList.toggle('is-valid-custom', pass);
                 el.classList.toggle('is-invalid-custom', !pass);
