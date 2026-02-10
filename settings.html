@@ -18,7 +18,8 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
         :root {
-            --base-width: 1280px;
+            /* PAKSA BASIS 720px */
+            --base-width: 720px;
         }
 
         body { 
@@ -32,55 +33,53 @@
             align-items: flex-start;
         }
 
-        /* WRAPPER UTAMA UNTUK DYNAMIC SCALING */
+        /* WRAPPER AUTO-SCALE */
         #scaler-context {
             width: var(--base-width);
             transform-origin: top center;
             transition: transform 0.2s ease-out;
             flex-shrink: 0;
-            padding: 2rem;
+            padding: 1.5rem;
             position: relative;
             z-index: 10;
         }
 
         .glass-ice { 
-            background: rgba(255, 255, 255, 0.4); 
-            backdrop-filter: blur(25px) saturate(150%);
-            -webkit-backdrop-filter: blur(25px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.6); 
-            border-radius: 2.5rem;
-            box-shadow: 0 10px 40px rgba(31, 38, 135, 0.1);
+            background: rgba(255, 255, 255, 0.45); 
+            backdrop-filter: blur(20px) saturate(160%);
+            border: 1px solid rgba(255, 255, 255, 0.7); 
+            border-radius: 2rem;
+            box-shadow: 0 10px 30px rgba(31, 38, 135, 0.08);
         }
 
         .input-glacier {
-            background: rgba(255, 255, 255, 0.5); 
+            background: rgba(255, 255, 255, 0.6); 
             border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 1.25rem; padding: 14px 45px 14px 18px; width: 100%; color: #1e293b; 
-            outline: none; transition: 0.3s;
+            border-radius: 1.25rem; padding: 12px 18px; width: 100%; color: #1e293b; 
+            font-size: 14px; font-weight: 600; outline: none; transition: 0.3s;
         }
         .input-glacier:focus { 
-            border-color: #3b82f6; 
-            background: white;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6; background: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
         }
 
         .btn-glacier { 
-            background: #2563eb;
-            font-weight: 800; padding: 14px; border-radius: 1.5rem; 
-            text-transform: uppercase; font-size: 11px; letter-spacing: 0.15em; 
+            background: #2563eb; font-weight: 800; padding: 14px; border-radius: 1.25rem; 
+            text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; 
             transition: 0.3s; color: white; border: none; cursor: pointer;
         }
-        .btn-glacier:hover { transform: scale(1.02); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); }
+        .btn-glacier:active { transform: scale(0.97); }
 
         .eye-toggle {
             position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
             cursor: pointer; color: #64748b;
         }
 
+        /* Visual Shard Effect */
         .shard {
             position: absolute; background: white; pointer-events: none;
             clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-            opacity: 0.8; animation: shatter 0.7s ease-out forwards; z-index: 100;
+            opacity: 0.8; animation: shatter 0.6s ease-out forwards; z-index: 100;
         }
         @keyframes shatter {
             0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
@@ -90,22 +89,31 @@
 </head>
 <body>
 
-    <div id="scaler-context">
+    <div id="scaler-context" class="space-y-6">
         
-        <header class="flex items-center justify-between mb-8">
+        <header class="flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="index.html" class="h-12 w-12 glass-ice flex items-center justify-center hover:bg-white/60 transition-all">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <a href="index.html" class="h-10 w-10 glass-ice flex items-center justify-center hover:bg-white/60 transition-all">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
-                <h1 class="text-xl font-black italic tracking-tighter uppercase text-slate-800">NIK <span class="text-blue-600">Settings</span></h1>
+                <div>
+                    <h1 class="text-lg font-black italic tracking-tighter uppercase text-slate-800 leading-none">NIK <span class="text-blue-600">Settings</span></h1>
+                    <p class="text-[8px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Configuration Terminal</p>
+                </div>
             </div>
-            <div id="roleBadge" class="px-6 py-2 glass-ice text-[10px] font-black uppercase tracking-widest text-blue-600">Access: Tech</div>
+            <div id="roleBadge" class="px-4 py-2 glass-ice text-[9px] font-black uppercase tracking-widest text-blue-600">Access: ---</div>
         </header>
 
-        <div class="grid grid-cols-2 gap-8 mb-8">
+        <div class="space-y-6">
             
-            <section class="glass-ice p-8">
-                <h2 class="text-xs font-black uppercase text-blue-600 mb-6 tracking-widest italic">Change Password</h2>
+            <section class="glass-ice p-6">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <h2 class="text-[11px] font-black uppercase text-blue-600 tracking-widest">Update NIK Password</h2>
+                </div>
+
                 <form id="changePassForm" class="space-y-4">
                     <div class="relative">
                         <input type="password" id="newPass" class="input-glacier" placeholder="New Password" required>
@@ -119,41 +127,52 @@
                             <svg id="eye-icon-confirmPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </div>
                     </div>
-                    <button type="submit" class="btn-glacier w-full mt-4 ice-trigger">Freeze New Password</button>
+                    <button type="submit" class="btn-glacier w-full mt-2 shard-trigger">❄️ Apply New Password</button>
                 </form>
             </section>
 
-            <section id="adminPanel" class="glass-ice p-8 hidden border-red-200">
-                <h2 class="text-xs font-black uppercase text-red-600 mb-6 tracking-widest italic">Deploy New Technician</h2>
+            <section id="adminPanel" class="glass-ice p-6 hidden border-l-4 border-red-500">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                    </div>
+                    <h2 class="text-[11px] font-black uppercase text-red-600 tracking-widest">Deploy New Technician</h2>
+                </div>
+
                 <form id="addUserForm" class="space-y-4">
-                    <input type="text" id="regNik" class="input-glacier" placeholder="NIK Baru" required>
-                    <input type="text" id="regName" class="input-glacier" placeholder="Full Name" required>
-                    <button type="submit" class="btn-glacier w-full bg-slate-800 !text-white mt-4 ice-trigger">Deploy NIK Record</button>
+                    <input type="text" id="regNik" class="input-glacier" placeholder="Nomor NIK Baru" required>
+                    <input type="text" id="regName" class="input-glacier" placeholder="Nama Lengkap" required>
+                    <button type="submit" class="btn-glacier w-full bg-slate-800 !text-white shard-trigger">Deploy NIK Record</button>
                 </form>
+            </section>
+
+            <section id="userListPanel" class="glass-ice p-6 hidden">
+                <h2 class="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-[0.2em]">NIK Terminal Database</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-400 border-b border-black/5 text-[10px] uppercase font-black">
+                                <th class="pb-3 pr-2">NIK</th>
+                                <th class="pb-3 pr-2">Identity</th>
+                                <th class="pb-3 text-right">Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody" class="divide-y divide-black/5"></tbody>
+                    </table>
+                </div>
             </section>
         </div>
 
-        <section id="userListPanel" class="glass-ice p-8 hidden">
-            <h2 class="text-xs font-black uppercase text-slate-500 mb-6 tracking-widest italic">NIK Terminal Database</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs text-left">
-                    <thead>
-                        <tr class="text-slate-400 border-b border-black/5 uppercase font-black">
-                            <th class="pb-4">NIK</th><th class="pb-4">Name</th><th class="pb-4">Role</th><th class="pb-4 text-right">Control</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody" class="divide-y divide-black/5"></tbody>
-                </table>
-            </div>
-        </section>
-
+        <footer class="text-center pb-4">
+            <p class="text-[8px] font-black text-slate-500 uppercase tracking-widest opacity-60">Hexindo Adaro Project Terminal v2.0</p>
+        </footer>
     </div>
 
     <script>
-        // --- AUTO SCALE ENGINE ---
+        // --- AUTO SCALE ENGINE (720px) ---
         function runAutoScale() {
             const scaler = document.getElementById('scaler-context');
-            const targetWidth = 1280;
+            const targetWidth = 720;
             const windowWidth = window.innerWidth;
             const scaleRatio = windowWidth / targetWidth;
 
@@ -166,6 +185,7 @@
             }
         }
         window.addEventListener('resize', runAutoScale);
+        window.addEventListener('load', runAutoScale);
 
         // --- PASSWORD VISIBILITY ---
         function togglePass(id) {
@@ -180,27 +200,24 @@
             }
         }
 
-        // --- VISUAL EFFECTS ---
-        const iceShatter = (e) => {
-            for (let i = 0; i < 8; i++) {
+        // --- VISUAL SHATTER ---
+        function triggerShatter(e) {
+            for (let i = 0; i < 10; i++) {
                 const shard = document.createElement('div');
                 shard.className = 'shard';
-                const size = Math.random() * 6 + 2;
+                const size = Math.random() * 5 + 2;
                 shard.style.width = size + 'px'; shard.style.height = size + 'px';
                 shard.style.left = e.clientX + 'px'; shard.style.top = e.clientY + 'px';
-                shard.style.setProperty('--x', (Math.random() - 0.5) * 150 + 'px');
-                shard.style.setProperty('--y', (Math.random() - 0.5) * 150 + 'px');
+                shard.style.setProperty('--x', (Math.random() - 0.5) * 160 + 'px');
+                shard.style.setProperty('--y', (Math.random() - 0.5) * 160 + 'px');
                 shard.style.setProperty('--r', Math.random() * 360 + 'deg');
                 document.body.appendChild(shard);
-                setTimeout(() => shard.remove(), 700);
+                setTimeout(() => shard.remove(), 600);
             }
-        };
+        }
+        document.addEventListener('click', (e) => { if(e.target.closest('.shard-trigger')) triggerShatter(e); });
 
-        document.addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON' || e.target.closest('.ice-trigger')) iceShatter(e);
-        });
-
-        // --- SUPABASE LOGIC ---
+        // --- SUPABASE ENGINE ---
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
         const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -215,15 +232,19 @@
                 document.getElementById('userListPanel').classList.remove('hidden');
                 fetchUsers();
             }
-            setTimeout(runAutoScale, 100);
+            setTimeout(runAutoScale, 300);
         };
 
         document.getElementById('changePassForm').onsubmit = async (e) => {
             e.preventDefault();
             const nPass = document.getElementById('newPass').value;
             if (nPass !== document.getElementById('confirmPass').value) return alert("Password mismatch!");
+            
             const { error } = await sb.from('users').update({ password: nPass }).eq('nik', currentNik);
-            if (!error) { alert("NIK Password updated!"); document.getElementById('changePassForm').reset(); }
+            if (!error) { 
+                alert("✅ Success: Password for NIK " + currentNik + " Updated."); 
+                document.getElementById('changePassForm').reset(); 
+            }
         };
 
         document.getElementById('addUserForm').onsubmit = async (e) => {
@@ -235,26 +256,38 @@
                 role: 'technician'
             };
             const { error } = await sb.from('users').insert([payload]);
-            if (!error) { alert("NIK Successfully Deployed!"); fetchUsers(); }
+            if (!error) { 
+                alert("🚀 NIK " + payload.nik + " Deployed Successfully!"); 
+                document.getElementById('addUserForm').reset();
+                fetchUsers(); 
+            } else {
+                alert("Error: " + error.message);
+            }
         };
 
         async function fetchUsers() {
             const { data } = await sb.from('users').select('*').order('full_name');
             const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = data.map(u => `
-                <tr class="hover:bg-white/20 transition-all">
-                    <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
-                    <td class="font-bold uppercase italic">${u.full_name}</td>
-                    <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
+            tbody.innerHTML = (data || []).map(u => `
+                <tr class="hover:bg-white/30 transition-all">
+                    <td class="py-4 text-[12px] font-mono font-bold text-blue-600">${u.nik}</td>
+                    <td>
+                        <div class="text-[12px] font-black uppercase italic">${u.full_name}</div>
+                        <div class="text-[8px] font-bold text-slate-400">${u.role.toUpperCase()}</div>
+                    </td>
                     <td class="text-right">
-                        <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
+                        <button onclick="resetUserPass('${u.nik}')" class="bg-white/60 px-3 py-1.5 rounded-lg text-red-500 font-black text-[9px] border border-white uppercase shadow-sm active:scale-90 transition-all">Reset</button>
                     </td>
                 </tr>`).join('');
+            runAutoScale();
         }
 
         async function resetUserPass(targetNik) {
-            const newPass = prompt("New password for NIK " + targetNik, "hexindo123");
-            if (newPass) await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+            const newPass = prompt("Set temporary password for NIK " + targetNik, "hexindo123");
+            if (newPass) {
+                const { error } = await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+                if (!error) alert("NIK " + targetNik + " has been reset.");
+            }
         }
     </script>
 </body>
