@@ -18,30 +18,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
         
         :root {
-            --base-width: 1280px;
+            --base-width: 720px;
         }
 
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-            min-height: 100vh; 
-            color: #0f172a;
-            margin: 0; padding: 0;
-            overflow-x: hidden; /* Dikunci untuk auto-scaling */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            min-height: 100vh; color: #0f172a; margin: 0; padding: 0;
+            overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start;
         }
 
-        /* CONTAINER UTAMA UNTUK DYNAMIC SCALING */
         #scaler-context {
             width: var(--base-width);
             transform-origin: top center;
             transition: transform 0.2s ease-out;
-            flex-shrink: 0;
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
+            flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
         }
 
         .glass-glacial { 
@@ -52,7 +43,7 @@
         .header-label { font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
         
         .input-glacial { 
-            width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.6); 
+            width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.6); 
             border: 1px solid rgba(255,255,255,0.8); border-radius: 12px;
             font-size: 13px; font-weight: 700; transition: 0.3s; outline: none;
         }
@@ -62,7 +53,7 @@
         .is-valid-custom { border: 2px solid #10b981 !important; background-color: #ecfdf5 !important; }
         .is-invalid-custom { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; }
 
-        th { background: #0f172a !important; color: white !important; font-size: 10px; text-transform: uppercase; padding: 12px !important; text-align: center; }
+        th { background: #0f172a !important; color: white !important; font-size: 9px; text-transform: uppercase; padding: 10px 5px !important; text-align: center; }
         .std-text { color: #ef4444; font-weight: 800; font-size: 10px; }
 
         @media print { .no-print { display: none; } .glass-glacial { background: white; border: none; backdrop-filter: none; } }
@@ -70,135 +61,164 @@
 </head>
 <body>
 
-    <div id="scaler-context" class="space-y-6">
+    <div id="scaler-context" class="space-y-4">
         
-        <header class="glass-glacial p-6 rounded-[2.5rem] flex justify-between items-center no-print gap-4">
-            <div class="flex items-center gap-4">
-                <a href="index.html" class="h-12 w-12 bg-white/60 rounded-2xl flex items-center justify-center text-sky-900 border border-white hover:bg-white transition-all shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <header class="glass-glacial p-5 rounded-[2rem] flex justify-between items-center no-print gap-3">
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="h-10 w-10 bg-white/60 rounded-xl flex items-center justify-center text-sky-900 border border-white shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
                 <div>
-                    <h1 class="text-xl font-black italic text-sky-950 uppercase tracking-tighter leading-none">Hydraulic <span class="text-sky-600">Test Pro</span></h1>
-                    <p class="text-[9px] font-bold text-sky-500 tracking-widest uppercase mt-1">Supabase Cloud Sync Active</p>
+                    <h1 class="text-lg font-black italic text-sky-950 uppercase tracking-tighter leading-none">Hydraulic <span class="text-sky-600">Test Pro</span></h1>
+                    <p class="text-[8px] font-bold text-sky-500 tracking-widest uppercase mt-1">Glacial Pro System Active</p>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button type="button" onclick="window.print()" class="bg-white/60 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">Print PDF</button>
-                <button type="button" onclick="newForm()" class="bg-white/60 text-sky-900 px-4 py-2 rounded-xl font-bold text-[10px] uppercase border border-white">New Form</button>
-                <button type="button" id="btnSave" onclick="saveToCloud()" class="bg-sky-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-sky-500/40">Sync to Cloud</button>
+                <button type="button" onclick="newForm()" class="bg-white/60 text-sky-900 px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-white">New</button>
+                <button type="button" id="btnSave" onclick="saveToCloud()" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase shadow-lg">❄️ Sync</button>
             </div>
         </header>
 
-        <form id="pumpForm" class="space-y-6">
+        <form id="pumpForm" class="space-y-4">
             <input type="hidden" id="recordId">
 
-            <div class="glass-glacial p-8 rounded-[3rem]">
-                <div class="grid grid-cols-6 gap-4">
-                    <div><label class="header-label">Date</label><input type="date" id="test_date" class="input-glacial"></div>
-                    <div><label class="header-label">Nama PIC</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly placeholder="Loading..."></div>
-                    <div><label class="header-label">NIK</label><input type="text" id="nik" class="input-glacial font-mono input-readonly" readonly placeholder="Loading..."></div>
+            <div class="glass-glacial p-6 rounded-[2.5rem]">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-1"><label class="header-label">Date</label><input type="date" id="test_date" class="input-glacial"></div>
+                    <div class="col-span-1"><label class="header-label text-sky-600">NIK (Primary)</label><input type="text" id="nik" class="input-glacial font-mono input-readonly" readonly></div>
+                    <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
                     <div><label class="header-label">Unit Model</label><input type="text" id="unit_model" class="input-glacial" placeholder="EX3600-6"></div>
-                    <div><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial" placeholder="S/N"></div>
-                    <div><label class="header-label">HM</label><input type="number" id="hour_meter" class="input-glacial" placeholder="Hour Meter"></div>
+                    <div><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial" placeholder="SN12345"></div>
+                    <div class="col-span-2"><label class="header-label">Hour Meter (HM)</label><input type="number" id="hour_meter" class="input-glacial" placeholder="0.0"></div>
                 </div>
             </div>
 
-            <div class="glass-glacial rounded-[2.5rem] overflow-hidden">
-                <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">1. Component & Oil History</h3></div>
+            <div class="glass-glacial rounded-[2rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-3 border-b border-white"><h3 class="header-label !mb-0 text-[11px]">1. Component & Oil History</h3></div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
-                            <tr><th style="width: 200px;">PART NAME</th><th>SERIAL NO.</th><th>LIFE HOURS</th><th>MODEL</th><th>REGULATOR</th></tr>
-                        </thead>
-                        <tbody class="bg-white/10">
-                            <tr><td class="p-3 font-bold">ENGINE</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp" value="-"></td></tr>
-                            <tr><td class="p-3 font-bold">PUMP 1-2</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
-                            <tr><td class="p-3 font-bold">PUMP 3-4</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
-                            <tr><td class="p-3 font-bold">PUMP 5-6</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
-                            <tr><td class="p-3 font-bold">PUMP 7-8</td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="number" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td><td><input type="text" class="input-glacial !border-0 bg-transparent data-comp"></td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="glass-glacial rounded-[2.5rem] overflow-hidden">
-                <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">2. Main Relief Pressure (Kgf/cm²)</h3></div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-center">
-                        <thead>
-                            <tr><th>P1</th><th>P2</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th><th>P7</th><th>P8</th><th class="std-text">Standard</th></tr>
-                        </thead>
-                        <tbody class="bg-white/10">
                             <tr>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></td>
-                                <td class="std-text">300-320</td>
+                                <th class="text-left pl-3">Component</th>
+                                <th>Serial</th>
+                                <th>Part No</th>
+                                <th>Lifetime</th>
+                                <th>Model</th>
                             </tr>
+                        </thead>
+                        <tbody class="bg-white/10">
+                            <script>
+                                const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8"];
+                                comps.forEach(c => {
+                                    document.write(`
+                                        <tr class="border-b border-white/20">
+                                            <td class="p-2 font-bold text-[9px] bg-white/20">${c}</td>
+                                            <td><input type="text" class="input-glacial !p-1 !rounded-md !text-[11px] bg-transparent data-comp"></td>
+                                            <td><input type="text" class="input-glacial !p-1 !rounded-md !text-[11px] bg-transparent data-comp"></td>
+                                            <td><input type="number" class="input-glacial !p-1 !rounded-md !text-[11px] bg-transparent data-comp"></td>
+                                            <td><input type="text" class="input-glacial !p-1 !rounded-md !text-[11px] bg-transparent data-comp"></td>
+                                        </tr>
+                                    `);
+                                });
+                            </script>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="grid grid-cols-3 gap-6">
-                <div class="glass-glacial rounded-[2.5rem] overflow-hidden col-span-1">
-                    <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">4. Engine Speed</h3></div>
+            <div class="glass-glacial rounded-[2rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-3 border-b border-white"><h3 class="header-label !mb-0 text-[11px]">2. Main Relief Pressure (Kgf/cm²)</h3></div>
+                <div class="p-4 grid grid-cols-4 gap-3">
+                    <script>
+                        for(let i=1; i<=8; i++) {
+                            document.write(`
+                                <div><label class="text-[9px] font-bold text-slate-500">P${i}</label><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320"></div>
+                            `);
+                        }
+                    </script>
+                </div>
+                <div class="bg-sky-50 px-4 py-2 text-center border-t border-white"><span class="std-text">STANDARD: 300 - 320 Kgf/cm²</span></div>
+            </div>
+
+            <div class="glass-glacial rounded-[2rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-3 border-b border-white"><h3 class="header-label !mb-0 text-[11px]">4. Engine Speed (RPM)</h3></div>
+                <div class="overflow-x-auto">
                     <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-left pl-3">Condition</th>
+                                <th>Standard</th>
+                                <th class="bg-blue-900/50">Before</th>
+                                <th class="bg-emerald-900/50">After</th>
+                            </tr>
+                        </thead>
                         <tbody class="bg-white/10">
-                            <tr class="border-b border-white/30"><td class="p-3 font-bold">Low Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="780" data-max="820"></td></tr>
-                            <tr class="border-b border-white/30"><td class="p-3 font-bold">High Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1850" data-max="1950"></td></tr>
-                            <tr class="border-b border-white/30"><td class="p-3 font-bold">Auto Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1350" data-max="1450"></td></tr>
-                            <tr><td class="p-3 font-bold">Relief Idle</td><td class="p-2"><input type="number" class="input-glacial validate-range data-eng" data-min="1770" data-max="1830"></td></tr>
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold text-[10px]">Low Idle</td><td class="text-center text-[10px] font-bold">780-820</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="780" data-max="820"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="780" data-max="820"></td></tr>
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold text-[10px]">High Idle</td><td class="text-center text-[10px] font-bold">1850-1950</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1850" data-max="1950"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1850" data-max="1950"></td></tr>
+                            <tr class="border-b border-white/30"><td class="p-3 font-bold text-[10px]">Auto Idle</td><td class="text-center text-[10px] font-bold">1350-1450</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1350" data-max="1450"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1350" data-max="1450"></td></tr>
+                            <tr><td class="p-3 font-bold text-[10px]">Relief Idle</td><td class="text-center text-[10px] font-bold">1770-1830</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1770" data-max="1830"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng" data-min="1770" data-max="1830"></td></tr>
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                <div class="glass-glacial rounded-[2.5rem] overflow-hidden col-span-2">
-                    <div class="bg-slate-900/10 p-4 border-b border-white"><h3 class="header-label !mb-0 text-sm">5 & 6. Cycle Time</h3></div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-center text-sm">
-                            <thead><tr><th>Action</th><th>Std</th><th>Before</th><th>After</th></tr></thead>
-                            <tbody class="bg-white/10">
-                                <tr class="border-b border-white/30"><td>Boom Raise</td><td class="std-text">8.2±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="8.2" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="8.2" data-tol="0.5"></td></tr>
-                                <tr class="border-b border-white/30"><td>Arm Roll-in</td><td class="std-text">7.0±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td></tr>
-                                <tr class="border-b border-white/30"><td>Arm Roll-out</td><td class="std-text">7.0±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="7.0" data-tol="0.5"></td></tr>
-                                <tr class="border-b border-white/30"><td>Bucket Roll-in</td><td class="std-text">6.5±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td></tr>
-                                <tr class="border-b border-white/30"><td>Bucket Roll-out</td><td class="std-text">6.5±0.5</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="6.5" data-tol="0.5"></td></tr>
-                                <tr class="border-b border-white/30"><td>Swing RH</td><td class="std-text">57±3</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td></tr>
-                                <tr><td>Swing LH</td><td class="std-text">57±3</td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td><td><input type="number" step="0.1" class="input-glacial text-center validate-tol data-cyc" data-target="57" data-tol="3"></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+            <div class="glass-glacial rounded-[2rem] overflow-hidden">
+                <div class="bg-slate-900/10 p-3 border-b border-white"><h3 class="header-label !mb-0 text-[11px]">5 & 6. Cycle Time (Sec)</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-sm">
+                        <thead><tr><th>Action</th><th>Std</th><th class="bg-blue-900/50">Before</th><th class="bg-emerald-900/50">After</th></tr></thead>
+                        <tbody class="bg-white/10">
+                            <script>
+                                const actions = [
+                                    {n: "Boom Raise", s: "8.2±0.5", t: 8.2, l: 0.5},
+                                    {n: "Arm Roll-in", s: "7.0±0.5", t: 7.0, l: 0.5},
+                                    {n: "Arm Roll-out", s: "7.0±0.5", t: 7.0, l: 0.5},
+                                    {n: "Bucket Roll-in", s: "6.5±0.5", t: 6.5, l: 0.5},
+                                    {n: "Bucket Roll-out", s: "6.5±0.5", t: 6.5, l: 0.5},
+                                    {n: "Swing RH", s: "57±3", t: 57, l: 3},
+                                    {n: "Swing LH", s: "57±3", t: 57, l: 3}
+                                ];
+                                actions.forEach(a => {
+                                    document.write(`
+                                        <tr class="border-b border-white/30">
+                                            <td class="text-[9px] text-left font-bold p-2 bg-white/10">${a.n}</td>
+                                            <td class="std-text">${a.s}</td>
+                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
+                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
+                                        </tr>
+                                    `);
+                                });
+                            </script>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </form>
 
-        <div class="glass-glacial rounded-[3rem] p-8 no-print">
-            <h3 class="header-label text-lg mb-6">Cloud Database (Supabase)</h3>
+        <div class="glass-glacial rounded-[2rem] p-6 no-print">
+            <h3 class="header-label text-sm mb-4">Cloud Sync History</h3>
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-left">
                     <thead>
-                        <tr><th>Date</th><th>Nama</th><th>NIK</th><th>Model</th><th>Serial</th><th>HM</th><th>Action</th></tr>
+                        <tr class="border-b border-white/30 text-[9px] uppercase font-black text-sky-900">
+                            <th class="p-2">Date</th>
+                            <th>Unit / SN</th>
+                            <th>PIC / NIK</th>
+                            <th class="text-center">Action</th>
+                        </tr>
                     </thead>
-                    <tbody id="dbTableBody" class="bg-white/10 text-center"></tbody>
+                    <tbody id="dbTableBody" class="text-[11px]"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // --- AUTO SCALE ENGINE ---
         function runAutoScale() {
             const scaler = document.getElementById('scaler-context');
-            const targetWidth = 1280;
+            const targetWidth = 720;
             const windowWidth = window.innerWidth;
             const scaleRatio = windowWidth / targetWidth;
-
             if (windowWidth < targetWidth) {
                 scaler.style.transform = `scale(${scaleRatio})`;
                 scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
@@ -208,6 +228,7 @@
             }
         }
         window.addEventListener('resize', runAutoScale);
+        window.addEventListener('load', runAutoScale);
 
         const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
@@ -229,7 +250,7 @@
             await loadUserProfile();
             document.getElementById('test_date').valueAsDate = new Date();
             fetchData();
-            setTimeout(runAutoScale, 100);
+            setTimeout(runAutoScale, 300);
         };
 
         async function saveToCloud() {
@@ -254,24 +275,21 @@
                 ? await sb.from('pump_performance_reports').update(record).eq('id', id)
                 : await sb.from('pump_performance_reports').insert([record]);
 
-            btn.innerText = "Sync to Cloud"; btn.disabled = false;
+            btn.innerText = "❄️ Sync"; btn.disabled = false;
             if (error) alert("Error: " + error.message);
-            else { alert("✅ Data Sinkron!"); newForm(); fetchData(); }
+            else { alert("✅ Data Synchronized!"); newForm(); fetchData(); }
         }
 
         async function fetchData() {
-            const { data } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
+            const { data } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false }).limit(10);
             const tbody = document.getElementById('dbTableBody');
             tbody.innerHTML = (data || []).map(item => `
-                <tr class="border-b border-white/20">
-                    <td class="p-3">${item.test_date}</td>
-                    <td>${item.nama_pic || '-'}</td>
-                    <td class="font-mono text-xs">${item.nik}</td>
-                    <td class="font-bold">${item.unit_model}</td>
-                    <td>${item.serial_number}</td>
-                    <td>${item.hour_meter || '-'}</td>
-                    <td class="p-2 flex gap-2 justify-center">
-                        <button class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
+                <tr class="border-b border-white/10 hover:bg-white/20 transition-all">
+                    <td class="p-2 font-bold text-sky-800">${item.test_date}</td>
+                    <td><b>${item.unit_model}</b><br><span class="text-[9px] text-slate-500">${item.serial_number}</span></td>
+                    <td class="text-slate-600">${item.nama_pic || '-'}<br><span class="text-[9px] font-mono">${item.nik}</span></td>
+                    <td class="p-2 text-center">
+                        <button class="bg-sky-600 text-white px-2 py-1 rounded text-[10px] font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
                     </td>
                 </tr>`).join('');
             runAutoScale();
@@ -334,4 +352,4 @@
         document.querySelectorAll('.validate-tol').forEach(i => i.addEventListener('input', () => validateTol(i)));
     </script>
 </body>
-    </html>
+</html>
