@@ -2,12 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Portal Utama | Hexindo Fleet Pro</title>
     <link rel="manifest" href="manifest.json">
     
     <script>
-        // Cek Login: Menggunakan key NIK sesuai preferensi Anda
         if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,43 +15,48 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
+        :root {
+            --base-width: 1280px;
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%); 
             min-height: 100vh; 
-            color: #1e293b; 
-            overflow-x: auto; /* Izinkan scroll horizontal jika layar HP terlalu kecil */
-            position: relative; 
+            margin: 0; padding: 0;
+            overflow-x: hidden; /* Penting untuk auto-scale */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
             visibility: hidden;
-            /* KUNCI LEBAR DESKTOP */
-            min-width: 1280px;
         }
 
-        /* Container utama dikunci agar layout tetap lebar */
-        .main-wrapper {
-            width: 1280px !important;
-            margin: 0 auto;
+        /* CONTAINER UTAMA UNTUK DYNAMIC SCALING */
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0;
             padding: 2rem;
+            position: relative;
+            z-index: 10;
         }
 
         #loadingOverlay { visibility: visible !important; position: fixed; inset: 0; background: #e0eafc; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
-        .crystal-ice { position: fixed; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); width: 3px; height: 25px; top: -50px; z-index: 1; pointer-events: none; animation: iceRain linear infinite; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8)); }
+        .crystal-ice { position: fixed; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); width: 3px; height: 25px; top: -50px; z-index: 1; pointer-events: none; animation: iceRain linear infinite; }
         @keyframes iceRain { 0% { transform: translateY(0) rotate(15deg); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(110vh) rotate(15deg); opacity: 0; } }
         
-        .shatter-piece { position: absolute; background: white; pointer-events: none; z-index: 50; box-shadow: 0 0 10px white; animation: shatterOut 0.6s ease-out forwards; }
-        @keyframes shatterOut { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); opacity: 0; } }
-        
-        .glass-ice { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12); position: relative; z-index: 10; }
+        .glass-ice { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12); }
         
         .menu-card { transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); border-radius: 2.5rem; }
         .menu-card:hover { transform: translateY(-8px); background: rgba(255, 255, 255, 0.8); border-color: #3b82f6; }
         
-        .digital-clock { font-family: 'JetBrains Mono', monospace; }
-        .logo-blend { mix-blend-mode: multiply; filter: contrast(1.2); }
+        .shatter-piece { position: absolute; background: white; pointer-events: none; z-index: 50; animation: shatterOut 0.6s ease-out forwards; }
+        @keyframes shatterOut { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) rotate(var(--dr)); opacity: 0; } }
     </style>
 </head>
-<body class="p-4 flex justify-center">
+<body>
 
     <div id="loadingOverlay">
         <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -61,12 +65,12 @@
 
     <div id="ice-container" class="fixed inset-0 pointer-events-none"></div>
 
-    <div class="main-wrapper space-y-6 relative z-10">
+    <div id="scaler-context">
         
-        <header class="glass-ice rounded-[2.5rem] p-6 flex justify-between items-center gap-4">
+        <header class="glass-ice rounded-[2.5rem] p-6 flex justify-between items-center gap-4 mb-6">
             <div class="flex items-center gap-5">
                 <div class="w-16 h-16 bg-white/40 p-2 rounded-2xl flex items-center justify-center border border-white/60">
-                    <img src="logo.png" alt="Logo" class="w-full h-full object-contain logo-blend">
+                    <img src="logo.png" alt="Logo" class="w-full h-full object-contain mix-blend-multiply">
                 </div>
                 <div>
                     <h1 class="text-xl font-extrabold tracking-tight text-slate-800 uppercase italic leading-none">HEXINDO <span class="text-blue-600">FLEET PRO</span></h1>
@@ -88,10 +92,10 @@
             </div>
         </header>
 
-        <div id="adminSection" class="hidden">
+        <div id="adminSection" class="hidden mb-6">
             <a href="admin-dashboard.html" class="glass-ice rounded-[2.5rem] p-6 border-2 border-red-200 flex items-center justify-between group hover:bg-red-50 transition-all">
                 <div class="flex items-center gap-6">
-                    <div class="w-16 h-16 bg-red-600 rounded-3xl flex items-center justify-center shadow-xl shadow-red-500/20">
+                    <div class="w-16 h-16 bg-red-600 rounded-3xl flex items-center justify-center shadow-xl">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                     </div>
                     <div>
@@ -103,61 +107,47 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-3 gap-6">
-            <div class="col-span-2 p-8 flex flex-col justify-center relative">
+        <div class="grid grid-cols-3 gap-6 mb-6">
+            <div class="col-span-2 p-8 flex flex-col justify-center">
                 <div id="roleBadge" class="bg-white/50 border border-white w-fit px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4">Verifying...</div>
                 <h2 class="text-5xl font-extrabold text-slate-800 leading-tight">Hello, <br><span class="text-blue-600 italic" id="hiName">User</span></h2>
-                <p class="text-slate-600 mt-4 font-semibold italic">Terminal Operasional Aktif. Silakan pilih modul.</p>
             </div>
             <div class="glass-ice rounded-[3rem] p-8 flex flex-col items-center justify-center text-center">
                 <p id="liveDate" class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-2">---</p>
-                <h3 id="liveTime" class="digital-clock text-4xl font-bold text-slate-800">00:00:00</h3>
+                <h3 id="liveTime" class="text-4xl font-bold text-slate-800" style="font-family: 'JetBrains Mono', monospace;">00:00:00</h3>
                 <div class="mt-4 px-4 py-1 bg-blue-600 text-white text-[9px] font-black rounded-full uppercase">Live Sync Active</div>
             </div>
         </div>
 
         <div class="grid grid-cols-4 gap-6">
-            
             <a href="hyd-test.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
+                    <div class="w-14 h-14 bg-sky-500 rounded-2xl flex items-center justify-center mb-6"><svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
                     <h3 class="text-xl font-black text-slate-800 uppercase italic">Hydraulic <span class="text-blue-600">Test</span></h3>
-                    <p class="text-slate-500 mt-2 text-xs font-semibold">Pump Performance & Relief Pressure.</p>
                 </div>
                 <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
 
             <a href="daily-activity.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                    </div>
+                    <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6"><svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg></div>
                     <h3 class="text-xl font-black text-slate-800 uppercase italic">Activity <span class="text-blue-600">Report</span></h3>
-                    <p class="text-slate-500 mt-2 text-xs font-semibold">Maintenance Log & Cloud Sync.</p>
                 </div>
                 <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
 
             <a href="undercarriage.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m10 0a2 2 0 100-4m0 4a2 2 0 110-4M6 20v-2m10 2v-2m-7-4h4"></path></svg>
-                    </div>
+                    <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-6"><svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m10 0a2 2 0 100-4m0 4a2 2 0 110-4M6 20v-2m10 2v-2m-7-4h4"></path></svg></div>
                     <h3 class="text-xl font-black text-slate-800 uppercase italic">UC <span class="text-blue-600">Inspection</span></h3>
-                    <p class="text-slate-500 mt-2 text-xs font-semibold">Wear Analysis & Measurement.</p>
                 </div>
                 <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
 
             <a href="toolbox.html" class="menu-card glass-ice p-8 flex flex-col justify-between group" onmouseenter="triggerShatter(event)">
                 <div class="flex flex-col">
-                    <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
-                        <svg class="w-7 h-7 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
-                    </div>
+                    <div class="w-14 h-14 bg-yellow-400 rounded-2xl flex items-center justify-center mb-6"><svg class="w-7 h-7 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 11-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg></div>
                     <h3 class="text-xl font-black text-slate-800 uppercase italic">Toolbox <span class="text-yellow-600">Pro</span></h3>
-                    <p class="text-slate-500 mt-2 text-xs font-semibold">Inventory & Condition Check.</p>
                 </div>
                 <div class="mt-8 text-[9px] font-black uppercase text-blue-600 flex items-center gap-2">Initialize &rarr;</div>
             </a>
@@ -169,6 +159,23 @@
     </div>
 
     <script>
+        // --- AUTO SCALE ENGINE ---
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const targetWidth = 1280;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth / targetWidth;
+
+            if (windowWidth < targetWidth) {
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
+            } else {
+                scaler.style.transform = `scale(1)`;
+                scaler.style.marginBottom = `0px`;
+            }
+        }
+        window.addEventListener('resize', runAutoScale);
+
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
         const sb = supabase.createClient(SB_URL, SB_KEY);
@@ -197,12 +204,13 @@
 
                 document.body.style.visibility = 'visible';
                 document.getElementById('loadingOverlay').style.display = 'none';
+                runAutoScale();
             } catch (err) { handleLogout(); }
         }
 
         function createIceRain() {
             const container = document.getElementById('ice-container');
-            for (let i = 0; i < 60; i++) {
+            for (let i = 0; i < 40; i++) {
                 const ice = document.createElement('div');
                 ice.className = 'crystal-ice';
                 ice.style.left = Math.random() * 100 + 'vw';
@@ -213,7 +221,7 @@
         }
 
         function triggerShatter(e) {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 6; i++) {
                 const piece = document.createElement('div');
                 piece.className = 'shatter-piece';
                 const size = Math.random() * 5 + 2;
@@ -241,7 +249,8 @@
             initSession(); 
             createIceRain(); 
             setInterval(updateTime, 1000); 
-            updateTime(); 
+            updateTime();
+            setTimeout(runAutoScale, 100);
         };
     </script>
 </body>
