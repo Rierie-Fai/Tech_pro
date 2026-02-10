@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280, initial-scale=1">
     <title>Glacier Settings | Hexindo Fleet Pro</title>
     
     <script>
@@ -21,7 +21,14 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
             min-height: 100vh; color: #1e293b;
-            overflow-x: hidden;
+            min-width: 1280px;
+            overflow-x: auto;
+        }
+
+        .main-container {
+            width: 1280px !important;
+            margin: 0 auto;
+            padding: 2rem;
         }
 
         .glass-ice { 
@@ -36,7 +43,7 @@
         .input-glacier {
             background: rgba(255, 255, 255, 0.5); 
             border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 1.25rem; padding: 14px 18px; width: 100%; color: #1e293b; 
+            border-radius: 1.25rem; padding: 14px 45px 14px 18px; width: 100%; color: #1e293b; 
             outline: none; transition: 0.3s;
         }
         .input-glacier:focus { 
@@ -57,6 +64,17 @@
             box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
         }
 
+        .eye-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #64748b;
+            transition: 0.2s;
+        }
+        .eye-toggle:hover { color: #2563eb; }
+
         .shard {
             position: absolute; background: white; pointer-events: none;
             clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
@@ -69,9 +87,9 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8 flex justify-center">
+<body class="p-4 flex justify-center">
 
-    <div class="max-w-4xl w-full space-y-6 relative z-10">
+    <div class="main-container space-y-6 relative z-10">
         
         <header class="flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -83,13 +101,29 @@
             <div id="roleBadge" class="px-6 py-2 glass-ice text-[10px] font-black uppercase tracking-widest text-blue-600">Loading...</div>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-2 gap-8">
             
             <section class="glass-ice p-8">
                 <h2 class="text-xs font-black uppercase text-blue-600 mb-6 tracking-widest italic">Change Password</h2>
                 <form id="changePassForm" class="space-y-4">
-                    <input type="password" id="newPass" class="input-glacier" placeholder="New Password" required>
-                    <input type="password" id="confirmPass" class="input-glacier" placeholder="Confirm Password" required>
+                    <div class="relative">
+                        <input type="password" id="newPass" class="input-glacier" placeholder="New Password" required>
+                        <div class="eye-toggle" onclick="togglePass('newPass')">
+                            <svg id="eye-icon-newPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <input type="password" id="confirmPass" class="input-glacier" placeholder="Confirm Password" required>
+                        <div class="eye-toggle" onclick="togglePass('confirmPass')">
+                            <svg id="eye-icon-confirmPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </div>
+                    </div>
                     <button type="submit" class="btn-glacier w-full mt-4 ice-trigger">Freeze New Password</button>
                 </form>
             </section>
@@ -121,7 +155,23 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE ---
+        // --- TOGGLE PASSWORD VISIBILITY ---
+        function togglePass(id) {
+            const input = document.getElementById(id);
+            const icon = document.getElementById('eye-icon-' + id);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                // Ubah Icon ke Mata Coret (Hidden)
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
+            } else {
+                input.type = 'password';
+                // Kembali ke Icon Mata Normal
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            }
+        }
+
+        // --- AUDIO & VISUAL ENGINE ---
         const playIceSound = () => {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -154,20 +204,22 @@
         };
 
         document.addEventListener('click', (e) => {
+            // Abaikan shatter jika yang diklik adalah toggle mata
+            if (e.target.closest('.eye-toggle')) return;
+            
             if (e.target.tagName === 'BUTTON' || e.target.classList.contains('ice-trigger')) {
                 iceShatter(e);
             }
         });
 
-        // --- SUPABASE LOGIC ---
+        // --- SUPABASE & NIK LOGIC ---
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        const currentNik = localStorage.getItem('userNRP');
+        
+        const currentNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
         const userRole = localStorage.getItem('userRole');
 
-        const sb = supabase.createClient(SB_URL, SB_KEY, {
-            global: { headers: { 'x-user-nik': currentNik } }
-        });
+        const sb = supabase.createClient(SB_URL, SB_KEY);
 
         window.onload = () => {
             document.getElementById('roleBadge').innerText = (userRole || 'TECH').toUpperCase() + " ACCESS";
@@ -178,7 +230,6 @@
             }
         };
 
-        // GANTI PASSWORD SENDIRI
         document.getElementById('changePassForm').onsubmit = async (e) => {
             e.preventDefault();
             const nPass = document.getElementById('newPass').value;
@@ -186,10 +237,15 @@
 
             const { error } = await sb.from('users').update({ password: nPass }).eq('nik', currentNik);
             if (error) alert(error.message);
-            else { alert("✅ Password updated!"); document.getElementById('changePassForm').reset(); }
+            else { 
+                alert("✅ Password updated!"); 
+                document.getElementById('changePassForm').reset();
+                // Kembalikan tipe input ke password jika habis reset
+                document.getElementById('newPass').type = 'password';
+                document.getElementById('confirmPass').type = 'password';
+            }
         };
 
-        // ADMIN: TAMBAH TEKNISI
         document.getElementById('addUserForm').onsubmit = async (e) => {
             e.preventDefault();
             const payload = {
@@ -208,7 +264,6 @@
             }
         };
 
-        // FETCH DATA TABLE
         async function fetchUsers() {
             const { data, error } = await sb.from('users').select('*').order('full_name');
             if (!error) {
@@ -226,7 +281,6 @@
             }
         }
 
-        // RESET PASS TEKNISI LAIN
         async function resetUserPass(targetNik) {
             const newPass = prompt("Set password baru untuk NIK " + targetNik, "hexindo123");
             if (newPass) {
@@ -235,15 +289,5 @@
             }
         }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('Glacier Service Worker: Active', reg))
-        .catch(err => console.log('Glacier Service Worker: Failed', err));
-    });
-  }
-</script>
-
 </body>
 </html>
