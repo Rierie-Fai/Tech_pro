@@ -2,11 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hydraulic Test Pro | Hexindo Fleet</title>
     
     <script>
-        // Cek Login: Menggunakan key isLoggedIn
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.replace('login.html');
         }
@@ -18,14 +17,31 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap');
         
+        :root {
+            --base-width: 1280px;
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
             min-height: 100vh; 
             color: #0f172a;
-            /* KUNCI LEBAR DESKTOP */
-            min-width: 1280px;
-            overflow-x: auto;
+            margin: 0; padding: 0;
+            overflow-x: hidden; /* Dikunci untuk auto-scaling */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        /* CONTAINER UTAMA UNTUK DYNAMIC SCALING */
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
         }
 
         .glass-glacial { 
@@ -49,19 +65,12 @@
         th { background: #0f172a !important; color: white !important; font-size: 10px; text-transform: uppercase; padding: 12px !important; text-align: center; }
         .std-text { color: #ef4444; font-weight: 800; font-size: 10px; }
 
-        /* Memastikan container tidak mengecil di HP */
-        .main-container {
-            width: 1280px !important;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
         @media print { .no-print { display: none; } .glass-glacial { background: white; border: none; backdrop-filter: none; } }
     </style>
 </head>
 <body>
 
-    <div class="main-container space-y-6">
+    <div id="scaler-context" class="space-y-6">
         
         <header class="glass-glacial p-6 rounded-[2.5rem] flex justify-between items-center no-print gap-4">
             <div class="flex items-center gap-4">
@@ -183,22 +192,32 @@
     </div>
 
     <script>
+        // --- AUTO SCALE ENGINE ---
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const targetWidth = 1280;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth / targetWidth;
+
+            if (windowWidth < targetWidth) {
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
+            } else {
+                scaler.style.transform = `scale(1)`;
+                scaler.style.marginBottom = `0px`;
+            }
+        }
+        window.addEventListener('resize', runAutoScale);
+
         const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function loadUserProfile() {
-            // Mengambil NIK sesuai standar aplikasi Anda
             const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
             if (!userNik) return;
-
             try {
-                const { data: user, error } = await sb
-                    .from('users')
-                    .select('full_name, nik')
-                    .eq('nik', userNik)
-                    .single();
-
+                const { data: user } = await sb.from('users').select('full_name, nik').eq('nik', userNik).single();
                 if (user) {
                     document.getElementById('nama_pic').value = user.full_name;
                     document.getElementById('nik').value = user.nik;
@@ -210,6 +229,7 @@
             await loadUserProfile();
             document.getElementById('test_date').valueAsDate = new Date();
             fetchData();
+            setTimeout(runAutoScale, 100);
         };
 
         async function saveToCloud() {
@@ -236,14 +256,13 @@
 
             btn.innerText = "Sync to Cloud"; btn.disabled = false;
             if (error) alert("Error: " + error.message);
-            else { alert("✅ Data Berhasil Sinkron!"); newForm(); fetchData(); }
+            else { alert("✅ Data Sinkron!"); newForm(); fetchData(); }
         }
 
         async function fetchData() {
-            const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
-            if (error) return;
+            const { data } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
             const tbody = document.getElementById('dbTableBody');
-            tbody.innerHTML = data.map(item => `
+            tbody.innerHTML = (data || []).map(item => `
                 <tr class="border-b border-white/20">
                     <td class="p-3">${item.test_date}</td>
                     <td>${item.nama_pic || '-'}</td>
@@ -253,9 +272,9 @@
                     <td>${item.hour_meter || '-'}</td>
                     <td class="p-2 flex gap-2 justify-center">
                         <button class="bg-sky-600 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick='editRecord(${JSON.stringify(item)})'>EDIT</button>
-                        <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-xs font-bold" onclick="deleteRecord('${item.id}')">HAPUS</button>
                     </td>
                 </tr>`).join('');
+            runAutoScale();
         }
 
         function editRecord(item) {
@@ -280,13 +299,6 @@
             item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateTol(cyc[i]); } });
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function deleteRecord(id) {
-            if(confirm("Hapus data dari Cloud?")) {
-                await sb.from('pump_performance_reports').delete().eq('id', id);
-                fetchData();
-            }
         }
 
         function newForm() {
@@ -322,4 +334,4 @@
         document.querySelectorAll('.validate-tol').forEach(i => i.addEventListener('input', () => validateTol(i)));
     </script>
 </body>
-</html>
+    </html>
