@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Toolbox Pro | NIK Terminal</title>
-    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
         :root {
-            --base-width: 1280px;
+            /* PAKSA BASIS 720px */
+            --base-width: 720px;
         }
 
         html { display: none; }
@@ -19,162 +19,161 @@
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden; /* Penting untuk auto-scale */
+            min-height: 100vh; margin: 0; padding: 0;
+            overflow-x: hidden;
             display: flex;
             justify-content: center;
             align-items: flex-start;
         }
 
-        /* CONTAINER UTAMA UNTUK DYNAMIC SCALING */
+        /* CONTAINER AUTO-SCALE */
         #scaler-context {
             width: var(--base-width);
             transform-origin: top center;
             transition: transform 0.2s ease-out;
             flex-shrink: 0;
-            padding: 30px 20px;
+            padding: 20px;
             position: relative;
             z-index: 10;
         }
 
-        /* --- SNOW ENGINE --- */
-        .snow-storm {
-            position: fixed; top: -50px; background: white; border-radius: 50%;
-            z-index: 1; pointer-events: none; animation: stormRun linear infinite;
-            filter: blur(1px); box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
-        }
-        @keyframes stormRun {
-            0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: translateY(110vh) translateX(100px) scale(0.5); opacity: 0; }
-        }
-
         .glass-ice {
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.7); box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
+            border-radius: 2rem;
         }
 
         .input-glass {
-            background: rgba(255, 255, 255, 0.6) !important;
-            border: 1px solid rgba(255, 255, 255, 0.8) !important;
-            border-radius: 12px; padding: 10px 14px; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 1rem; padding: 12px; font-size: 14px; font-weight: 700;
         }
 
-        .scroll-area { height: 500px; overflow-y: auto; }
+        .scroll-area { max-height: 600px; overflow-y: auto; }
 
         th { 
-            background: rgba(255, 255, 255, 0.9); position: sticky; top: 0; z-index: 20;
-            font-size: 9px; text-transform: uppercase; padding: 12px 8px; 
-            border-bottom: 2px solid rgba(59, 130, 246, 0.2);
+            background: rgba(255, 255, 255, 0.95); position: sticky; top: 0; z-index: 20;
+            font-size: 10px; text-transform: uppercase; padding: 12px 8px; 
+            border-bottom: 2px solid rgba(59, 130, 246, 0.1);
         }
 
-        .row-highlight { background-color: rgba(239, 68, 68, 0.3) !important; outline: 2px solid #ef4444; }
-        input[type="radio"] { width: 22px; height: 22px; cursor: pointer; accent-color: #2563eb; }
+        input[type="radio"] { width: 24px; height: 24px; cursor: pointer; accent-color: #2563eb; }
+
+        /* SNOW EFFECT */
+        .snow-storm {
+            position: fixed; top: -50px; background: white; border-radius: 50%;
+            z-index: 1; pointer-events: none; animation: stormRun linear infinite;
+            filter: blur(1px); opacity: 0.6;
+        }
+        @keyframes stormRun {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            20% { opacity: 0.8; }
+            100% { transform: translateY(110vh) translateX(50px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
 <div id="storm-container" class="fixed inset-0 pointer-events-none"></div>
 
-<div id="scaler-context">
+<div id="scaler-context" class="space-y-6">
     
-    <header class="glass-ice p-6 rounded-[2.5rem] flex justify-between items-center mb-6">
+    <header class="glass-ice p-5 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <button onclick="window.location.href='index.html'" class="h-12 w-12 bg-white/70 hover:bg-white rounded-2xl flex items-center justify-center text-slate-700 transition-all shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            <button onclick="window.location.href='index.html'" class="h-10 w-10 bg-white/70 rounded-xl flex items-center justify-center text-blue-600 transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </button>
             <div>
-                <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Toolbox <span class="text-blue-600">Pro</span></h1>
-                <p id="roleText" class="text-[10px] text-blue-600 font-bold uppercase tracking-widest mt-1">NIK: LOADING...</p>
+                <h1 class="text-xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Toolbox <span class="text-blue-600">Pro</span></h1>
+                <p id="roleText" class="text-[9px] text-blue-600 font-bold uppercase tracking-widest mt-1">NIK: LOADING...</p>
             </div>
         </div>
-        <div id="currentMonthBadge" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase shadow-xl">FEB 2026</div>
+        <div id="currentMonthBadge" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg">FEB 2026</div>
     </header>
 
-    <div class="grid grid-cols-3 gap-6 mb-6">
-        <div class="glass-ice p-6 rounded-[2rem] text-center border-b-4 border-emerald-500">
-            <span class="block text-4xl font-black text-emerald-600" id="countB">0</span>
-            <span class="text-[10px] font-bold text-slate-500 uppercase">Kondisi Baik</span>
+    <div class="grid grid-cols-3 gap-3">
+        <div class="glass-ice p-4 text-center border-b-4 border-emerald-500">
+            <span class="block text-2xl font-black text-emerald-600" id="countB">0</span>
+            <span class="text-[8px] font-bold text-slate-500 uppercase">Baik</span>
         </div>
-        <div class="glass-ice p-6 rounded-[2rem] text-center border-b-4 border-yellow-500">
-            <span class="block text-4xl font-black text-yellow-600" id="countR">0</span>
-            <span class="text-[10px] font-bold text-slate-500 uppercase">Rusak</span>
+        <div class="glass-ice p-4 text-center border-b-4 border-yellow-500">
+            <span class="block text-2xl font-black text-yellow-600" id="countR">0</span>
+            <span class="text-[8px] font-bold text-slate-500 uppercase">Rusak</span>
         </div>
-        <div class="glass-ice p-6 rounded-[2rem] text-center border-b-4 border-red-500">
-            <span class="block text-4xl font-black text-red-600" id="countH">0</span>
-            <span class="text-[10px] font-bold text-slate-500 uppercase">Hilang</span>
+        <div class="glass-ice p-4 text-center border-b-4 border-red-500">
+            <span class="block text-2xl font-black text-red-600" id="countH">0</span>
+            <span class="text-[8px] font-bold text-slate-500 uppercase">Hilang</span>
         </div>
     </div>
 
-    <div class="glass-ice p-8 rounded-[3rem] grid grid-cols-4 gap-6 mb-6">
+    <div class="glass-ice p-6 space-y-4">
         <input type="hidden" id="editingId">
-        <div>
-            <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">NIK Teknisi</label>
-            <input type="text" id="asset" class="input-glass w-full font-mono text-blue-700 font-bold" readonly>
-        </div>
-        <div>
-            <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Nama Lengkap</label>
-            <input type="text" id="pic" class="input-glass w-full uppercase font-bold" readonly>
-        </div>
-        <div>
-            <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Tanggal</label>
-            <input type="date" id="tgl" onchange="updateMonthBadge()" class="input-glass w-full font-bold">
-        </div>
-        <div>
-            <label class="text-[10px] font-black uppercase text-slate-500 mb-2 block">Lokasi</label>
-            <input type="text" id="branch" value="ADARO PROJECT" class="input-glass w-full font-bold" readonly>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-4 gap-4 mb-6">
-        <button onclick="prosesSimpan()" id="btnSubmit" class="bg-blue-600 text-white p-4 rounded-2xl font-black text-[11px] uppercase shadow-xl hover:bg-blue-700">☁️ Sync NIK</button>
-        <button onclick="fetchHistory()" class="bg-white/80 text-slate-700 p-4 rounded-2xl font-black text-[11px] uppercase border border-white">🔄 Pull Records</button>
-        <button onclick="checkAllBaik()" class="bg-emerald-500 text-white p-4 rounded-2xl font-black text-[11px] uppercase shadow-lg">✅ All Baik</button>
-        <button onclick="resetForm()" class="bg-slate-800 text-white p-4 rounded-2xl font-black text-[11px] uppercase">➕ New Form</button>
-    </div>
-
-    <div class="grid grid-cols-2 gap-6 mb-6">
-        <div class="glass-ice rounded-[2.5rem] overflow-hidden">
-            <div class="scroll-area p-2">
-                <table class="w-full">
-                    <thead><tr><th width="40">No</th><th class="text-left">Item Tools (1-53)</th><th width="45">B</th><th width="45">R</th><th width="45">H</th></tr></thead>
-                    <tbody id="area1" class="text-[11px]"></tbody>
-                </table>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block ml-1">NIK Teknisi</label>
+                <input type="text" id="asset" class="input-glass w-full font-mono text-blue-700" readonly>
+            </div>
+            <div>
+                <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block ml-1">Tanggal</label>
+                <input type="date" id="tgl" onchange="updateMonthBadge()" class="input-glass w-full">
             </div>
         </div>
-        <div class="glass-ice rounded-[2.5rem] overflow-hidden">
-            <div class="scroll-area p-2">
-                <table class="w-full">
-                    <thead><tr><th width="40">No</th><th class="text-left">Item Tools (54-106)</th><th width="45">B</th><th width="45">R</th><th width="45">H</th></tr></thead>
-                    <tbody id="area2" class="text-[11px]"></tbody>
-                </table>
-            </div>
+        <div>
+            <label class="text-[9px] font-black uppercase text-slate-400 mb-1 block ml-1">Nama Lengkap</label>
+            <input type="text" id="pic" class="input-glass w-full uppercase" readonly>
         </div>
     </div>
 
-    <div class="glass-ice p-8 rounded-[3rem]">
-        <h3 class="text-xs font-black uppercase italic tracking-widest text-slate-800 mb-6 flex items-center gap-2">
-            <span class="w-2 h-6 bg-blue-600 rounded-full"></span> 📋 NIK Cloud Repository
+    <div class="grid grid-cols-2 gap-3">
+        <button onclick="prosesSimpan()" id="btnSubmit" class="bg-blue-600 text-white p-4 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">☁️ Sync NIK Cloud</button>
+        <button onclick="checkAllBaik()" class="bg-emerald-500 text-white p-4 rounded-2xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">✅ Set All Baik</button>
+        <button onclick="fetchHistory()" class="bg-white text-slate-700 p-4 rounded-2xl font-black text-[10px] uppercase border border-blue-100 active:scale-95 transition-all">🔄 Pull History</button>
+        <button onclick="resetForm()" class="bg-slate-800 text-white p-4 rounded-2xl font-black text-[10px] uppercase active:scale-95 transition-all">➕ Reset Form</button>
+    </div>
+
+    <div class="glass-ice overflow-hidden">
+        <div class="p-4 bg-white/50 border-b border-white/50 flex justify-between items-center">
+            <span class="text-[10px] font-black uppercase italic text-slate-800">Inspection Checklist</span>
+            <span class="text-[9px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">106 Items</span>
+        </div>
+        <div class="scroll-area">
+            <table class="w-full">
+                <thead>
+                    <tr>
+                        <th width="50">No</th>
+                        <th class="text-left">Item Name</th>
+                        <th width="50">B</th>
+                        <th width="50">R</th>
+                        <th width="50">H</th>
+                    </tr>
+                </thead>
+                <tbody id="toolTableBody" class="text-[11px] font-bold uppercase divide-y divide-white/40"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="glass-ice p-6">
+        <h3 class="text-[10px] font-black uppercase italic tracking-widest text-slate-800 mb-4 flex items-center gap-2">
+            <span class="w-1.5 h-4 bg-blue-600 rounded-full"></span> Recent NIK Logs
         </h3>
-        <table class="w-full text-[11px]">
-            <thead>
-                <tr class="text-left text-[9px] uppercase text-slate-400 border-b border-white/50">
-                    <th class="py-4">Date</th><th>NIK</th><th>Name</th><th>Status</th><th class="text-right">Action</th>
-                </tr>
-            </thead>
-            <tbody id="histBody" class="font-bold"></tbody>
-        </table>
-        <div id="loader" class="hidden text-center p-10 font-black text-blue-600 italic animate-pulse">SYNCING...</div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-[10px]">
+                <tbody id="histBody" class="divide-y divide-black/5"></tbody>
+            </table>
+        </div>
+        <div id="loader" class="hidden text-center py-4 font-black text-blue-600 italic animate-pulse text-[10px]">SYNCING DATABASE...</div>
     </div>
+
+    <footer class="text-center pb-8">
+        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">© 2026 PT HEXINDO ADARO | SECURE NIK TERMINAL</p>
+    </footer>
 </div>
 
 <script>
-    // --- ENGINE AUTO SCALE ---
+    // --- AUTO SCALE (720px) ---
     function runAutoScale() {
         const scaler = document.getElementById('scaler-context');
-        const targetWidth = 1280;
+        const targetWidth = 720;
         const windowWidth = window.innerWidth;
         const scaleRatio = windowWidth / targetWidth;
 
@@ -188,39 +187,43 @@
     }
     window.addEventListener('resize', runAutoScale);
 
-    // --- SNOW ENGINE ---
-    function initSnowStorm() {
+    // --- SNOW ---
+    function initSnow() {
         const container = document.getElementById('storm-container');
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 30; i++) {
             const flake = document.createElement('div');
             flake.className = 'snow-storm';
-            const size = Math.random() * 5 + 2;
+            const size = Math.random() * 4 + 2;
             flake.style.width = size + 'px'; flake.style.height = size + 'px';
             flake.style.left = Math.random() * 100 + 'vw';
-            flake.style.animationDuration = (Math.random() * 2 + 1) + 's';
+            flake.style.animationDuration = (Math.random() * 3 + 2) + 's';
             flake.style.animationDelay = (Math.random() * 5) + 's';
             container.appendChild(flake);
         }
     }
 
-    // --- DATA & SUPABASE ---
+    // --- SUPABASE & LOGIC ---
     const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
     const sbClient = supabase.createClient(SB_URL, SB_KEY);
 
-    const userNrp = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
+    const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
     const userName = localStorage.getItem('userName');
     const userRole = localStorage.getItem('userRole') || 'technician';
 
     const listAlat = ["Adjustable wrench L=12\"", "Adjustable wrench pipe L=10\"", "Allen key 12mm", "Allen key 14mm", "Allen key 17mm", "Allen key set 2-10mm", "Brush steel W=30mm", "Catridge belt wrench 125mm", "Chisel plate W=11 L=140mm", "Combination wrench 24mm", "Combination wrench 27mm", "Combination wrench 30mm", "Combination wrench 32mm", "Combination wrench 36mm", "Combination wrench 41mm", "Extention socket 1/2\" L=10\"", "Extention socket 1/2\" L=5\"", "Extention socket 3/4\" L=18\"", "Extention socket 3/4\" L=8\"", "Extention socket 1/2\" U-joint", "Feeler gauge set", "Files set (5 pcs) 150mm", "Files plate type 250mm", "Files round type 250mm", "Haksaw iron & blade", "Half moon wrench 14x17", "Half moon wrench 19x22", "Hammer besi 0.5kg", "Hammer karet 0.5kg", "Hammer plastik 0.5kg", "Handle socket T 1/2\"", "Handle socket T 3/4\"", "Handle rachet 1/2\"", "Handle rachet 3/4\"", "Magnetic stick L=50cm", "Multitester CD 800", "Open end 6x7", "Open end 8x9", "Open end 10x11", "Open end 12x13", "Open end 14x15", "Open end 16x17", "Open end 18x19", "Open end 20x22", "Open end 24x26", "Open end 36x41", "Paint brush", "Pliers combination 200mm", "Pliers side cutting 200mm", "Pliers water pump", "Pliers viece grip", "Pliers snap ring (in)", "Pliers snap ring (out)", "Pry bar L=40cm", "Punch drift 150mm", "Punch center 130mm", "Ring spanner 6x7", "Ring spanner 8x9", "Ring spanner 10x11", "Ring spanner 12x13", "Ring spanner 14x15", "Ring spanner 16x17", "Ring spanner 18x19", "Ring spanner 20x22", "Ring spanner 24x26", "Scale meter roll 2.5m", "Scrape blade W=25mm", "Screw drive plus 75mm", "Screw drive plus 100mm", "Screw drive plus 125mm", "Screw drive plus 150mm", "Screw drive plate 75mm", "Screw drive plate 100mm", "Screw drive plate 150mm", "Screw drive plate 200mm", "Socket (12) 1/2\" 10mm", "Socket (12) 1/2\" 11mm", "Socket (12) 1/2\" 12mm", "Socket (12) 1/2\" 13mm", "Socket (12) 1/2\" 14mm", "Socket (12) 1/2\" 15mm", "Socket (12) 1/2\" 16mm", "Socket (12) 1/2\" 17mm", "Socket (12) 1/2\" 18mm", "Socket (12) 1/2\" 19mm", "Socket (12) 1/2\" 20mm", "Socket (12) 1/2\" 21mm", "Socket (12) 1/2\" 22mm", "Socket (12) 3/4\" 22mm", "Socket (12) 3/4\" 23mm", "Socket (12) 3/4\" 24mm", "Socket (12) 3/4\" 27mm", "Socket (12) 3/4\" 28mm", "Socket (12) 3/4\" 29mm", "Socket (12) 3/4\" 30mm", "Socket (12) 3/4\" 32mm", "Socket (12) 3/4\" 36mm", "Socket (12) 3/4\" 38mm", "Socket (12) 3/4\" 41mm", "Socket (12) 3/4\" 46mm", "Stop watch digital", "Thermometer 0-200C", "Treeds gauge set", "Tools box 3 step", "Test pen DC", "Vernier caliper 150mm"];
 
     function initTable() {
-        const a1 = document.getElementById('area1'), a2 = document.getElementById('area2');
-        listAlat.forEach((name, i) => {
-            const no = i + 1;
-            const html = `<tr><td class="text-center py-2">${no}</td><td class="font-bold uppercase">${name}</td><td class="text-center"><input type="radio" name="t-${no}" value="B" onclick="refreshSummary()"></td><td class="text-center"><input type="radio" name="t-${no}" value="R" onclick="refreshSummary()"></td><td class="text-center"><input type="radio" name="t-${no}" value="H" onclick="refreshSummary()"></td></tr>`;
-            if(no <= 53) a1.innerHTML += html; else a2.innerHTML += html;
-        });
+        const tbody = document.getElementById('toolTableBody');
+        tbody.innerHTML = listAlat.map((name, i) => `
+            <tr class="hover:bg-blue-50/50 transition-colors">
+                <td class="text-center py-4 text-slate-400 font-mono text-[9px]">${i + 1}</td>
+                <td class="pr-2 leading-tight">${name}</td>
+                <td class="text-center"><input type="radio" name="t-${i+1}" value="B" onclick="refreshSummary()"></td>
+                <td class="text-center"><input type="radio" name="t-${i+1}" value="R" onclick="refreshSummary()"></td>
+                <td class="text-center"><input type="radio" name="t-${i+1}" value="H" onclick="refreshSummary()"></td>
+            </tr>
+        `).join('');
     }
 
     function refreshSummary() {
@@ -252,39 +255,59 @@
     async function fetchHistory() {
         document.getElementById('loader').classList.remove('hidden');
         let q = sbClient.from('toolbox_reports').select('*');
-        if (userRole !== 'admin') q = q.eq('nik', userNrp);
-        const { data } = await q.order('check_date', { ascending: false }).limit(10);
+        if (userRole !== 'admin') q = q.eq('nik', userNik);
+        const { data } = await q.order('check_date', { ascending: false }).limit(5);
         document.getElementById('loader').classList.add('hidden');
+        
         const hBody = document.getElementById('histBody');
-        hBody.innerHTML = "";
-        data?.forEach(row => {
+        hBody.innerHTML = (data || []).map(row => {
             const b = row.items_data.filter(x => x==='B').length;
             const r = row.items_data.filter(x => x==='R').length;
             const h = row.items_data.filter(x => x==='H').length;
-            hBody.innerHTML += `<tr class="border-b border-white/30 hover:bg-white/20 transition-all"><td class="py-4 text-slate-600">${row.check_date}</td><td class="font-mono text-blue-600">${row.nik}</td><td class="uppercase">${row.pic_name}</td><td>B:${b} R:${r} H:${h}</td><td class="text-right"><button onclick='loadData(${JSON.stringify(row)})' class="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[9px] uppercase font-black">Edit</button></td></tr>`;
-        });
+            return `
+                <tr class="hover:bg-white/40 transition-all">
+                    <td class="py-3">
+                        <div class="font-black text-slate-800">${row.check_date}</div>
+                        <div class="text-[8px] text-blue-600 font-mono">${row.nik}</div>
+                    </td>
+                    <td class="py-3">
+                        <div class="flex gap-2">
+                            <span class="text-emerald-600">B:${b}</span>
+                            <span class="text-yellow-600">R:${r}</span>
+                            <span class="text-red-600">H:${h}</span>
+                        </div>
+                    </td>
+                    <td class="text-right py-3">
+                        <button onclick='loadData(${JSON.stringify(row)})' class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[8px] font-black uppercase shadow-sm">Edit</button>
+                    </td>
+                </tr>`;
+        }).join('');
     }
 
     async function prosesSimpan() {
         const vals = listAlat.map((_, i) => document.querySelector(`input[name="t-${i+1}"]:checked`)?.value || null);
-        if(vals.includes(null)) return alert("Ada item belum diperiksa!");
+        if(vals.includes(null)) return alert("⚠️ Perhatian: Ada item yang belum diperiksa!");
         
         const payload = {
             nik: document.getElementById('asset').value,
             pic_name: document.getElementById('pic').value,
             check_date: document.getElementById('tgl').value,
-            branch: document.getElementById('branch').value,
+            branch: "ADARO PROJECT",
             items_data: vals
         };
         const id = document.getElementById('editingId').value;
         const res = id ? await sbClient.from('toolbox_reports').update(payload).eq('id', id) : await sbClient.from('toolbox_reports').insert([payload]);
-        if(!res.error) { alert("Data Tersimpan!"); resetForm(); fetchHistory(); }
+        
+        if(!res.error) { 
+            alert("✅ Sukses: Data NIK " + userNik + " telah tersinkronisasi!"); 
+            resetForm(); fetchHistory(); 
+        } else {
+            alert("❌ Gagal: " + res.error.message);
+        }
     }
 
     function loadData(row) {
         document.getElementById('editingId').value = row.id;
-        document.getElementById('asset').value = row.nik;
-        document.getElementById('pic').value = row.pic_name;
         document.getElementById('tgl').value = row.check_date;
         row.items_data.forEach((val, i) => {
             const rad = document.querySelector(`input[name="t-${i+1}"][value="${val}"]`);
@@ -297,17 +320,17 @@
         document.getElementById('editingId').value = "";
         document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
         document.getElementById('tgl').valueAsDate = new Date();
-        refreshSummary();
+        refreshSummary(); updateMonthBadge();
     }
 
     window.onload = () => {
         if (localStorage.getItem('isLoggedIn') !== 'true') window.location.href = 'login.html';
         document.documentElement.style.display = 'block';
-        document.getElementById('roleText').innerText = `NIK: ${userNrp} | ${userName}`;
-        document.getElementById('asset').value = userNrp;
+        document.getElementById('roleText').innerText = `NIK: ${userNik} | ${userName}`;
+        document.getElementById('asset').value = userNik;
         document.getElementById('pic').value = userName;
         document.getElementById('tgl').valueAsDate = new Date();
-        initTable(); initSnowStorm(); fetchHistory();
+        initTable(); initSnow(); fetchHistory();
         setTimeout(runAutoScale, 100);
     }
 </script>
