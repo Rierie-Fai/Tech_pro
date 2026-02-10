@@ -26,8 +26,9 @@
 
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
-            min-height: 100vh; color: #0f172a; 
+            /* Theme: Deep Arctic Frost (Lebih Sejuk) */
+            background: radial-gradient(circle at top, #0c4a6e, #082f49, #020617);
+            min-height: 100vh; color: #f1f5f9; 
             margin: 0; padding: 0;
             overflow-x: hidden;
             display: flex;
@@ -45,37 +46,42 @@
             z-index: 10;
         }
 
-        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
-        .snowflake { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.6; filter: blur(1px); animation: fall linear infinite; }
-        @keyframes fall { to { transform: translateY(110vh) translateX(30px) rotate(360deg); opacity: 0; } }
-
-        .glass-glacial { 
-            background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(25px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); 
+        /* Salju Deras */
+        .snow-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .snowflake { position: absolute; top: -10px; background: white; border-radius: 50%; opacity: 0.5; filter: blur(1px); animation: fall linear infinite; }
+        @keyframes fall { 
+            0% { transform: translateY(-10vh) translateX(0); }
+            100% { transform: translateY(110vh) translateX(50px); opacity: 0.1; } 
         }
 
-        .header-label { font-size: 10px; font-weight: 800; color: #0369a1; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 4px; }
-        .header-val { border: 1px solid rgba(255,255,255,0.6); border-radius: 12px; font-weight: 700; width: 100%; padding: 10px 14px; background: rgba(255,255,255,0.5); font-size: 13px; outline: none; transition: 0.3s; }
-        .header-val:focus { border-color: #0ea5e9; background: white; }
+        .glass-glacial { 
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); 
+        }
 
-        th { background: rgba(15, 23, 42, 0.9); font-size: 10px; text-transform: uppercase; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 10px; }
-        .td-main { border: 1px solid rgba(255,255,255,0.2); padding: 10px; font-size: 11px; vertical-align: top !important; background: rgba(255,255,255,0.1); }
+        .header-label { font-size: 10px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.15em; display: block; margin-bottom: 4px; }
+        .header-val { border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; font-weight: 700; width: 100%; padding: 10px 14px; background: rgba(15, 23, 42, 0.6); font-size: 13px; outline: none; transition: 0.3s; color: white; }
+        .header-val:focus { border-color: #38bdf8; background: rgba(15, 23, 42, 0.9); }
+        .header-val::placeholder { color: rgba(255,255,255,0.3); }
+
+        th { background: rgba(2, 6, 23, 0.9); font-size: 10px; text-transform: uppercase; color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.1); padding: 12px; }
+        .td-main { border: 1px solid rgba(255,255,255,0.05); padding: 12px; font-size: 11px; vertical-align: top !important; background: rgba(255,255,255,0.02); }
 
         .cell-time { 
-            font-family: 'Fira Code', monospace; color: #0369a1; font-weight: 700; 
+            font-family: 'Fira Code', monospace; color: #7dd3fc; font-weight: 700; 
             text-align: center !important; vertical-align: middle !important; 
-            background: rgba(255,255,255,0.4); width: 90px; border-bottom: 1px solid rgba(255,255,255,0.2);
-            border-right: 1px solid rgba(255,255,255,0.2); font-size: 10px;
+            background: rgba(0,0,0,0.4); width: 90px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05); font-size: 10px;
         }
         
         .description-text { 
-            word-wrap: break-word; white-space: pre-wrap; line-height: 1.5; 
-            color: #0f172a; font-weight: 600; padding: 8px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.2); font-size: 11px;
+            word-wrap: break-word; white-space: pre-wrap; line-height: 1.6; 
+            color: #e2e8f0; font-weight: 500; padding: 10px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 11px;
         }
 
         #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #e0f2fe;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #020617;
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
         .fade-out { opacity: 0; visibility: hidden; transition: 1s; }
@@ -88,26 +94,26 @@
 
     <div id="splash-screen">
         <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-6 font-black text-sky-700 text-[10px] tracking-widest uppercase italic">Initializing Glacial Terminal...</p>
+        <p class="mt-6 font-black text-sky-400 text-[10px] tracking-[0.3em] uppercase italic">Glacial Terminal v4.2</p>
     </div>
 
     <div id="scaler-context" class="space-y-4">
         
         <header class="glass-glacial p-5 rounded-[2.5rem] flex justify-between items-center no-print gap-3">
             <div class="flex items-center gap-3">
-                <a href="index.html" class="h-10 w-10 bg-white/60 rounded-xl flex items-center justify-center text-sky-900 shadow-sm border border-white">
+                <a href="index.html" class="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-white shadow-sm border border-white/10 hover:bg-white/20 transition-all">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
                 <div>
-                    <h1 class="text-lg font-black italic text-sky-950 leading-none tracking-tighter uppercase">ACTIVITY <span class="text-sky-600">REPORT</span></h1>
-                    <p class="text-[8px] font-black text-sky-500 tracking-widest uppercase mt-1">Glacial Pro System Active</p>
+                    <h1 class="text-lg font-black italic text-white leading-none tracking-tighter uppercase">ACTIVITY <span class="text-sky-400">REPORT</span></h1>
+                    <p class="text-[8px] font-black text-sky-600 tracking-widest uppercase mt-1">Status: Glacial Pro Active</p>
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="pullFromCloud()" class="bg-white/40 text-sky-900 px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-white">🔄 Pull</button>
-                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase shadow-lg">❄️ Sync</button>
-                <button onclick="exportToPDF()" class="bg-slate-900 text-white px-3 py-2 rounded-lg font-bold text-[9px] uppercase">📄 PDF</button>
-                <button onclick="exportToExcel()" class="bg-emerald-600 text-white px-3 py-2 rounded-lg font-bold text-[9px] uppercase">📊 Excel</button>
+                <button onclick="pullFromCloud()" class="bg-slate-800 text-sky-400 px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-sky-900/50">🔄 Pull</button>
+                <button onclick="syncToCloud()" id="btnSync" class="bg-sky-600 text-white px-4 py-2 rounded-lg font-bold text-[9px] uppercase shadow-lg hover:bg-sky-500 transition-all">❄️ Sync</button>
+                <button onclick="exportToPDF()" class="bg-slate-900 text-slate-300 px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-white/5">📄 PDF</button>
+                <button onclick="exportToExcel()" class="bg-emerald-700 text-white px-3 py-2 rounded-lg font-bold text-[9px] uppercase border border-emerald-900">📊 Excel</button>
             </div>
         </header>
 
@@ -117,8 +123,8 @@
                 <div>
                     <label class="header-label">Technician & NIK</label>
                     <div class="flex gap-2">
-                        <input type="text" id="nameInp" class="header-val bg-white/20" readonly>
-                        <input type="text" id="nikInp" class="header-val w-28 text-center font-mono bg-white/20" readonly>
+                        <input type="text" id="nameInp" class="header-val opacity-70" readonly>
+                        <input type="text" id="nikInp" class="header-val w-28 text-center font-mono opacity-70" readonly>
                     </div>
                 </div>
                 <div><label class="header-label">Date</label><input type="date" id="dateInp" class="header-val"></div>
@@ -127,7 +133,7 @@
             </div>
             
             <div class="grid grid-cols-2 gap-4 mb-6">
-                <div><label class="header-label">Model</label><input type="text" id="modelInp" class="header-val text-sky-600" placeholder="EX3600-6"></div>
+                <div><label class="header-label">Model</label><input type="text" id="modelInp" class="header-val text-sky-400" placeholder="EX3600-6"></div>
                 <div><label class="header-label">S/N</label><input type="text" id="snInp" class="header-val" placeholder="SN12345"></div>
                 <div><label class="header-label">HM</label><input type="number" step="0.1" id="hmInp" class="header-val" placeholder="0.0"></div>
                 <div><label class="header-label">General Job</label><input type="text" id="jobDescInp" class="header-val" placeholder="OVERHAUL"></div>
@@ -136,8 +142,8 @@
             <div id="detailRowsContainer" class="space-y-3 mb-6"></div>
             
             <div class="flex flex-col gap-3">
-                <button onclick="smartAddTask()" class="bg-white/60 text-sky-700 px-6 py-3 rounded-[1.2rem] font-black text-[10px] uppercase border border-white hover:bg-white transition-all">+ Add Progress</button>
-                <button id="submitBtn" onclick="submitLog()" class="bg-sky-950 text-white font-black py-4 rounded-[1.2rem] uppercase text-[10px] tracking-[0.3em] shadow-xl hover:bg-black transition-all">Authorize & Submit</button>
+                <button onclick="smartAddTask()" class="bg-white/5 text-sky-300 px-6 py-3 rounded-[1.2rem] font-black text-[10px] uppercase border border-white/10 hover:bg-white/10 transition-all">+ Add Progress</button>
+                <button id="submitBtn" onclick="submitLog()" class="bg-sky-500 text-white font-black py-4 rounded-[1.2rem] uppercase text-[10px] tracking-[0.3em] shadow-xl hover:bg-sky-400 transition-all">Authorize & Submit</button>
             </div>
         </div>
 
@@ -182,16 +188,28 @@
             setTimeout(runAutoScale, 100);
         };
 
+        // Fungsi Helper untuk Bullet Point Otomatis
+        function formatBullet(text) {
+            if (!text) return "";
+            return text.split('\n')
+                .map(line => line.trim())
+                .filter(line => line !== "")
+                .map(line => line.startsWith('•') ? line : `• ${line}`)
+                .join('\n');
+        }
+
         function addDetailRow(timeF = '', timeT = '', desc = '') {
             const container = document.getElementById('detailRowsContainer');
             const div = document.createElement('div');
-            div.className = "flex gap-3 items-start bg-white/40 p-4 rounded-[1.5rem] border border-white shadow-sm";
+            div.className = "flex gap-3 items-start bg-white/5 p-4 rounded-[1.5rem] border border-white/5 shadow-sm";
             div.innerHTML = `
                 <div class="w-24 flex-shrink-0 flex flex-col gap-2">
                     <input type="time" class="header-val text-center !p-1 text-[11px]" value="${timeF}">
                     <input type="time" class="header-val text-center !p-1 text-[11px]" value="${timeT}">
                 </div>
-                <div class="flex-1"><textarea class="header-val !p-3 min-h-[60px] text-[11px]" placeholder="Input Detail...">${desc}</textarea></div>
+                <div class="flex-1">
+                    <textarea class="header-val !p-3 min-h-[60px] text-[11px]" placeholder="Input Detail...">${desc}</textarea>
+                </div>
                 <button onclick="this.parentElement.remove()" class="text-red-400 font-black p-1 text-xl">&times;</button>
             `;
             container.appendChild(div);
@@ -208,7 +226,12 @@
             const dateVal = document.getElementById('dateInp').value;
             const details = Array.from(document.querySelectorAll('#detailRowsContainer > div')).map(row => {
                 const t = row.querySelectorAll('input[type="time"]');
-                return { f: t[0].value, t: t[1].value, d: row.querySelector('textarea').value.trim() };
+                const rawDesc = row.querySelector('textarea').value;
+                return { 
+                    f: t[0].value, 
+                    t: t[1].value, 
+                    d: formatBullet(rawDesc) // Tambah bullet saat save
+                };
             }).filter(item => item.d !== "");
 
             if(!dateVal || details.length === 0) return alert("Required: Date & Progress!");
@@ -228,7 +251,7 @@
             let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             isEditMode ? logs = logs.map(l => l.id === logEntry.id ? logEntry : l) : logs.push(logEntry);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-            clearForm(); refreshTable(); alert("✅ Recorded Locally");
+            clearForm(); refreshTable(); alert("✅ Recorded Locally (Bullets Applied)");
         }
 
         function refreshTable() {
@@ -246,11 +269,11 @@
                 const section = document.createElement('div');
                 section.className = "glass-glacial rounded-[2rem] overflow-hidden mb-6";
                 section.innerHTML = `
-                    <div class="bg-sky-500/20 p-3 flex justify-between items-center border-b border-white/50">
-                        <span class="text-[8px] font-black text-sky-900 uppercase italic ml-2">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
+                    <div class="bg-sky-500/10 p-3 flex justify-between items-center border-b border-white/5">
+                        <span class="text-[8px] font-black text-sky-400 uppercase italic ml-2">${obj.isSynced ? '❄️ SYNCED' : '☁️ LOCAL'}</span>
                         <div class="flex gap-4 mr-2">
-                            <button onclick="editLog(${obj.id})" class="text-sky-700 text-[9px] font-black">EDIT</button>
-                            <button onclick="deleteLog(${obj.id})" class="text-red-500 text-[9px] font-black">DELETE</button>
+                            <button onclick="editLog(${obj.id})" class="text-sky-300 text-[9px] font-black">EDIT</button>
+                            <button onclick="deleteLog(${obj.id})" class="text-red-400 text-[9px] font-black">DELETE</button>
                         </div>
                     </div>
                     <div class="overflow-x-auto">
@@ -265,18 +288,18 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td class="td-main font-black text-sky-950 text-center text-[10px]">${obj.date}</td>
+                                    <td class="td-main font-black text-white text-center text-[10px]">${obj.date}</td>
                                     <td class="td-main">
-                                        <b class="text-sky-900">${obj.name}</b><br><span class="text-[9px]">NIK: ${obj.nik}</span>
-                                        <hr class="my-1 border-white/30">
-                                        <b class="text-sky-900">${obj.customer}</b><br><span class="text-[9px] text-sky-600 font-bold">${obj.location}</span>
+                                        <b class="text-sky-300">${obj.name}</b><br><span class="text-[9px] opacity-60">NIK: ${obj.nik}</span>
+                                        <hr class="my-1 border-white/5">
+                                        <b class="text-white">${obj.customer}</b><br><span class="text-[9px] text-sky-400 font-bold">${obj.location}</span>
                                     </td>
                                     <td class="td-main">
-                                        <span class="text-[9px] font-bold text-slate-800 uppercase block mb-1">${obj.job || '-'}</span>
-                                        <hr class="my-1 border-white/30">
-                                        <b class="text-sky-700 text-[10px]">${obj.model}</b><br>
-                                        <span class="text-[9px]">SN: ${obj.sn}</span><br>
-                                        <span class="text-[9px]">HM: ${obj.hm}</span>
+                                        <span class="text-[9px] font-bold text-slate-300 uppercase block mb-1">${obj.job || '-'}</span>
+                                        <hr class="my-1 border-white/5">
+                                        <b class="text-sky-400 text-[10px]">${obj.model}</b><br>
+                                        <span class="text-[9px] opacity-60">SN: ${obj.sn}</span><br>
+                                        <span class="text-[9px] opacity-60">HM: ${obj.hm}</span>
                                     </td>
                                     <td class="p-0">
                                         <table class="w-full border-none">${chronoRows}</table>
@@ -331,14 +354,17 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // Salju Deras
         function createSnow() {
             const box = document.getElementById('snow-box');
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<100; i++) { // Jumlah salju diperbanyak
                 let s = document.createElement('div');
                 s.className = 'snowflake';
-                s.style.width = s.style.height = Math.random() * 4 + 2 + 'px';
+                let size = Math.random() * 5 + 2;
+                s.style.width = s.style.height = size + 'px';
                 s.style.left = Math.random() * 100 + 'vw';
-                s.style.animationDuration = Math.random() * 4 + 3 + 's';
+                s.style.animationDuration = Math.random() * 2 + 1.5 + 's'; // Lebih cepat jatuh
+                s.style.animationDelay = Math.random() * 5 + 's';
                 box.appendChild(s);
             }
         }
@@ -375,7 +401,7 @@
             doc.autoTable({ 
                 head: [['DATE', 'TECH', 'CLIENT', 'UNIT', 'JOB', 'TIME', 'DETAIL']], 
                 body: flatData, 
-                headStyles: { fillColor: [15, 23, 42] },
+                headStyles: { fillColor: [2, 6, 23] },
                 styles: { fontSize: 8 }
             });
             doc.save("Activity_Report.pdf");
