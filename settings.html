@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Glacier Settings | Hexindo Fleet Pro</title>
     
     <script>
@@ -17,18 +17,30 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
+        :root {
+            --base-width: 1280px;
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background: linear-gradient(135deg, #d1e3ff 0%, #a2c2e8 100%);
             min-height: 100vh; color: #1e293b;
-            min-width: 1280px;
-            overflow-x: auto;
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
 
-        .main-container {
-            width: 1280px !important;
-            margin: 0 auto;
+        /* WRAPPER UTAMA UNTUK DYNAMIC SCALING */
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0;
             padding: 2rem;
+            position: relative;
+            z-index: 10;
         }
 
         .glass-ice { 
@@ -48,38 +60,27 @@
         }
         .input-glacier:focus { 
             border-color: #3b82f6; 
-            background: rgba(255, 255, 255, 0.8);
+            background: white;
             box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
         }
 
         .btn-glacier { 
             background: #2563eb;
             font-weight: 800; padding: 14px; border-radius: 1.5rem; 
-            text-transform: uppercase; font-size: 11px; tracking-widest: 0.15em; 
-            transition: 0.3s; color: white; border: none;
-            cursor: pointer;
+            text-transform: uppercase; font-size: 11px; letter-spacing: 0.15em; 
+            transition: 0.3s; color: white; border: none; cursor: pointer;
         }
-        .btn-glacier:hover { 
-            transform: scale(1.02) translateY(-2px); 
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
-        }
+        .btn-glacier:hover { transform: scale(1.02); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); }
 
         .eye-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #64748b;
-            transition: 0.2s;
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            cursor: pointer; color: #64748b;
         }
-        .eye-toggle:hover { color: #2563eb; }
 
         .shard {
             position: absolute; background: white; pointer-events: none;
             clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-            opacity: 0.8; animation: shatter 0.7s ease-out forwards;
-            z-index: 100;
+            opacity: 0.8; animation: shatter 0.7s ease-out forwards; z-index: 100;
         }
         @keyframes shatter {
             0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
@@ -87,21 +88,21 @@
         }
     </style>
 </head>
-<body class="p-4 flex justify-center">
+<body>
 
-    <div class="main-container space-y-6 relative z-10">
+    <div id="scaler-context">
         
-        <header class="flex items-center justify-between">
+        <header class="flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
                 <a href="index.html" class="h-12 w-12 glass-ice flex items-center justify-center hover:bg-white/60 transition-all">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 </a>
                 <h1 class="text-xl font-black italic tracking-tighter uppercase text-slate-800">NIK <span class="text-blue-600">Settings</span></h1>
             </div>
-            <div id="roleBadge" class="px-6 py-2 glass-ice text-[10px] font-black uppercase tracking-widest text-blue-600">Loading...</div>
+            <div id="roleBadge" class="px-6 py-2 glass-ice text-[10px] font-black uppercase tracking-widest text-blue-600">Access: Tech</div>
         </header>
 
-        <div class="grid grid-cols-2 gap-8">
+        <div class="grid grid-cols-2 gap-8 mb-8">
             
             <section class="glass-ice p-8">
                 <h2 class="text-xs font-black uppercase text-blue-600 mb-6 tracking-widest italic">Change Password</h2>
@@ -109,19 +110,13 @@
                     <div class="relative">
                         <input type="password" id="newPass" class="input-glacier" placeholder="New Password" required>
                         <div class="eye-toggle" onclick="togglePass('newPass')">
-                            <svg id="eye-icon-newPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
+                            <svg id="eye-icon-newPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </div>
                     </div>
                     <div class="relative">
                         <input type="password" id="confirmPass" class="input-glacier" placeholder="Confirm Password" required>
                         <div class="eye-toggle" onclick="togglePass('confirmPass')">
-                            <svg id="eye-icon-confirmPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
+                            <svg id="eye-icon-confirmPass" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         </div>
                     </div>
                     <button type="submit" class="btn-glacier w-full mt-4 ice-trigger">Freeze New Password</button>
@@ -133,13 +128,13 @@
                 <form id="addUserForm" class="space-y-4">
                     <input type="text" id="regNik" class="input-glacier" placeholder="NIK Baru" required>
                     <input type="text" id="regName" class="input-glacier" placeholder="Full Name" required>
-                    <button type="submit" class="btn-glacier w-full bg-slate-800 !text-white mt-4 ice-trigger">Deploy Technician</button>
+                    <button type="submit" class="btn-glacier w-full bg-slate-800 !text-white mt-4 ice-trigger">Deploy NIK Record</button>
                 </form>
             </section>
         </div>
 
         <section id="userListPanel" class="glass-ice p-8 hidden">
-            <h2 class="text-xs font-black uppercase text-slate-500 mb-6 tracking-widest italic">All NIK Records</h2>
+            <h2 class="text-xs font-black uppercase text-slate-500 mb-6 tracking-widest italic">NIK Terminal Database</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs text-left">
                     <thead>
@@ -155,41 +150,39 @@
     </div>
 
     <script>
-        // --- TOGGLE PASSWORD VISIBILITY ---
+        // --- AUTO SCALE ENGINE ---
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const targetWidth = 1280;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth / targetWidth;
+
+            if (windowWidth < targetWidth) {
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
+            } else {
+                scaler.style.transform = `scale(1)`;
+                scaler.style.marginBottom = `0px`;
+            }
+        }
+        window.addEventListener('resize', runAutoScale);
+
+        // --- PASSWORD VISIBILITY ---
         function togglePass(id) {
             const input = document.getElementById(id);
             const icon = document.getElementById('eye-icon-' + id);
-            
             if (input.type === 'password') {
                 input.type = 'text';
-                // Ubah Icon ke Mata Coret (Hidden)
                 icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />`;
             } else {
                 input.type = 'password';
-                // Kembali ke Icon Mata Normal
                 icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
             }
         }
 
-        // --- AUDIO & VISUAL ENGINE ---
-        const playIceSound = () => {
-            try {
-                const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(1200, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.1);
-            } catch (e) { console.log("Audio not supported"); }
-        };
-
+        // --- VISUAL EFFECTS ---
         const iceShatter = (e) => {
-            playIceSound();
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 8; i++) {
                 const shard = document.createElement('div');
                 shard.className = 'shard';
                 const size = Math.random() * 6 + 2;
@@ -204,22 +197,16 @@
         };
 
         document.addEventListener('click', (e) => {
-            // Abaikan shatter jika yang diklik adalah toggle mata
-            if (e.target.closest('.eye-toggle')) return;
-            
-            if (e.target.tagName === 'BUTTON' || e.target.classList.contains('ice-trigger')) {
-                iceShatter(e);
-            }
+            if (e.target.tagName === 'BUTTON' || e.target.closest('.ice-trigger')) iceShatter(e);
         });
 
-        // --- SUPABASE & NIK LOGIC ---
+        // --- SUPABASE LOGIC ---
         const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
         const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
         const currentNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
         const userRole = localStorage.getItem('userRole');
-
-        const sb = supabase.createClient(SB_URL, SB_KEY);
 
         window.onload = () => {
             document.getElementById('roleBadge').innerText = (userRole || 'TECH').toUpperCase() + " ACCESS";
@@ -228,22 +215,15 @@
                 document.getElementById('userListPanel').classList.remove('hidden');
                 fetchUsers();
             }
+            setTimeout(runAutoScale, 100);
         };
 
         document.getElementById('changePassForm').onsubmit = async (e) => {
             e.preventDefault();
             const nPass = document.getElementById('newPass').value;
-            if (nPass !== document.getElementById('confirmPass').value) return alert("❌ Password mismatch!");
-
+            if (nPass !== document.getElementById('confirmPass').value) return alert("Password mismatch!");
             const { error } = await sb.from('users').update({ password: nPass }).eq('nik', currentNik);
-            if (error) alert(error.message);
-            else { 
-                alert("✅ Password updated!"); 
-                document.getElementById('changePassForm').reset();
-                // Kembalikan tipe input ke password jika habis reset
-                document.getElementById('newPass').type = 'password';
-                document.getElementById('confirmPass').type = 'password';
-            }
+            if (!error) { alert("NIK Password updated!"); document.getElementById('changePassForm').reset(); }
         };
 
         document.getElementById('addUserForm').onsubmit = async (e) => {
@@ -254,39 +234,27 @@
                 password: 'hexindo123',
                 role: 'technician'
             };
-
             const { error } = await sb.from('users').insert([payload]);
-            if (error) alert("Gagal: " + error.message);
-            else {
-                alert("✅ Teknisi Berhasil Didaftarkan!");
-                document.getElementById('addUserForm').reset();
-                fetchUsers();
-            }
+            if (!error) { alert("NIK Successfully Deployed!"); fetchUsers(); }
         };
 
         async function fetchUsers() {
-            const { data, error } = await sb.from('users').select('*').order('full_name');
-            if (!error) {
-                const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = data.map(u => `
-                    <tr class="hover:bg-white/20 transition-all">
-                        <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
-                        <td class="font-bold uppercase italic">${u.full_name}</td>
-                        <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
-                        <td class="text-right">
-                            <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
+            const { data } = await sb.from('users').select('*').order('full_name');
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = data.map(u => `
+                <tr class="hover:bg-white/20 transition-all">
+                    <td class="py-4 font-mono font-bold text-blue-600">${u.nik}</td>
+                    <td class="font-bold uppercase italic">${u.full_name}</td>
+                    <td><span class="text-[9px] px-2 py-0.5 rounded-full border border-blue-200">${u.role}</span></td>
+                    <td class="text-right">
+                        <button onclick="resetUserPass('${u.nik}')" class="text-red-500 font-black text-[9px] uppercase">Reset</button>
+                    </td>
+                </tr>`).join('');
         }
 
         async function resetUserPass(targetNik) {
-            const newPass = prompt("Set password baru untuk NIK " + targetNik, "hexindo123");
-            if (newPass) {
-                const { error } = await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
-                if (!error) alert("✅ NIK " + targetNik + " Reset!");
-            }
+            const newPass = prompt("New password for NIK " + targetNik, "hexindo123");
+            if (newPass) await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
         }
     </script>
 </body>
