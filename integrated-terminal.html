@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Integrated Adjustment | NIK Terminal</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
-        /* Sync background dengan Portal Utama */
         body { 
             background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 50%, #0f172a 100%); 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -28,14 +30,29 @@
             display: flex;
             flex-direction: column;
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; 
         }
 
-        /* Glassmorphism Navigation */
         .tab-nav { 
             background: rgba(255, 255, 255, 0.1); 
             backdrop-filter: blur(20px) saturate(180%); 
             border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
             z-index: 50; flex-shrink: 0;
+        }
+
+        /* Home Button Style */
+        .home-btn {
+            padding: 0 20px;
+            color: rgba(255,255,255,0.8);
+            border-right: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #ffffff;
         }
 
         .tab-btn { 
@@ -53,7 +70,7 @@
 
         .iframe-container { 
             flex-grow: 1; position: relative; 
-            background: rgba(15, 23, 42, 0.5); /* Semi-transparent base for iframes */
+            background: rgba(15, 23, 42, 0.5); 
             overflow: hidden; 
         }
 
@@ -76,13 +93,28 @@
             border-radius: 0.75rem;
             padding: 6px 12px;
         }
+
+        #auth-guard {
+            position: fixed; inset: 0; background: #0f172a;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
 
+    <div id="auth-guard">
+        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-white font-black text-[10px] tracking-[0.3em] uppercase italic">Verifying NIK Session...</p>
+    </div>
+
     <div id="main-scaler">
-        <div class="tab-nav flex items-center justify-between px-6">
-            <div class="flex">
+        <div class="tab-nav flex items-center justify-between">
+            <div class="flex h-full">
+                <a href="index.html" class="home-btn" title="Back to Home">
+                    <i class="fas fa-home text-lg"></i>
+                </a>
+
                 <button onclick="switchTab('hyd-test')" id="btn-hyd-test" class="tab-btn active">
                     <i class="fas fa-bolt mr-2"></i> Hyd Test
                 </button>
@@ -94,13 +126,13 @@
                 </button>
             </div>
             
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 px-6">
                 <div class="nik-badge flex flex-col items-end">
                     <span class="text-[7px] font-black text-blue-200 uppercase tracking-tighter">Verified User</span>
                     <span id="user-display" class="text-[10px] font-bold text-white font-mono">NIK: ------</span>
                 </div>
-                <button onclick="location.href='index.html'" class="bg-white/10 hover:bg-red-500/40 w-10 h-10 rounded-xl border border-white/20 text-white transition-all flex items-center justify-center">
-                    <i class="fas fa-times"></i>
+                <button onclick="logout()" class="bg-white/10 hover:bg-red-500/40 w-10 h-10 rounded-xl border border-white/20 text-white transition-all flex items-center justify-center">
+                    <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
         </div>
@@ -114,6 +146,46 @@
     </div>
 
     <script>
+        const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function checkAuth() {
+            const userNik = localStorage.getItem('userNIK');
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+
+            if (!userNik || isLoggedIn !== 'true') {
+                window.location.replace('login.html');
+                return;
+            }
+
+            try {
+                const { data, error } = await sb
+                    .from('users')
+                    .select('nik, full_name')
+                    .eq('nik', userNik)
+                    .single();
+
+                if (error || !data) {
+                    logout();
+                    return;
+                }
+
+                document.getElementById('user-display').innerText = `NIK: ${data.nik}`;
+                document.getElementById('auth-guard').style.display = 'none';
+                document.getElementById('main-scaler').style.opacity = '1';
+                handleAutoScale();
+
+            } catch (err) {
+                window.location.replace('login.html');
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.replace('login.html');
+        }
+
         function switchTab(tabId, url = null) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('iframe').forEach(frame => frame.classList.remove('active'));
@@ -133,15 +205,15 @@
 
         function handleAutoScale() {
             const scaler = document.getElementById('main-scaler');
+            if (scaler.style.opacity === "0") return;
+
             const winW = window.innerWidth;
             const winH = window.innerHeight;
             const targetW = 720;
-            
             const scale = winW / targetW;
             
             if (winW < targetW) {
                 scaler.style.transform = `translateX(-50%) scale(${scale})`;
-                // Memastikan height tetap mengover layar saat di-scale down
                 scaler.style.height = (winH / scale) + "px";
             } else {
                 scaler.style.transform = `translateX(-50%) scale(1)`;
@@ -150,12 +222,7 @@
         }
 
         window.addEventListener('resize', handleAutoScale);
-        window.addEventListener('load', () => {
-            handleAutoScale();
-            // Mengambil NIK sesuai setting yang disepakati
-            const userNik = localStorage.getItem('userNIK') || 'UNKNOWN';
-            document.getElementById('user-display').innerText = `NIK: ${userNik}`;
-        });
+        window.addEventListener('DOMContentLoaded', checkAuth);
     </script>
 </body>
 </html>
