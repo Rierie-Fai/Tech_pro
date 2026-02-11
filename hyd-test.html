@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hydraulic Test Pro | NIK Terminal</title>
     
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -12,37 +15,50 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
-        html, body { background: #f1f5f9; margin: 0; padding: 0; width: 100%; overflow-x: hidden; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        :root { --base-width: 720px; }
 
-        /* Scaler sync with Pump Analysis */
-        #nik-scaler { width: 720px; transform-origin: top center; padding: 15px; box-sizing: border-box; transition: transform 0.2s ease-out; }
-        
-        .glass-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
-        
-        /* Input Styling Sync */
-        .header-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; display: block; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #f1f5f9; 
+            min-height: 100vh; margin: 0; padding: 0;
+            overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start;
+        }
+
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
+        }
+
+        .glass-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        .header-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
         
         .input-glacial { 
-            width: 100%; padding: 10px; font-size: 12px; border: 2px solid #e2e8f0; 
-            border-radius: 10px; font-weight: 700; color: #1e3a8a; 
-            outline: none; transition: all 0.2s; background: #f8fafc;
+            width: 100%; padding: 10px; background: #f8fafc; 
+            border: 2px solid #e2e8f0; border-radius: 0.75rem;
+            font-size: 12px; font-weight: 700; outline: none; color: #1e3a8a; transition: 0.2s;
         }
         .input-glacial:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .input-readonly { background: #f1f5f9 !important; color: #94a3b8 !important; cursor: not-allowed; border-style: dashed; }
 
-        /* Table Styling Sync */
-        .table-custom { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        .table-custom th { font-size: 8px; color: #64748b; background: #f8fafc; padding: 10px 5px; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid #e2e8f0; text-align: center; }
-        .table-custom td { padding: 8px 5px; font-size: 11px; border-bottom: 1px solid #f1f5f9; text-align: center; font-weight: 600; }
+        th { background: #f8fafc !important; color: #64748b !important; font-size: 8px; text-transform: uppercase; padding: 10px 5px !important; font-weight: 800; border-bottom: 2px solid #e2e8f0; }
+        td { border-bottom: 1px solid #f1f5f9; }
+        .std-text { color: #f87171; font-weight: 800; font-size: 9px; }
 
-        /* Validation Colors Sync */
-        .val-ok { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46 !important; }
-        .val-err { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
+        .is-valid-custom { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46 !important; }
+        .is-invalid-custom { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
 
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         
-        @media print { .no-print { display: none; } #nik-scaler { transform: scale(1) !important; width: 100%; } }
+        @media print { .no-print { display: none; } #scaler-context { transform: scale(1) !important; margin: 0 !important; width: 100%; } }
     </style>
 </head>
 <body>
@@ -52,161 +68,172 @@
         <p class="mt-4 font-black text-white text-[10px] tracking-widest uppercase italic">NIK Cloud Sync Active...</p>
     </div>
 
-    <div id="nik-scaler">
-        <div class="mb-3 no-print flex justify-between items-center px-1">
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Hydraulic Diagnostic Module</span>
+    <div id="scaler-context" class="space-y-4">
+        
+        <header class="glass-card p-5 flex justify-between items-center no-print border-l-8 border-blue-600">
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">Hydraulic <span class="text-blue-600">Test Pro</span></h1>
+                    <p class="text-[7px] font-bold text-slate-400 tracking-widest uppercase mt-1">Diagnostic Terminal Active</p>
+                </div>
             </div>
-            <span class="text-[8px] font-black text-slate-300 tracking-[0.3em] uppercase">System v2.6.4</span>
-        </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="newForm()" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-black text-[9px] uppercase hover:bg-slate-200 transition-all">New</button>
+                <button type="button" id="btnSave" onclick="saveToCloud()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[9px] uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">Sync Data</button>
+            </div>
+        </header>
 
-        <div class="glass-card mb-4 p-5 border-l-8 border-blue-600 flex justify-between items-center bg-white">
-            <div class="flex-1 grid grid-cols-4 gap-4">
-                <div class="col-span-1">
-                    <span class="header-label text-blue-600">Test Date</span>
-                    <input type="date" id="test_date" class="input-glacial !p-2 !text-[11px]">
-                </div>
-                <div class="col-span-1">
-                    <span class="header-label">Unit Model</span>
-                    <input type="text" id="unit_model" class="input-glacial !p-2 !text-[11px] uppercase" placeholder="EX3600-6">
-                </div>
-                <div class="col-span-1">
-                    <span class="header-label">Serial Number</span>
-                    <input type="text" id="serial_num" class="input-glacial !p-2 !text-[11px] uppercase" placeholder="SN12345">
-                </div>
-                <div class="col-span-1">
-                    <span class="header-label">Operator NIK</span>
-                    <p id="user-nik-display" class="text-xs font-black text-blue-600 mt-2">LOADING...</p>
-                </div>
-            </div>
-            <div class="ml-6 flex flex-col gap-2">
-                <button onclick="saveToCloud()" id="btn-save" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-black text-[9px] uppercase shadow-md hover:bg-blue-700 transition-all">
-                    <i class="fas fa-cloud-upload-alt mr-1"></i> Sync Cloud
-                </button>
-                <button onclick="newForm()" class="text-[8px] font-bold text-slate-400 uppercase hover:text-red-500 transition-colors">
-                    <i class="fas fa-redo mr-1"></i> Reset
-                </button>
-            </div>
-        </div>
+        <form id="pumpForm" class="space-y-4">
+            <input type="hidden" id="recordId">
 
-        <form id="mainForm" class="space-y-4">
-            <div class="glass-card">
-                <div class="bg-slate-50 p-2 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-history mr-2"></i>1. Component & Oil History</h3>
-                    <input type="number" id="hour_meter" class="bg-white border-2 border-blue-100 rounded-lg px-2 py-1 text-[10px] font-black w-24 outline-none" placeholder="HM UNIT">
+            <div class="glass-card p-6">
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="col-span-1"><label class="header-label text-blue-600">Date</label><input type="date" id="test_date" class="input-glacial !p-2"></div>
+                    <div class="col-span-1"><label class="header-label">Unit Model</label><input type="text" id="unit_model" class="input-glacial !p-2 uppercase" placeholder="EX3600-6"></div>
+                    <div class="col-span-1"><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial !p-2 uppercase" placeholder="SN12345"></div>
+                    <div class="col-span-1">
+                        <label class="header-label">NIK (Settings)</label>
+                        <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono">LOADING...</div>
+                        <input type="hidden" id="nik">
+                    </div>
+                    
+                    <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
+                    <div class="col-span-2"><label class="header-label">Hour Meter (HM)</label><input type="number" id="hour_meter" class="input-glacial" placeholder="0.0"></div>
                 </div>
-                <table class="table-custom">
-                    <thead>
-                        <tr><th style="width:120px" class="text-left pl-4">Component</th><th>Serial Number</th><th>Part Number</th><th>Lifetime</th><th>Model</th></tr>
-                    </thead>
-                    <tbody id="component-body">
-                        <script>
-                            const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8", "SWING DEVICE", "TRAVEL DEVICE"];
-                            comps.forEach(c => {
-                                document.write(`
-                                    <tr>
-                                        <td class="text-left pl-4 font-black text-slate-700 text-[10px]">${c}</td>
-                                        <td><input type="text" class="input-glacial !p-1.5 !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                        <td><input type="text" class="input-glacial !p-1.5 !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                        <td><input type="number" class="input-glacial !p-1.5 !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                        <td><input type="text" class="input-glacial !p-1.5 !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                    </tr>
-                                `);
-                            });
-                        </script>
-                    </tbody>
-                </table>
             </div>
 
             <div class="glass-card">
-                <div class="bg-slate-50 p-2 border-b border-slate-100">
-                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-gauge-high mr-2"></i>2. Relief Pressures (Kgf/cm²)</h3>
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-history mr-2"></i>1. Component & Oil History</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-left pl-4">Component</th>
+                                <th>Serial</th>
+                                <th>Part No</th>
+                                <th>Lifetime</th>
+                                <th>Model</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <script>
+                                const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8"];
+                                comps.forEach(c => {
+                                    document.write(`
+                                        <tr>
+                                            <td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td>
+                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
+                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
+                                            <td><input type="number" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
+                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
+                                        </tr>
+                                    `);
+                                });
+                            </script>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="p-4 grid grid-cols-4 gap-4">
+            </div>
+
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-gauge-high mr-2"></i>2. Main Relief Pressure (Kgf/cm²)</h3></div>
+                <div class="p-5 grid grid-cols-4 gap-4">
                     <script>
                         for(let i=1; i<=8; i++) {
                             document.write(`
-                                <div class="space-y-1">
-                                    <label class="text-[9px] font-black text-slate-400 uppercase">Pump ${i}</label>
-                                    <input type="number" class="input-glacial text-center validate-press" data-min="300" data-max="320" placeholder="-">
-                                </div>
+                                <div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i}</label><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320" placeholder="-"></div>
                             `);
                         }
                     </script>
                 </div>
-                <div class="bg-blue-50 py-2 text-center border-t border-blue-100">
-                    <span class="text-[9px] font-black text-blue-400 tracking-widest uppercase italic">Standard Range: 300 ~ 320 Kgf/cm²</span>
+                <div class="bg-blue-50 py-2 text-center border-t border-blue-100"><span class="text-[9px] font-black text-blue-400 tracking-widest uppercase italic">STANDARD: 300 - 320 Kgf/cm²</span></div>
+            </div>
+
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-bolt mr-2"></i>3. Engine Speed (RPM)</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-left pl-4">Condition</th>
+                                <th>Standard</th>
+                                <th class="text-blue-600">Before</th>
+                                <th class="text-green-600">After</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-slate-50"><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">Low Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">780-820</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="780" data-max="820"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="780" data-max="820"></td></tr>
+                            <tr class="border-b border-slate-50"><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">High Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">1850-1950</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1850" data-max="1950"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1850" data-max="1950"></td></tr>
+                            <tr class="border-b border-slate-50"><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">Auto Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">1350-1450</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1350" data-max="1450"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1350" data-max="1450"></td></tr>
+                            <tr><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">Relief Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">1770-1830</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1770" data-max="1830"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1770" data-max="1830"></td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
             <div class="glass-card">
-                <div class="bg-slate-50 p-2 border-b border-slate-100">
-                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-bolt mr-2"></i>3. Engine Speed (RPM)</h3>
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-stopwatch mr-2"></i>4. Cycle Time (Sec)</h3></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-center text-sm">
+                        <thead><tr><th class="text-left pl-4">Action</th><th>Std</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
+                        <tbody>
+                            <script>
+                                const actions = [
+                                    {n: "Boom Raise", s: "8.2±0.5", t: 8.2, l: 0.5},
+                                    {n: "Arm Roll-in", s: "7.0±0.5", t: 7.0, l: 0.5},
+                                    {n: "Arm Roll-out", s: "7.0±0.5", t: 7.0, l: 0.5},
+                                    {n: "Bucket Roll-in", s: "4.7±0.5", t: 4.7, l: 0.5},
+                                    {n: "Bucket Roll-out", s: "4.2±0.5", t: 4.2, l: 0.5},
+                                    {n: "Swing RH", s: "57±3", t: 57, l: 3},
+                                    {n: "Swing LH", s: "57±3", t: 57, l: 3}
+                                ];
+                                actions.forEach(a => {
+                                    document.write(`
+                                        <tr>
+                                            <td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td>
+                                            <td class="std-text">${a.s}</td>
+                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
+                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
+                                        </tr>
+                                    `);
+                                });
+                            </script>
+                        </tbody>
+                    </table>
                 </div>
-                <table class="table-custom">
-                    <thead>
-                        <tr><th class="text-left pl-4">Condition</th><th>Standard</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="text-left pl-4 font-bold text-slate-700">Low Idle</td>
-                            <td class="text-slate-400 italic">780 ~ 820</td>
-                            <td><input type="number" class="input-glacial !p-1.5 !w-24 text-center val-eng" data-min="780" data-max="820"></td>
-                            <td><input type="number" class="input-glacial !p-1.5 !w-24 text-center val-eng" data-min="780" data-max="820"></td>
-                        </tr>
-                        <tr>
-                            <td class="text-left pl-4 font-bold text-slate-700">High Idle</td>
-                            <td class="text-slate-400 italic">1850 ~ 1950</td>
-                            <td><input type="number" class="input-glacial !p-1.5 !w-24 text-center val-eng" data-min="1850" data-max="1950"></td>
-                            <td><input type="number" class="input-glacial !p-1.5 !w-24 text-center val-eng" data-min="1850" data-max="1950"></td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </form>
 
-        <div class="mt-4 glass-card no-print">
-            <div class="bg-slate-900 p-2 flex justify-between items-center">
-                <h3 class="text-[9px] font-black text-white uppercase px-2">Recent Cloud Syncs</h3>
-                <i class="fas fa-cloud text-blue-400 mr-2 text-xs"></i>
-            </div>
-            <div class="max-h-40 overflow-y-auto">
-                <table class="w-full text-[10px]">
-                    <thead class="sticky top-0 bg-white shadow-sm">
-                        <tr class="text-[8px] text-slate-400 uppercase font-black border-b">
-                            <th class="p-2 text-left">Date</th><th>Unit Model</th><th>Technician</th><th class="text-center">Action</th>
+        <div class="glass-card no-print">
+            <div class="bg-slate-900 p-2 flex justify-between items-center"><h3 class="text-[9px] font-black text-white uppercase px-2">Recent Cloud Syncs</h3></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-[8px] uppercase font-black text-slate-400 border-b">
+                            <th class="p-2 pl-4">Date</th><th>Unit Details</th><th>Technician</th><th class="text-center">Edit</th>
                         </tr>
                     </thead>
-                    <tbody id="dbTableBody" class="font-bold text-slate-600"></tbody>
+                    <tbody id="dbTableBody" class="text-[10px] font-bold text-slate-600"></tbody>
                 </table>
             </div>
         </div>
 
-        <footer class="mt-6 text-center no-print">
-            <button onclick="window.print()" class="bg-white border border-slate-200 text-slate-500 px-6 py-2 rounded-xl font-black text-[10px] uppercase hover:bg-slate-50 transition-all">
-                <i class="fas fa-print mr-2"></i> Generate Technical Report (PDF)
-            </button>
-            <p class="text-[8px] font-black text-slate-300 uppercase tracking-[0.4em] mt-4 italic">PT HEXINDO ADARO | NIK SECURED TERMINAL</p>
+        <footer class="text-center py-6">
+            <p class="text-slate-300 text-[8px] uppercase font-black tracking-[0.4em] italic">© 2026 PT HEXINDO ADARO | NIK SECURED TERMINAL</p>
         </footer>
     </div>
 
     <script>
         const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
 
-        // --- GLOBAL SYNC LOGIC (SAMA DENGAN PUMP ANALYSIS) ---
         function setupNikSync() {
             const fields = ['unit_model', 'serial_num'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
                 const saved = localStorage.getItem('nik_sync_' + id);
                 if (saved) el.value = saved;
-                el.addEventListener('input', () => { 
-                    localStorage.setItem('nik_sync_' + id, el.value); 
-                });
+                el.addEventListener('input', () => { localStorage.setItem('nik_sync_' + id, el.value); });
             });
-
-            // Listen to storage changes from other tabs
             window.addEventListener('storage', (e) => {
                 if (e.key && e.key.startsWith('nik_sync_')) {
                     const id = e.key.replace('nik_sync_', '');
@@ -216,78 +243,126 @@
             });
         }
 
-        // --- VALIDATION LOGIC ---
-        function setupValidation() {
-            document.querySelectorAll('.validate-press, .val-eng').forEach(input => {
-                input.addEventListener('input', function() {
-                    const val = parseFloat(this.value);
-                    const min = parseFloat(this.dataset.min);
-                    const max = parseFloat(this.dataset.max);
-                    this.classList.remove('val-ok', 'val-err');
-                    if(!isNaN(val)) {
-                        if(val >= min && val <= max) this.classList.add('val-ok');
-                        else this.classList.add('val-err');
-                    }
-                });
-            });
+        async function loadUserProfile() {
+            const userNik = localStorage.getItem('userNIK') || 'GUEST';
+            document.getElementById('display-nik').innerText = userNik;
+            document.getElementById('nik').value = userNik;
+            try {
+                const { data: user } = await sb.from('users').select('full_name').eq('nik', userNik).single();
+                if (user) document.getElementById('nama_pic').value = user.full_name;
+            } catch (err) { console.error(err); }
         }
 
-        // --- AUTO SCALER ---
-        function handleAutoScale() {
-            const scaler = document.getElementById('nik-scaler');
-            const targetW = 720;
-            const winW = window.innerWidth;
-            if (winW < targetW) {
-                const scale = winW / targetW;
-                scaler.style.transform = `scale(${scale})`;
-                scaler.style.marginBottom = `-${(1 - scale) * scaler.offsetHeight}px`;
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const targetWidth = 720;
+            const windowWidth = window.innerWidth;
+            if (windowWidth < targetWidth) {
+                const scaleRatio = windowWidth / targetWidth;
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
             } else {
                 scaler.style.transform = `scale(1)`;
                 scaler.style.marginBottom = `0px`;
             }
         }
 
-        async function saveToCloud() {
-            const overlay = document.getElementById('loadingOverlay');
-            overlay.style.display = 'flex';
-            
-            // Logic Simpan Supabase Anda
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                alert("✅ Cloud Data Synchronized!");
-                fetchData();
-            }, 1000);
-        }
-
         async function fetchData() {
             const { data } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false }).limit(5);
             const tbody = document.getElementById('dbTableBody');
-            if(data) {
+            if (data) {
                 tbody.innerHTML = data.map(item => `
-                    <tr class="border-b border-slate-50 hover:bg-blue-50 transition-all cursor-pointer">
-                        <td class="p-2">${item.test_date}</td>
-                        <td class="text-blue-600">${item.unit_model}</td>
-                        <td class="text-[9px]">${item.nik}</td>
-                        <td class="text-center"><i class="fas fa-chevron-right text-slate-300"></i></td>
+                    <tr class="border-b border-slate-50 hover:bg-blue-50 transition-all cursor-pointer" onclick='editRecord(${JSON.stringify(item)})'>
+                        <td class="p-2 pl-4">${item.test_date}</td>
+                        <td><span class="text-blue-600">${item.unit_model}</span> / ${item.serial_number}</td>
+                        <td>${item.nik}</td>
+                        <td class="text-center text-blue-400"><i class="fas fa-edit"></i></td>
                     </tr>
                 `).join('');
             }
         }
 
-        function newForm() {
-            if(confirm("Reset form? Identity remains synced.")) {
-                document.getElementById('mainForm').reset();
+        function editRecord(item) {
+            document.getElementById('recordId').value = item.id;
+            document.getElementById('test_date').value = item.test_date;
+            document.getElementById('unit_model').value = item.unit_model;
+            document.getElementById('serial_num').value = item.serial_number;
+            document.getElementById('hour_meter').value = item.hour_meter || '';
+            
+            const comp = document.querySelectorAll('.data-comp');
+            item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
+            const pump = document.querySelectorAll('.data-pump');
+            item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateInput(pump[i], 'range'); } });
+            const eng = document.querySelectorAll('.data-eng');
+            item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
+            const cyc = document.querySelectorAll('.data-cyc');
+            item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function validateInput(el, type) {
+            const val = parseFloat(el.value);
+            el.classList.remove('is-valid-custom', 'is-invalid-custom');
+            if (isNaN(val)) return;
+
+            if (type === 'range') {
+                const min = parseFloat(el.dataset.min);
+                const max = parseFloat(el.dataset.max);
+                if (val >= min && val <= max) el.classList.add('is-valid-custom');
+                else el.classList.add('is-invalid-custom');
+            } else {
+                const target = parseFloat(el.dataset.target);
+                const tol = parseFloat(el.dataset.tol);
+                if (val >= (target - tol) && val <= (target + tol)) el.classList.add('is-valid-custom');
+                else el.classList.add('is-invalid-custom');
             }
         }
 
-        window.onload = () => {
+        async function saveToCloud() {
+            const id = document.getElementById('recordId').value;
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.style.display = 'flex';
+
+            const record = {
+                test_date: document.getElementById('test_date').value,
+                nama_pic: document.getElementById('nama_pic').value,
+                nik: document.getElementById('nik').value,
+                unit_model: document.getElementById('unit_model').value,
+                serial_number: document.getElementById('serial_num').value,
+                hour_meter: document.getElementById('hour_meter').value,
+                component_history: Array.from(document.querySelectorAll('.data-comp')).map(i => i.value),
+                pump_relief_values: Array.from(document.querySelectorAll('.data-pump')).map(i => i.value),
+                engine_speed_values: Array.from(document.querySelectorAll('.data-eng')).map(i => i.value),
+                cycle_time_values: Array.from(document.querySelectorAll('.data-cyc')).map(i => i.value)
+            };
+
+            const { error } = id 
+                ? await sb.from('pump_performance_reports').update(record).eq('id', id)
+                : await sb.from('pump_performance_reports').insert([record]);
+
+            overlay.style.display = 'none';
+            if (error) alert("Error: " + error.message);
+            else { alert("✅ Data Synchronized!"); fetchData(); }
+        }
+
+        function newForm() {
+            if(confirm("Clear form?")) {
+                document.getElementById('pumpForm').reset();
+                document.getElementById('recordId').value = "";
+                document.getElementById('test_date').valueAsDate = new Date();
+                document.querySelectorAll('.input-glacial').forEach(i => i.classList.remove('is-valid-custom', 'is-invalid-custom'));
+            }
+        }
+
+        window.onload = async () => {
+            await loadUserProfile();
             setupNikSync();
-            setupValidation();
-            handleAutoScale();
-            fetchData();
-            window.addEventListener('resize', handleAutoScale);
             document.getElementById('test_date').valueAsDate = new Date();
-            document.getElementById('user-nik-display').innerText = localStorage.getItem('userNIK') || 'GUEST';
+            fetchData();
+            runAutoScale();
+            window.addEventListener('resize', runAutoScale);
+            document.querySelectorAll('.validate-range').forEach(i => i.addEventListener('input', () => validateInput(i, 'range')));
+            document.querySelectorAll('.validate-tol').forEach(i => i.addEventListener('input', () => validateInput(i, 'tol')));
         };
     </script>
 </body>
