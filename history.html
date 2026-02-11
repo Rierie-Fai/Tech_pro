@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>MASTER HISTORY - LIVE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { background: #0f172a; color: white; font-family: 'Plus Jakarta Sans', sans-serif; padding: 20px; }
+        .log-card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1rem; padding: 1.25rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; border-left: 4px solid transparent; }
+        .log-card:hover { border-left-color: #3b82f6; background: rgba(30, 41, 59, 0.9); }
+        .btn-edit { background: #2563eb; color: white; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 10px; text-transform: uppercase; }
+        .live-indicator { font-size: 10px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; }
+        .dot { height: 6px; width: 6px; background-color: #10b981; border-radius: 50%; display: inline-block; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-black uppercase tracking-tighter italic">Adjustment <span class="text-emerald-500">Master History</span></h2>
+            <div class="live-indicator">
+                <span class="dot"></span> LIVE SYNC ACTIVE
+            </div>
+        </div>
+        <div id="logs-container">
+            <div class="text-center py-10 text-slate-500 font-bold text-xs uppercase tracking-widest">Memuat Data NIK...</div>
+        </div>
+    </div>
+
+    <script>
+        const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
+
+        // Fungsi Ambil Data
+        async function fetchLogs() {
+            const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false });
+            if (error) {
+                console.error("Fetch error:", error);
+                return;
+            }
+            renderLogs(data);
+        }
+
+        // Fungsi Tampilkan Data
+        function renderLogs(logs) {
+            const container = document.getElementById('logs-container');
+            if (!logs || logs.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-500 text-xs font-bold">BELUM ADA DATA MASTER</div>`;
+                return;
+            }
+            container.innerHTML = logs.map(log => `
+                <div class="log-card">
+                    <div>
+                        <h3 class="font-black text-xs uppercase italic text-blue-400">${log.unit_model || 'UNIT N/A'}</h3>
+                        <p class="text-[9px] text-slate-400 font-bold uppercase mt-1">SN: ${log.serial_number} | NIK: ${log.nik || 'GUEST'}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-[9px] font-bold text-slate-500">${new Date(log.test_date).toLocaleDateString('id-ID')}</span>
+                        <button onclick='initEdit("${log.id}", ${JSON.stringify(log)})' class="btn-edit hover:bg-blue-700 active:scale-95 transition-all">Edit Master</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // FUNGSI LIVE SYNC (REALTIME)
+        function subscribeToChanges() {
+            sb.channel('custom-all-channel')
+            .on('postgres_changes', 
+                { event: '*', schema: 'public', table: 'pump_performance_reports' }, 
+                (payload) => {
+                    console.log('Change received!', payload);
+                    fetchLogs(); // Ambil data ulang otomatis saat ada INSERT/UPDATE/DELETE
+                }
+            )
+            .subscribe();
+        }
+
+        function initEdit(id, logData) {
+            localStorage.clear();
+            localStorage.setItem('editMode', 'true');
+            localStorage.setItem('editId', id);
+            localStorage.setItem('editData', JSON.stringify(logData));
+            localStorage.setItem('nik_master_store', JSON.stringify(logData.all_pumps_data || {}));
+            
+            // Integrasi switchTab jika ada di parent
+            if(window.parent && window.parent.switchTab) {
+                window.parent.switchTab('pump-perform', '1');
+            } else {
+                window.location.href = 'pump-analysis.html?p=1';
+            }
+        }
+
+        // Inisialisasi
+        window.onload = () => {
+            fetchLogs();
+            subscribeToChanges();
+        };
+    </script>
+</body>
+</html>
