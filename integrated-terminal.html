@@ -7,14 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
-        html, body { 
-            background: #0f172a; 
+        /* Sync background dengan Portal Utama */
+        body { 
+            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 50%, #0f172a 100%); 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             margin: 0; padding: 0;
-            width: 100%; height: 100%;
             overflow: hidden; 
+            height: 100vh;
         }
 
         #main-scaler {
@@ -26,40 +27,55 @@
             transform-origin: top center;
             display: flex;
             flex-direction: column;
-            transition: transform 0.1s ease-out;
-            background: #0f172a;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* Glassmorphism Navigation */
         .tab-nav { 
-            background: rgba(30, 41, 59, 0.95); 
-            backdrop-filter: blur(10px); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(20px) saturate(180%); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
             z-index: 50; flex-shrink: 0;
         }
 
         .tab-btn { 
-            padding: 16px 20px; font-size: 10px; font-weight: 800; 
-            text-transform: uppercase; color: #64748b; 
-            border-bottom: 2px solid transparent; transition: all 0.2s; 
-            display: flex; align-items: center; 
+            padding: 20px 24px; font-size: 11px; font-weight: 800; 
+            text-transform: uppercase; color: rgba(255,255,255,0.6); 
+            border-bottom: 3px solid transparent; transition: all 0.3s; 
+            display: flex; align-items: center; letter-spacing: 0.05em;
         }
 
         .tab-btn.active { 
-            color: #3b82f6; border-bottom-color: #3b82f6; 
-            background: rgba(59, 130, 246, 0.1); 
+            color: #ffffff; border-bottom-color: #ffffff; 
+            background: rgba(255, 255, 255, 0.1); 
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
         }
 
-        .iframe-container { flex-grow: 1; position: relative; background: #0f172a; overflow: hidden; }
+        .iframe-container { 
+            flex-grow: 1; position: relative; 
+            background: rgba(15, 23, 42, 0.5); /* Semi-transparent base for iframes */
+            overflow: hidden; 
+        }
 
         iframe { 
             position: absolute; top: 0; left: 0; 
             width: 100%; height: 100%; border: none; 
             opacity: 0; pointer-events: none; 
-            transition: opacity 0.3s ease; 
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(10px);
         }
 
-        iframe.active { opacity: 1; pointer-events: auto; z-index: 10; }
+        iframe.active { 
+            opacity: 1; pointer-events: auto; z-index: 10; 
+            transform: translateY(0);
+        }
+
+        .nik-badge {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 0.75rem;
+            padding: 6px 12px;
+        }
     </style>
 </head>
 <body>
@@ -68,58 +84,49 @@
         <div class="tab-nav flex items-center justify-between px-6">
             <div class="flex">
                 <button onclick="switchTab('hyd-test')" id="btn-hyd-test" class="tab-btn active">
-                    <i class="fas fa-tools mr-2"></i> Hyd Test
+                    <i class="fas fa-bolt mr-2"></i> Hyd Test
                 </button>
                 <button onclick="switchTab('pump-menu')" id="btn-pump-menu" class="tab-btn">
-                    <i class="fas fa-chart-line mr-2"></i> Pump Perform
+                    <i class="fas fa-gauge-high mr-2"></i> Pump Perform
                 </button>
-                <button onclick="switchTab('history')" id="btn-history" class="tab-btn text-amber-500">
-                    <i class="fas fa-history mr-2"></i> History
+                <button onclick="switchTab('history')" id="btn-history" class="tab-btn">
+                    <i class="fas fa-clock-rotate-left mr-2 text-blue-300"></i> History
                 </button>
             </div>
+            
             <div class="flex items-center gap-4">
-                <button onclick="location.href='index.html'" class="text-slate-500 hover:text-white p-2">
-                    <i class="fas fa-home"></i>
+                <div class="nik-badge flex flex-col items-end">
+                    <span class="text-[7px] font-black text-blue-200 uppercase tracking-tighter">Verified User</span>
+                    <span id="user-display" class="text-[10px] font-bold text-white font-mono">NIK: ------</span>
+                </div>
+                <button onclick="location.href='index.html'" class="bg-white/10 hover:bg-red-500/40 w-10 h-10 rounded-xl border border-white/20 text-white transition-all flex items-center justify-center">
+                    <i class="fas fa-times"></i>
                 </button>
-                <span id="user-display" class="text-[8px] font-black text-slate-500 uppercase tracking-widest border-l border-white/10 pl-4">
-                    NIK Terminal
-                </span>
             </div>
         </div>
 
         <div class="iframe-container">
             <iframe src="hyd-test.html" id="frame-hyd-test" class="active"></iframe>
-            
             <iframe src="pump-nav.html" id="frame-pump-menu"></iframe>
-            
             <iframe src="history.html" id="frame-history"></iframe>
-            
             <iframe src="about:blank" id="frame-pump-analysis"></iframe>
         </div>
     </div>
 
     <script>
-        /**
-         * Logika Navigasi Terintegrasi
-         */
         function switchTab(tabId, url = null) {
-            // 1. Reset Semua Tab & Iframe
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('iframe').forEach(frame => frame.classList.remove('active'));
 
-            // 2. Aktifkan Button Tab (Handle Pump Analysis sebagai bagian dari Pump Perform)
             const targetBtnId = (tabId === 'pump-analysis') ? 'btn-pump-menu' : 'btn-' + tabId;
-            document.getElementById(targetBtnId).classList.add('active');
+            const btn = document.getElementById(targetBtnId);
+            if(btn) btn.classList.add('active');
 
-            // 3. Set URL jika dikirim (biasanya untuk pump-analysis.html?p=X)
             const targetFrame = document.getElementById('frame-' + tabId);
             if (url) targetFrame.src = url;
-
-            // 4. Tampilkan Frame
-            targetFrame.classList.add('active');
+            if (targetFrame) targetFrame.classList.add('active');
         }
 
-        // Ekspos ke global agar Iframe Pump-Nav bisa memerintah Parent untuk ganti tab
         window.parentNavigate = function(tabId, url) {
             switchTab(tabId, url);
         };
@@ -127,11 +134,15 @@
         function handleAutoScale() {
             const scaler = document.getElementById('main-scaler');
             const winW = window.innerWidth;
+            const winH = window.innerHeight;
             const targetW = 720;
+            
+            const scale = winW / targetW;
+            
             if (winW < targetW) {
-                const scale = winW / targetW;
                 scaler.style.transform = `translateX(-50%) scale(${scale})`;
-                scaler.style.height = (100 / scale) + "vh";
+                // Memastikan height tetap mengover layar saat di-scale down
+                scaler.style.height = (winH / scale) + "px";
             } else {
                 scaler.style.transform = `translateX(-50%) scale(1)`;
                 scaler.style.height = "100vh";
@@ -141,7 +152,8 @@
         window.addEventListener('resize', handleAutoScale);
         window.addEventListener('load', () => {
             handleAutoScale();
-            const userNik = localStorage.getItem('userNIK') || 'GUEST';
+            // Mengambil NIK sesuai setting yang disepakati
+            const userNik = localStorage.getItem('userNIK') || 'UNKNOWN';
             document.getElementById('user-display').innerText = `NIK: ${userNik}`;
         });
     </script>
