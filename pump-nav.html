@@ -2,32 +2,34 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pump Selection | NIK Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
         body { 
-            background: #f8fafc; 
+            background: #f1f5f9; /* Sama dengan background pump-analysis */
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
-            padding: 24px;
+            padding: 20px;
             display: flex;
             justify-content: center;
+            overflow-x: hidden;
         }
 
         .container {
             width: 100%;
-            max-width: 670px; /* Menyesuaikan padding scaler induk */
+            max-width: 680px;
         }
 
+        /* Card Styling yang lebih modern & senada */
         .pump-card {
             background: white;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 24px 16px;
+            border-radius: 20px;
+            padding: 20px 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             display: flex;
@@ -38,78 +40,101 @@
         }
 
         .pump-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
             border-color: #3b82f6;
-            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
         }
 
-        .pump-card:active { transform: scale(0.96); }
+        .pump-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 2px; 
+            background: linear-gradient(135deg, #3b82f6, transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .pump-card:hover::before { opacity: 1; }
 
         .pump-icon {
-            width: 48px;
-            height: 48px;
-            background: #f1f5f9;
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            background: #f8fafc;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            color: #64748b;
+            margin-bottom: 14px;
+            color: #94a3b8;
             transition: all 0.3s;
+            border: 1px solid #f1f5f9;
         }
 
         .pump-card:hover .pump-icon {
             background: #eff6ff;
             color: #3b82f6;
+            transform: rotate(45deg);
         }
 
         .status-badge {
             font-size: 8px;
             font-weight: 800;
             text-transform: uppercase;
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 100px;
             background: #f0fdf4;
             color: #16a34a;
-            margin-top: 8px;
+            margin-top: 10px;
             letter-spacing: 0.05em;
+            border: 1px solid #dcfce7;
         }
 
-        /* Scan-line animation effect */
-        .pump-card::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
+        /* NIK Persistence Info Bar */
+        .info-bar {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
-        .pump-card:hover::after { opacity: 1; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="flex items-end justify-between mb-8 border-b border-slate-200 pb-4">
+    <div class="flex items-end justify-between mb-8 border-b-2 border-slate-200 pb-5">
         <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tighter uppercase italic">
-                Pump <span class="text-blue-600">Modules</span>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="h-2 w-8 bg-blue-600 rounded-full"></span>
+                <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">Diagnostic Terminal</span>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
+                Mainpump <span class="text-blue-600">Modules</span>
             </h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Select component for performance analysis</p>
         </div>
         <div class="text-right">
-            <span class="text-[9px] font-black text-slate-300 uppercase">System v2.0</span>
+            <span id="active-nik" class="text-[10px] font-black text-slate-400 font-mono bg-slate-200 px-3 py-1 rounded-md">NIK: ------</span>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="pump-grid">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="pump-grid">
         </div>
 
-    <div class="mt-8 p-4 border border-dashed border-slate-300 rounded-xl bg-slate-50">
-        <div class="flex items-center gap-3">
-            <i class="fas fa-info-circle text-slate-400"></i>
-            <p class="text-[10px] font-bold text-slate-500 leading-relaxed uppercase">
-                Data yang diinput pada setiap modul akan otomatis disinkronkan dengan NIK Terminal pusat berdasarkan Model Unit dan Serial Number yang aktif.
+    <div class="mt-8 info-bar">
+        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
+            <i class="fas fa-sync-alt animate-spin-slow"></i>
+        </div>
+        <div>
+            <p class="text-[10px] font-black text-slate-800 uppercase tracking-tight">Real-time Data Persistence Active</p>
+            <p class="text-[9px] font-bold text-slate-400 uppercase leading-none mt-1">
+                Setiap perubahan pada PUMP 1-8 akan tersimpan otomatis di NIK Cloud Session.
             </p>
         </div>
     </div>
@@ -117,35 +142,54 @@
 
 <script>
     const grid = document.getElementById('pump-grid');
+    const userNik = localStorage.getItem('userNIK') || 'GUEST';
+    document.getElementById('active-nik').innerText = `NIK: ${userNik}`;
     
     // Generate 8 Pump Modules
     for (let i = 1; i <= 8; i++) {
         const card = document.createElement('div');
         card.className = 'pump-card';
         
-        // Fungsi Navigasi ke Parent
         card.onclick = () => {
-            if (window.parent && window.parent.parentNavigate) {
-                // Mengirim perintah ke integrated-terminal.html
-                window.parent.parentNavigate('pump-analysis', `pump-analysis.html?p=${i}`);
-            } else {
-                // Fallback jika dibuka stand-alone
-                window.location.href = `pump-analysis.html?p=${i}`;
-            }
+            // Animasi tekan sebelum pindah
+            card.style.transform = "scale(0.95)";
+            setTimeout(() => {
+                if (window.parent && window.parent.parentNavigate) {
+                    window.parent.parentNavigate('pump-analysis', `pump-analysis.html?p=${i}`);
+                } else {
+                    window.location.href = `pump-analysis.html?p=${i}`;
+                }
+            }, 100);
         };
+        
+        // Cek apakah ada data tersimpan untuk pump ini di Master Store
+        const masterStore = JSON.parse(localStorage.getItem('nik_master_store')) || {};
+        const hasData = masterStore[i] ? true : false;
         
         card.innerHTML = `
             <div class="pump-icon">
-                <i class="fas fa-gears text-xl"></i>
+                <i class="fas fa-gauge-high text-xl"></i>
             </div>
-            <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Module 0${i}</div>
-            <div class="text-lg font-black text-slate-800 italic">PUMP ${i}</div>
-            <div class="status-badge">
-                <i class="fas fa-check-circle mr-1"></i> Ready
+            <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Diagnostic 0${i}</div>
+            <div class="text-xl font-black text-slate-800 italic">PUMP ${i}</div>
+            <div class="status-badge ${hasData ? 'bg-blue-50 text-blue-600 border-blue-100' : ''}">
+                <i class="fas ${hasData ? 'fa-database' : 'fa-check-circle'} mr-1"></i> 
+                ${hasData ? 'In Session' : 'Ready'}
             </div>
         `;
         grid.appendChild(card);
     }
+
+    // CSS Spin slow
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
+    `;
+    document.head.appendChild(style);
 </script>
 
 </body>
