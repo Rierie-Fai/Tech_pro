@@ -55,7 +55,6 @@
     </div>
 
     <script>
-        // Supabase Initialization
         const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
 
         const currentUserNik = localStorage.getItem('userNIK') || 'GUEST';
@@ -80,6 +79,9 @@
             container.innerHTML = logs.map(log => {
                 const canEdit = (currentUserRole === 'admin' || log.nik === currentUserNik);
                 
+                // Objek data di-string-kan dengan aman untuk atribut HTML
+                const safeData = JSON.stringify(log).replace(/'/g, "&apos;");
+
                 return `
                     <div class="log-card">
                         <div class="flex items-center gap-4">
@@ -100,7 +102,7 @@
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            <button onclick='initEdit("${log.id}", ${JSON.stringify(log)})' 
+                            <button onclick='initEdit("${log.id}", ${safeData})' 
                                 class="btn-action ${canEdit ? 'btn-edit hover:bg-blue-600' : 'btn-view hover:bg-slate-800'} active:scale-95">
                                 <i class="fas ${canEdit ? 'fa-edit' : 'fa-eye'} mr-1"></i>
                                 ${canEdit ? 'Buka Master' : 'Lihat Data'}
@@ -112,33 +114,33 @@
         }
 
         function initEdit(id, logData) {
-            // 1. CLEAR SESSION LAMA
+            // 1. CLEAR & RESET SESSION
             localStorage.removeItem('editMode');
-            localStorage.removeItem('editId');
             localStorage.removeItem('editData');
-            localStorage.removeItem('nik_master_store');
-            localStorage.removeItem('nik_sync_unit_model');
-            localStorage.removeItem('nik_sync_serial_num');
 
-            // 2. SET SESSION IDENTITAS (Untuk Hydraulic Test)
+            // 2. PREPARE CLEAN OBJECT (Memastikan struktur data valid)
+            const payload = typeof logData === 'string' ? JSON.parse(logData) : logData;
+
+            // 3. SET DATA UNTUK HYDRAULIC TEST (Penting: Format harus identik dengan fetch database)
             localStorage.setItem('editMode', 'true');
-            localStorage.setItem('editId', id);
-            localStorage.setItem('editData', JSON.stringify(logData));
-            localStorage.setItem('nik_sync_unit_model', logData.unit_model || '');
-            localStorage.setItem('nik_sync_serial_num', logData.serial_number || '');
+            localStorage.setItem('editData', JSON.stringify(payload));
+            
+            // 4. SYNC IDENTITAS (Untuk sinkronisasi antar tab modul)
+            localStorage.setItem('nik_sync_unit_model', payload.unit_model || '');
+            localStorage.setItem('nik_sync_serial_num', payload.serial_number || '');
 
-            // 3. SET DATA TEKNIS (Untuk Pump Performance)
-            if (logData.all_pumps_data) {
-                localStorage.setItem('nik_master_store', JSON.stringify(logData.all_pumps_data));
+            // 5. DATA PERFORMA POMPA (Jika ada)
+            if (payload.all_pumps_data) {
+                localStorage.setItem('nik_master_store', JSON.stringify(payload.all_pumps_data));
             }
             
-            // 4. NAVIGASI: Buka Tab Hydraulic Test Dahulu
+            // 6. NAVIGASI
             if(window.parent && window.parent.switchTab) {
-                // Diarahkan ke tab 'hyd-test'
+                // Pindah ke tab Hydraulic Test
                 window.parent.switchTab('hyd-test');
             } else {
-                // Fallback jika tidak dalam iframe terminal
-                window.location.href = `hydraulic-test.html`;
+                // Manual Redirect jika tidak dalam iframe
+                window.location.href = 'hydraulic-test.html';
             }
         }
 
