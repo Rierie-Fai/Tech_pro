@@ -3,226 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Integrated Adjustment | NIK Terminal</title>
+    <title>Integrated Hydraulic Test Pro | NIK Terminal</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
         
+        :root { --base-width: 720px; }
+
         body { 
-            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 50%, #0f172a 100%); 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            margin: 0; padding: 0;
-            overflow: hidden; 
-            height: 100vh;
+            background: #f1f5f9; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
         }
 
-        #main-scaler {
-            width: 720px;
-            height: 100vh;
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translateX(-50%) scale(1);
-            transform-origin: top center;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0; 
+        #scaler-context { 
+            width: var(--base-width); 
+            transform-origin: top center; 
+            transition: transform 0.2s ease-out; 
+            flex-shrink: 0; 
+            padding: 1.5rem; 
+            position: relative; 
+            z-index: 10;
         }
 
-        .tab-nav { 
-            background: rgba(255, 255, 255, 0.1); 
-            backdrop-filter: blur(20px) saturate(180%); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
-            z-index: 50; flex-shrink: 0;
-        }
+        .glass-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 1.5rem; overflow: hidden; margin-bottom: 1rem; }
+        .header-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
+        .input-glacial { width: 100%; padding: 10px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.75rem; font-size: 12px; font-weight: 700; outline: none; color: #1e3a8a; transition: 0.2s; }
+        .input-glacial:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .input-readonly { background: #f1f5f9 !important; color: #94a3b8 !important; cursor: not-allowed; border-style: dashed; }
+        
+        .table-custom { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc !important; color: #64748b !important; font-size: 7px; text-transform: uppercase; padding: 8px 2px !important; font-weight: 800; border-bottom: 2px solid #e2e8f0; text-align: center; }
+        td { border-bottom: 1px solid #f1f5f9; padding: 8px 4px; font-size: 10px; text-align: center; font-weight: 600; }
+        
+        .std-text { color: #f87171; font-weight: 800; font-size: 9px; }
+        .qc-output { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
+        .chart-container { height: 320px; width: 100%; padding: 15px; }
+        
+        #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .tab-btn.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
 
-        /* Home Button Style */
-        .home-btn {
-            padding: 0 20px;
-            color: rgba(255,255,255,0.8);
-            border-right: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .home-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: #ffffff;
-        }
-
-        .tab-btn { 
-            padding: 20px 24px; font-size: 11px; font-weight: 800; 
-            text-transform: uppercase; color: rgba(255,255,255,0.6); 
-            border-bottom: 3px solid transparent; transition: all 0.3s; 
-            display: flex; align-items: center; letter-spacing: 0.05em;
-        }
-
-        .tab-btn.active { 
-            color: #ffffff; border-bottom-color: #ffffff; 
-            background: rgba(255, 255, 255, 0.1); 
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-
-        .iframe-container { 
-            flex-grow: 1; position: relative; 
-            background: rgba(15, 23, 42, 0.5); 
-            overflow: hidden; 
-        }
-
-        iframe { 
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; border: none; 
-            opacity: 0; pointer-events: none; 
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(10px);
-        }
-
-        iframe.active { 
-            opacity: 1; pointer-events: auto; z-index: 10; 
-            transform: translateY(0);
-        }
-
-        .nik-badge {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 0.75rem;
-            padding: 6px 12px;
-        }
-
-        #auth-guard {
-            position: fixed; inset: 0; background: #0f172a;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 100;
-        }
+        #history-panel { position: fixed; bottom: 20px; right: 20px; width: 280px; z-index: 1000; transition: all 0.3s ease; }
+        #history-panel.minimized { width: 140px; height: 40px; overflow: hidden; }
+        .history-content { max-height: 350px; overflow-y: auto; background: #f8fafc; }
     </style>
 </head>
 <body>
 
-    <div id="auth-guard">
-        <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-white font-black text-[10px] tracking-[0.3em] uppercase italic">Verifying NIK Session...</p>
+    <div id="loadingOverlay">
+        <div class="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 font-black text-white text-[10px] tracking-widest uppercase italic">NIK Cloud Sync Active...</p>
     </div>
 
-    <div id="main-scaler">
-        <div class="tab-nav flex items-center justify-between">
-            <div class="flex h-full">
-                <a href="index.html" class="home-btn" title="Back to Home">
-                    <i class="fas fa-home text-lg"></i>
-                </a>
+    <div id="history-panel" class="minimized glass-card border-2 border-blue-600 shadow-2xl">
+        <div onclick="toggleHistory()" class="bg-blue-600 p-3 flex justify-between items-center cursor-pointer">
+            <h3 class="text-[9px] font-black text-white uppercase"><i class="fas fa-database mr-2"></i>NIK Riwayat</h3>
+            <i id="hist-icon" class="fas fa-chevron-up text-white text-[9px]"></i>
+        </div>
+        <div class="history-content p-2">
+            <div id="history-list" class="space-y-2"><p class="text-[8px] text-center text-slate-400 italic py-4">Loading cloud data...</p></div>
+        </div>
+    </div>
 
-                <button onclick="switchTab('hyd-test')" id="btn-hyd-test" class="tab-btn active">
-                    <i class="fas fa-bolt mr-2"></i> Hyd Test
-                </button>
-                <button onclick="switchTab('pump-menu')" id="btn-pump-menu" class="tab-btn">
-                    <i class="fas fa-gauge-high mr-2"></i> Pump Perform
-                </button>
-                <button onclick="switchTab('history')" id="btn-history" class="tab-btn">
-                    <i class="fas fa-clock-rotate-left mr-2 text-blue-300"></i> History
-                </button>
-            </div>
-            
-            <div class="flex items-center gap-4 px-6">
-                <div class="nik-badge flex flex-col items-end">
-                    <span class="text-[7px] font-black text-blue-200 uppercase tracking-tighter">Verified User</span>
-                    <span id="user-display" class="text-[10px] font-bold text-white font-mono">NIK: ------</span>
+    <div id="scaler-context">
+        <header class="glass-card p-5 flex justify-between items-center no-print border-l-8 border-blue-600">
+            <div class="flex items-center gap-3">
+                <div>
+                    <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">Hydraulic <span class="text-blue-600">Tune-Up</span></h1>
+                    <div id="accessBadge" class="inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">
+                        <i class="fas fa-sync-alt mr-1"></i> <span id="sync-status">New Entry Mode</span>
+                    </div>
                 </div>
-                <button onclick="logout()" class="bg-white/10 hover:bg-red-500/40 w-10 h-10 rounded-xl border border-white/20 text-white transition-all flex items-center justify-center">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="switchTab('general')" id="tab-gen" class="tab-btn active px-3 py-1 text-[9px] font-black uppercase">General Test</button>
+                <button onclick="switchTab('pump')" id="tab-pump" class="tab-btn px-3 py-1 text-[9px] font-black uppercase">Pump Analysis</button>
+                <button type="button" id="btnSave" onclick="saveToCloud()" class="ml-4 bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[9px] uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">Sync Data</button>
+            </div>
+        </header>
+
+        <div class="glass-card p-6">
+            <input type="hidden" id="current_record_id">
+            <div class="grid grid-cols-4 gap-4">
+                <div class="col-span-1"><label class="header-label text-blue-600">Date</label><input type="date" id="test_date" class="input-glacial !p-2"></div>
+                <div class="col-span-1"><label class="header-label">Unit Model</label><input type="text" id="unit_model" class="input-glacial !p-2 uppercase" placeholder="EX3600-6"></div>
+                <div class="col-span-1"><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial !p-2 uppercase" placeholder="SN12345"></div>
+                <div class="col-span-1">
+                    <label class="header-label">NIK (Settings)</label>
+                    <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono italic tracking-widest">---</div>
+                    <input type="hidden" id="nik">
+                </div>
+                <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
+                <div class="col-span-2"><label class="header-label">Hour Meter (HM)</label><input type="number" id="hour_meter" class="input-glacial" placeholder="0.0"></div>
             </div>
         </div>
 
-        <div class="iframe-container">
-            <iframe src="hyd-test.html" id="frame-hyd-test" class="active"></iframe>
-            <iframe src="pump-nav.html" id="frame-pump-menu"></iframe>
-            <iframe src="history.html" id="frame-history"></iframe>
-            <iframe src="about:blank" id="frame-pump-analysis"></iframe>
+        <div id="section-general" class="space-y-4">
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-history mr-2"></i>1. Component & Oil History</h3></div>
+                <table class="w-full">
+                    <thead><tr><th class="text-left pl-4">Component</th><th>Serial</th><th>Part No</th><th>Lifetime</th><th>Model</th></tr></thead>
+                    <tbody id="comp-history-body"></tbody>
+                </table>
+            </div>
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-gauge-high mr-2"></i>2. Main Relief Pressure (Kgf/cm²)</h3></div>
+                <div class="p-5 grid grid-cols-4 gap-4" id="pump-relief-grid"></div>
+                <div class="bg-blue-50 py-2 text-center border-t border-blue-100"><span class="text-[9px] font-black text-blue-400 tracking-widest uppercase italic">STANDARD: 300 - 320 Kgf/cm²</span></div>
+            </div>
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-bolt mr-2"></i>3. Engine Speed (RPM)</h3></div>
+                <table class="w-full" id="engine-speed-table">
+                    <thead><tr><th class="text-left pl-4">Condition</th><th>Standard</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
+                    <tbody id="engine-speed-body"></tbody>
+                </table>
+            </div>
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-stopwatch mr-2"></i>4. Cycle Time (Sec)</h3></div>
+                <table class="w-full text-center" id="cycle-time-table">
+                    <thead><tr><th class="text-left pl-4">Action</th><th>Std</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
+                    <tbody id="cycle-time-body"></tbody>
+                </table>
+            </div>
         </div>
+
+        <div id="section-pump" class="hidden space-y-4">
+            <div class="flex justify-between items-center bg-slate-800 text-white p-3 rounded-xl mb-2">
+                <span class="text-[10px] font-black uppercase">Active Analysis: Pump <span id="active-p-num">1</span></span>
+                <select id="pump-select" onchange="changePump(this.value)" class="bg-slate-700 text-[10px] font-bold border-none rounded px-2 py-1 outline-none">
+                    <option value="1">PUMP 1</option><option value="2">PUMP 2</option><option value="3">PUMP 3</option><option value="4">PUMP 4</option>
+                    <option value="5">PUMP 5</option><option value="6">PUMP 6</option><option value="7">PUMP 7</option><option value="8">PUMP 8</option>
+                </select>
+            </div>
+            <div id="pump-tables-container"></div>
+            <div class="glass-card bg-white chart-container"><canvas id="nikChart"></canvas></div>
+            <textarea id="nik-notes" class="w-full glass-card p-3 text-[11px] font-semibold h-20 focus:outline-none" placeholder="Technical analysis notes..."></textarea>
+        </div>
+
+        <footer class="text-center py-6">
+            <p class="text-slate-300 text-[8px] uppercase font-black tracking-[0.4em] italic">© 2026 PT HEXINDO ADARO | NIK SECURED TERMINAL</p>
+        </footer>
     </div>
 
     <script>
-        const SUPABASE_URL = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
+        
+        let currentPump = "1";
+        let nikChart;
+        let masterStore = JSON.parse(localStorage.getItem('nik_master_store')) || {};
 
-        async function checkAuth() {
-            const userNik = localStorage.getItem('userNIK');
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
+        const pumpFlowStd = [
+            { label: 'P50', p: '50 ± 2', ne: 1900, i: 1.02, np: 1838, min: 524, max: 535, std: '502 ± 5' },
+            { label: 'P137', p: '137 ± 5', ne: 1900, i: 1.02, np: 1838, min: 512, max: 523, std: '491 ± 5' },
+            { label: 'P170', p: '170', ne: 1900, i: 1.02, np: 1838, min: 422, max: 453, std: '415 ± 15' },
+            { label: 'P250', p: '250 ± 5', ne: 1900, i: 1.02, np: 1838, min: 284, max: 315, std: '284 ± 15' },
+            { label: 'P300', p: '300 ± 2', ne: 1900, i: 1.02, np: 1838, min: 234, max: 245, std: '227 ± 5' }
+        ];
 
-            if (!userNik || isLoggedIn !== 'true') {
-                window.location.replace('login.html');
-                return;
-            }
-
-            try {
-                const { data, error } = await sb
-                    .from('users')
-                    .select('nik, full_name')
-                    .eq('nik', userNik)
-                    .single();
-
-                if (error || !data) {
-                    logout();
-                    return;
-                }
-
-                document.getElementById('user-display').innerText = `NIK: ${data.nik}`;
-                document.getElementById('auth-guard').style.display = 'none';
-                document.getElementById('main-scaler').style.opacity = '1';
-                handleAutoScale();
-
-            } catch (err) {
-                window.location.replace('login.html');
-            }
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.replace('login.html');
-        }
-
-        function switchTab(tabId, url = null) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('iframe').forEach(frame => frame.classList.remove('active'));
-
-            const targetBtnId = (tabId === 'pump-analysis') ? 'btn-pump-menu' : 'btn-' + tabId;
-            const btn = document.getElementById(targetBtnId);
-            if(btn) btn.classList.add('active');
-
-            const targetFrame = document.getElementById('frame-' + tabId);
-            if (url) targetFrame.src = url;
-            if (targetFrame) targetFrame.classList.add('active');
-        }
-
-        window.parentNavigate = function(tabId, url) {
-            switchTab(tabId, url);
-        };
-
-        function handleAutoScale() {
-            const scaler = document.getElementById('main-scaler');
-            if (scaler.style.opacity === "0") return;
-
-            const winW = window.innerWidth;
-            const winH = window.innerHeight;
-            const targetW = 720;
-            const scale = winW / targetW;
-            
-            if (winW < targetW) {
-                scaler.style.transform = `translateX(-50%) scale(${scale})`;
-                scaler.style.height = (winH / scale) + "px";
+        function runAutoScale() {
+            const scaler = document.getElementById('scaler-context');
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth / 720;
+            if (windowWidth < 720) {
+                scaler.style.transform = `scale(${scaleRatio})`;
+                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
             } else {
-                scaler.style.transform = `translateX(-50%) scale(1)`;
-                scaler.style.height = "100vh";
+                scaler.style.transform = `scale(1)`;
+                scaler.style.marginBottom = `0px`;
             }
         }
 
-        window.addEventListener('resize', handleAutoScale);
-        window.addEventListener('DOMContentLoaded', checkAuth);
+        async function syncUserSession() {
+            const userNIK = localStorage.getItem('userNIK');
+            if (!userNIK) return;
+            const { data, error } = await sb.from('users').select('nik, full_name').eq('nik', userNIK).single();
+            if (data) {
+                document.getElementById('display-nik').innerText = data.nik;
+                document.getElementById('nik').value = data.nik;
+                document.getElementById('nama_pic').value = data.full_name;
+                localStorage.setItem('fullName', data.full_name);
+            }
+        }
+
+        function toggleHistory() {
+            const p = document.getElementById('history-panel');
+            p.classList.toggle('minimized');
+            if(!p.classList.contains('minimized')) fetchHistory();
+        }
+
+        async function fetchHistory() {
+            const list = document.getElementById('history-list');
+            const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false }).limit(10);
+            if (error) { list.innerHTML = `<p class="text-[7px] text-red-500 text-center">Error</p>`; return; }
+            list.innerHTML = data.map(rec => `
+                <div class="bg-white p-2 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
+                    <div class="overflow-hidden">
+                        <p class="text-[9px] font-black truncate">${rec.unit_model || 'UNIT'}</p>
+                        <p class="text-[7px] text-slate-400 font-bold">${new Date(rec.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="loadRecord('${rec.id}')" class="text-blue-500 p-1"><i class="fas fa-edit"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadRecord(id) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            const { data, error } = await sb.from('pump_performance_reports').select('*').eq('id', id).single();
+            if (data) {
+                document.getElementById('current_record_id').value = data.id;
+                document.getElementById('test_date').value = data.test_date;
+                document.getElementById('unit_model').value = data.unit_model;
+                document.getElementById('serial_num').value = data.serial_number;
+                document.getElementById('hour_meter').value = data.hour_meter;
+                const setVal = (sel, vals) => document.querySelectorAll(sel).forEach((el, i) => el.value = vals[i] || '');
+                setVal('.data-comp', data.component_history || []);
+                setVal('.data-pump', data.pump_relief_values || []);
+                setVal('.data-eng', data.engine_speed_values || []);
+                setVal('.data-cyc', data.cycle_time_values || []);
+                masterStore = data.all_pumps_data || {};
+                renderPumpAnalysis();
+                toggleHistory();
+            }
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function renderPumpAnalysis() {
+            const container = document.getElementById('pump-tables-container');
+            const pumpData = masterStore[currentPump] || { valuesBefore: [], valuesAfter: [] };
+            const buildTable = (title, type) => {
+                const values = (type === 'after' ? pumpData.valuesAfter : pumpData.valuesBefore) || [];
+                return `
+                    <div class="glass-card mb-6">
+                        <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-blue-600 uppercase px-2">${title}</h3></div>
+                        <table class="table-custom">
+                            <thead><tr><th>Point</th><th>Press</th><th>Measured Q</th><th>QC</th><th>Standard</th></tr></thead>
+                            <tbody>
+                                ${pumpFlowStd.map((item, i) => {
+                                    const val = values[i] || '';
+                                    const qc = val ? Math.round((item.np * val) / (item.i * item.ne)) : '-';
+                                    return `
+                                        <tr>
+                                            <td class="font-black">${item.label}</td>
+                                            <td class="text-slate-400">${item.p}</td>
+                                            <td><input type="number" class="input-glacial !p-1 text-center w-16" value="${val}" oninput="updatePumpVal(${i}, this.value, '${type}')"></td>
+                                            <td class="qc-output text-blue-600" id="qc-${type}-${i}">${qc}</td>
+                                            <td class="font-bold text-slate-500">${item.std}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            };
+            container.innerHTML = buildTable('1. BEFORE ADJUSTMENT', 'before') + buildTable('2. AFTER READJUSTMENT', 'after');
+            updateChart();
+        }
+
+        function updatePumpVal(idx, val, type) {
+            if(!masterStore[currentPump]) masterStore[currentPump] = { valuesBefore: [], valuesAfter: [] };
+            const key = type === 'after' ? 'valuesAfter' : 'valuesBefore';
+            if(!masterStore[currentPump][key]) masterStore[currentPump][key] = [];
+            masterStore[currentPump][key][idx] = val;
+            const item = pumpFlowStd[idx];
+            const qcTarget = document.getElementById(`qc-${type}-${idx}`);
+            if (qcTarget) qcTarget.innerText = val ? Math.round((item.np * val) / (item.i * item.ne)) : '-';
+            updateChart();
+            localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
+        }
+
+        function initGeneralForms() {
+            const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8"];
+            const cBody = document.getElementById('comp-history-body');
+            cBody.innerHTML = "";
+            comps.forEach(c => cBody.innerHTML += `<tr><td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="number" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td></tr>`);
+            const rGrid = document.getElementById('pump-relief-grid');
+            rGrid.innerHTML = "";
+            for(let i=1; i<=8; i++) rGrid.innerHTML += `<div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i}</label><input type="number" class="input-glacial text-center data-pump"></div>`;
+            const engData = [{n: "Low Idle", s: "780-820"}, {n: "High Idle", s: "1850-1950"}, {n: "Auto Idle", s: "1350-1450"}, {n: "Relief Idle", s: "1770-1830"}];
+            const eBody = document.getElementById('engine-speed-body'); eBody.innerHTML = "";
+            engData.forEach(e => eBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">${e.n}</td><td class="text-center text-[10px] text-slate-400 font-bold">${e.s}</td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td></tr>`);
+            const actions = [{n: "Boom Raise", s: "8.2±0.5"},{n: "Arm Roll-in", s: "7.0±0.5"},{n: "Arm Roll-out", s: "7.0±0.5"},{n: "Bucket Roll-in", s: "4.7±0.5"},{n: "Bucket Roll-out", s: "4.2±0.5"},{n: "Swing RH", s: "57±3"},{n: "Swing LH", s: "57±3"}];
+            const cycBody = document.getElementById('cycle-time-body'); cycBody.innerHTML = "";
+            actions.forEach(a => cycBody.innerHTML += `<tr><td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td><td class="std-text">${a.s}</td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td></tr>`);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('nikChart').getContext('2d');
+            if (nikChart) nikChart.destroy();
+            nikChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: pumpFlowStd.map(d => d.label),
+                    datasets: [
+                        { label: 'Min', data: pumpFlowStd.map(d => d.min), borderColor: '#facc15', borderDash: [5,5], pointRadius: 0, fill: false },
+                        { label: 'Max', data: pumpFlowStd.map(d => d.max), borderColor: '#ef4444', borderDash: [5,5], pointRadius: 0, fill: false },
+                        { label: 'Before', data: [], borderColor: '#94a3b8', tension: 0.3, pointRadius: 4, fill: false },
+                        { label: 'After', data: [], borderColor: '#3b82f6', tension: 0.3, pointRadius: 4, fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function updateChart() {
+            if(!nikChart) return;
+            const pumpData = masterStore[currentPump] || { valuesBefore: [], valuesAfter: [] };
+            const calcQC = (v, i) => v ? Math.round((pumpFlowStd[i].np * v) / (pumpFlowStd[i].i * pumpFlowStd[i].ne)) : null;
+            nikChart.data.datasets[2].data = (pumpData.valuesBefore || []).map((v, i) => calcQC(v, i));
+            nikChart.data.datasets[3].data = (pumpData.valuesAfter || []).map((v, i) => calcQC(v, i));
+            nikChart.update();
+        }
+
+        async function saveToCloud() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            const recId = document.getElementById('current_record_id').value;
+            const record = {
+                test_date: document.getElementById('test_date').value,
+                nik: document.getElementById('nik').value,
+                unit_model: document.getElementById('unit_model').value,
+                serial_number: document.getElementById('serial_num').value,
+                hour_meter: document.getElementById('hour_meter').value,
+                component_history: Array.from(document.querySelectorAll('.data-comp')).map(i => i.value),
+                pump_relief_values: Array.from(document.querySelectorAll('.data-pump')).map(i => i.value),
+                engine_speed_values: Array.from(document.querySelectorAll('.data-eng')).map(i => i.value),
+                cycle_time_values: Array.from(document.querySelectorAll('.data-cyc')).map(i => i.value),
+                all_pumps_data: masterStore
+            };
+            let res = recId ? await sb.from('pump_performance_reports').update(record).eq('id', recId) : await sb.from('pump_performance_reports').insert([record]);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            if (res.error) alert("Sync Error!"); else alert("✅ Synchronized!");
+        }
+
+        function switchTab(t) {
+            document.getElementById('section-general').classList.toggle('hidden', t !== 'general');
+            document.getElementById('section-pump').classList.toggle('hidden', t !== 'pump');
+            document.getElementById('tab-gen').classList.toggle('active', t === 'general');
+            document.getElementById('tab-pump').classList.toggle('active', t === 'pump');
+            if(t === 'pump') { if(!nikChart) initChart(); renderPumpAnalysis(); }
+        }
+
+        function changePump(v) { currentPump = v; document.getElementById('active-p-num').innerText = v; renderPumpAnalysis(); }
+
+        window.onload = async () => {
+            initGeneralForms();
+            runAutoScale();
+            window.addEventListener('resize', runAutoScale);
+            await syncUserSession();
+            document.getElementById('test_date').valueAsDate = new Date();
+            fetchHistory();
+        };
     </script>
 </body>
 </html>
