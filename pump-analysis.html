@@ -14,16 +14,14 @@
         html, body { background: #f1f5f9; margin: 0; padding: 0; width: 100%; overflow-x: hidden; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
         
-        /* Scaler logic sync with NIK Terminal */
-        #nik-scaler { width: 720px; transform-origin: top center; padding: 15px; box-sizing: border-box; transition: transform 0.2s ease-out; }
+        #nik-scaler { width: 720px; transform-origin: top center; padding: 15px; box-sizing: border-box; transition: transform 0.2s ease-out; position: relative; }
         
-        .glass-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; }
+        .glass-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden; position: relative; }
         
         .table-custom { width: 100%; border-collapse: collapse; table-layout: fixed; }
         .table-custom th { font-size: 8px; color: #64748b; background: #f8fafc; padding: 10px 2px; text-transform: uppercase; font-weight: 800; border-bottom: 2px solid #e2e8f0; text-align: center; }
         .table-custom td { padding: 8px 2px; font-size: 11px; border-bottom: 1px solid #f1f5f9; text-align: center; font-weight: 600; }
         
-        /* Input Glacial Light Version */
         .input-q { 
             width: 55px; padding: 6px; font-size: 11px; border: 2px solid #e2e8f0; 
             border-radius: 8px; text-align: center; font-weight: 800; color: #1e3a8a; 
@@ -31,7 +29,7 @@
         }
         .input-q:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         
-        /* NIK 3-COLOR VALIDATION (High Contrast) */
+        /* NIK 3-COLOR VALIDATION */
         .val-low { border-color: #facc15 !important; background-color: #fefce8 !important; color: #854d0e !important; }
         .val-ok { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46 !important; }
         .val-high { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
@@ -39,7 +37,21 @@
         .qc-output { font-size: 12px; font-weight: 900; color: #1e293b; font-family: 'JetBrains Mono', monospace; }
         .chart-container { height: 320px; width: 100%; padding: 15px; }
 
+        /* Watermark Style */
+        #watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 60px; font-weight: 900;
+            color: rgba(239, 68, 68, 0.07);
+            pointer-events: none; z-index: 50;
+            white-space: nowrap; display: none;
+            text-transform: uppercase; letter-spacing: 0.2em;
+        }
+
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        
+        @media print { .no-print { display: none; } #nik-scaler { transform: scale(1) !important; width: 100%; } }
     </style>
 </head>
 <body>
@@ -50,14 +62,18 @@
 </div>
 
 <div id="nik-scaler">
+    <div id="watermark">RESTRICTED VIEW</div>
+
     <div class="mb-3 no-print flex justify-between items-center px-1">
-        <button onclick="window.parent.switchTab('pump-menu')" class="group flex items-center text-[10px] font-black text-slate-400 uppercase hover:text-blue-600 transition-all">
+        <button onclick="history.back()" class="group flex items-center text-[10px] font-black text-slate-400 uppercase hover:text-blue-600 transition-all">
             <div class="w-6 h-6 rounded-full bg-slate-200 group-hover:bg-blue-100 flex items-center justify-center mr-2 transition-all">
                 <i class="fas fa-arrow-left text-[8px]"></i>
             </div>
             Back to Selection
         </button>
-        <span class="text-[8px] font-black text-slate-300 tracking-[0.3em] uppercase">Diagnostic Module v2.6</span>
+        <div id="accessBadge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">
+            <i class="fas fa-pen-nib mr-1"></i> New Entry Mode
+        </div>
     </div>
 
     <div class="glass-card mb-4 p-5 border-l-8 border-blue-600 flex justify-between items-center bg-white">
@@ -79,8 +95,8 @@
             </div>
         </div>
         <div class="text-right">
-            <div class="bg-blue-50 px-3 py-1 rounded-full inline-block mb-2 border border-blue-100">
-                <p id="user-nik-display" class="text-[9px] font-black text-blue-700 font-mono">NIK: LOADING...</p>
+            <div class="bg-slate-900 px-3 py-1 rounded-full inline-block mb-2 border border-slate-700">
+                <p id="user-nik-display" class="text-[9px] font-black text-white font-mono">NIK: LOADING...</p>
             </div>
             <br>
             <button onclick="createNewReport()" class="text-[9px] font-bold text-slate-400 hover:text-red-500 uppercase transition-colors">
@@ -89,7 +105,7 @@
         </div>
     </div>
 
-    <div class="space-y-4">
+    <div class="space-y-4" id="main-content-area">
         <div>
             <h2 class="text-[9px] font-black text-slate-500 uppercase mb-2 px-1 flex items-center">
                 <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mr-2"></span> 1. Before Readjustment
@@ -97,7 +113,7 @@
             <div class="glass-card">
                 <table class="table-custom">
                     <thead>
-                        <tr><th style="width:70px">Point</th><th style="width:85px">Press</th><th style="width:40px">Ne</th><th style="width:75px" class="text-blue-600">Measured Q</th><th style="width:35px">i</th><th style="width:40px">Np</th><th style="width:65px">Qc</th><th style="width:85px">Standard</th><th style="width:90px">Guidance</th></tr>
+                        <tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr>
                     </thead>
                     <tbody id="measurement-body"></tbody>
                 </table>
@@ -111,7 +127,7 @@
             <div class="glass-card">
                 <table class="table-custom">
                     <thead>
-                        <tr><th style="width:70px">Point</th><th style="width:85px">Press</th><th style="width:40px">Ne</th><th style="width:75px" class="text-blue-600">Measured Q</th><th style="width:35px">i</th><th style="width:40px">Np</th><th style="width:65px">Qc</th><th style="width:85px">Standard</th><th style="width:90px">Guidance</th></tr>
+                        <tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr>
                     </thead>
                     <tbody id="readjustment-body"></tbody>
                 </table>
@@ -125,11 +141,8 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-3 gap-3 mt-4">
+    <div class="grid grid-cols-3 gap-3 mt-4 no-print">
         <div class="col-span-2 glass-card p-3 bg-white border-dashed border-2 flex items-start gap-3">
-            <div class="bg-slate-100 p-2 rounded-lg text-slate-400">
-                <i class="fas fa-comment-medical"></i>
-            </div>
             <textarea id="nik-notes" class="w-full bg-transparent text-[11px] font-semibold h-12 focus:outline-none" placeholder="Input manual analysis or technical notes here..."></textarea>
         </div>
         <div class="flex flex-col gap-2">
@@ -152,6 +165,8 @@
     let masterStore = JSON.parse(localStorage.getItem('nik_master_store')) || {};
     let isEditMode = localStorage.getItem('editMode') === 'true';
     let editId = localStorage.getItem('editId');
+    let userNik = localStorage.getItem('userNIK') || 'GUEST';
+    let userRole = localStorage.getItem('userRole') || 'technician';
 
     const tableData = [
         { p: '50 ± 2', label: 'P50', min: 524, max: 535, std: '502 ± 5' },
@@ -194,7 +209,6 @@
         if (type === 'before') beforeValues[index] = qcResult;
         else afterValues[index] = qcResult;
 
-        // Validation Logic
         const min = parseFloat(el.dataset.min);
         const max = parseFloat(el.dataset.max);
         el.classList.remove('val-low', 'val-ok', 'val-high');
@@ -204,47 +218,42 @@
             else el.classList.add('val-ok');
         }
 
-        // Global Persistence Sync (localStorage)
         if(!skipSave) {
             if(!masterStore[pumpNum]) masterStore[pumpNum] = { before: [], after: [] };
             masterStore[pumpNum][type][index] = el.value;
             localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
-            
-            // Sync Unit & SN to other tabs
-            if(el.id === 'unit_model' || el.id === 'serial_num') {
-                localStorage.setItem('nik_sync_' + el.id, el.value);
-            }
         }
         if(nikChart) nikChart.update();
     }
 
-    // Auto-scaling logic for 720px base width
-    function handleAutoScale() {
-        const scaler = document.getElementById('nik-scaler');
-        const winW = window.innerWidth;
-        const targetW = 720;
-        if (winW < targetW) {
-            const scale = winW / targetW;
-            scaler.style.transform = `scale(${scale})`;
-            scaler.style.marginBottom = `-${(1 - scale) * scaler.offsetHeight}px`;
-        } else {
-            scaler.style.transform = `scale(1)`;
-            scaler.style.marginBottom = `0px`;
+    function checkAccess(ownerNik) {
+        const canEdit = (userRole === 'admin' || ownerNik === userNik);
+        const watermark = document.getElementById('watermark');
+        const badge = document.getElementById('accessBadge');
+        const btnSave = document.getElementById('btn-save');
+
+        if (!canEdit && isEditMode) {
+            watermark.style.display = 'block';
+            btnSave.style.display = 'none';
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
+            badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
+            document.querySelectorAll('input, textarea').forEach(el => el.readOnly = true);
+        } else if (isEditMode) {
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
+            badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
         }
     }
 
     async function saveMasterToSupabase() {
         const overlay = document.getElementById('loadingOverlay');
-        const btn = document.getElementById('btn-save');
         overlay.style.display = 'flex';
-        btn.disabled = true;
         
         const payload = {
             test_date: document.getElementById('test_date').value,
             unit_model: document.getElementById('unit_model').value,
             serial_number: document.getElementById('serial_num').value,
             diagnosis: document.getElementById('nik-notes').value,
-            nik: localStorage.getItem('userNIK') || 'GUEST',
+            nik: userNik,
             all_pumps_data: masterStore 
         };
 
@@ -253,17 +262,15 @@
             : await sb.from('pump_performance_reports').insert([payload]);
 
         overlay.style.display = 'none';
-        btn.disabled = false;
-
-        if (error) alert("Sync Failed: " + error.message);
+        if (error) alert("Error: " + error.message);
         else {
-            alert("✅ Pump Master Data Synchronized to Cloud!");
+            alert("✅ Pump Master Data Synchronized!");
             if(!isEditMode) createNewReport();
         }
     }
 
     function createNewReport() {
-        if(confirm("Start new report? This will clear temporary data.")) {
+        if(confirm("Reset form?")) {
             localStorage.removeItem('nik_master_store');
             localStorage.removeItem('editMode');
             localStorage.removeItem('editData');
@@ -272,15 +279,25 @@
         }
     }
 
+    function handleAutoScale() {
+        const scaler = document.getElementById('nik-scaler');
+        const winW = window.innerWidth;
+        if (winW < 720) {
+            const scale = winW / 720;
+            scaler.style.transform = `scale(${scale})`;
+            scaler.style.marginBottom = `-${(1 - scale) * scaler.offsetHeight}px`;
+        }
+    }
+
     window.onload = () => {
         handleAutoScale();
         window.addEventListener('resize', handleAutoScale);
-
         document.getElementById('p-label').innerText = pumpNum;
+        document.getElementById('user-nik-display').innerText = `NIK: ${userNik}`;
+        
         fillTable('measurement-body', 'before');
         fillTable('readjustment-body', 'after');
 
-        // Initialized Chart
         const ctx = document.getElementById('nikChart').getContext('2d');
         nikChart = new Chart(ctx, {
             type: 'line',
@@ -293,25 +310,9 @@
                     { label: 'After', data: afterValues, borderColor: '#3b82f6', tension: 0.2, pointRadius: 7, borderWidth: 4 }
                 ]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { font: { size: 10, weight: '800' } } } }
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
 
-        // Load Persisted Identity Data
-        document.getElementById('unit_model').value = localStorage.getItem('nik_sync_unit_model') || '';
-        document.getElementById('serial_num').value = localStorage.getItem('nik_sync_serial_num') || '';
-        
-        // Sync Identity Inputs
-        ['unit_model', 'serial_num'].forEach(id => {
-            document.getElementById(id).addEventListener('input', (e) => {
-                localStorage.setItem('nik_sync_' + id, e.target.value);
-            });
-        });
-
-        // Load Edit Mode Data
         if(isEditMode) {
             const ed = JSON.parse(localStorage.getItem('editData'));
             masterStore = ed.all_pumps_data || {};
@@ -319,9 +320,9 @@
             document.getElementById('serial_num').value = ed.serial_number;
             document.getElementById('test_date').value = ed.test_date;
             document.getElementById('nik-notes').value = ed.diagnosis;
+            checkAccess(ed.nik);
         }
 
-        // Load Input Data from Master Memory
         const cur = masterStore[pumpNum];
         if(cur) {
             const bIn = document.querySelectorAll('.before-q');
@@ -330,8 +331,7 @@
             if(cur.after) cur.after.forEach((v, i) => { if(aIn[i] && v) { aIn[i].value = v; handleNikInput(aIn[i], 'after', i, true); }});
         }
 
-        document.getElementById('user-nik-display').innerText = `NIK: ${localStorage.getItem('userNIK') || 'GUEST'}`;
-        if(!isEditMode && !document.getElementById('test_date').value) document.getElementById('test_date').valueAsDate = new Date();
+        if(!isEditMode) document.getElementById('test_date').valueAsDate = new Date();
     };
 </script>
 </body>
