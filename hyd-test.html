@@ -14,64 +14,23 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
-        
         :root { --base-width: 720px; }
-
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: #f1f5f9; 
-            min-height: 100vh; margin: 0; padding: 0;
-            overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start;
-        }
-
-        #scaler-context {
-            width: var(--base-width);
-            transform-origin: top center;
-            transition: transform 0.2s ease-out;
-            flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
-        }
-
-        .glass-card { 
-            background: white; 
-            border: 1px solid #e2e8f0; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            border-radius: 1.5rem;
-            overflow: hidden;
-        }
-
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start; }
+        #scaler-context { width: var(--base-width); transform-origin: top center; transition: transform 0.2s ease-out; flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10; }
+        .glass-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 1.5rem; overflow: hidden; }
         .header-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
-        
-        .input-glacial { 
-            width: 100%; padding: 10px; background: #f8fafc; 
-            border: 2px solid #e2e8f0; border-radius: 0.75rem;
-            font-size: 12px; font-weight: 700; outline: none; color: #1e3a8a; transition: 0.2s;
-        }
+        .input-glacial { width: 100%; padding: 10px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.75rem; font-size: 12px; font-weight: 700; outline: none; color: #1e3a8a; transition: 0.2s; }
         .input-glacial:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .input-readonly { background: #f1f5f9 !important; color: #94a3b8 !important; cursor: not-allowed; border-style: dashed; }
-
         th { background: #f8fafc !important; color: #64748b !important; font-size: 8px; text-transform: uppercase; padding: 10px 5px !important; font-weight: 800; border-bottom: 2px solid #e2e8f0; }
         td { border-bottom: 1px solid #f1f5f9; }
         .std-text { color: #f87171; font-weight: 800; font-size: 9px; }
-
         .is-valid-custom { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46 !important; }
         .is-invalid-custom { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
-
-        /* Watermark & Access UI */
-        #watermark {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 60px; font-weight: 900;
-            color: rgba(239, 68, 68, 0.07);
-            pointer-events: none; z-index: 50;
-            white-space: nowrap; display: none;
-            text-transform: uppercase; letter-spacing: 0.2em;
-        }
+        #watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 60px; font-weight: 900; color: rgba(239, 68, 68, 0.07); pointer-events: none; z-index: 50; white-space: nowrap; display: none; text-transform: uppercase; letter-spacing: 0.2em; }
         #pumpForm { position: relative; }
         #accessBadge { transition: all 0.3s ease; }
-
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-        
         @media print { .no-print { display: none; } #scaler-context { transform: scale(1) !important; margin: 0 !important; width: 100%; } }
     </style>
 </head>
@@ -83,7 +42,6 @@
     </div>
 
     <div id="scaler-context" class="space-y-4">
-        
         <header class="glass-card p-5 flex justify-between items-center no-print border-l-8 border-blue-600">
             <div class="flex items-center gap-3">
                 <div>
@@ -114,7 +72,6 @@
                         <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono">LOADING...</div>
                         <input type="hidden" id="nik">
                     </div>
-                    
                     <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
                     <div class="col-span-2"><label class="header-label">Hour Meter (HM)</label><input type="number" id="hour_meter" class="input-glacial" placeholder="0.0"></div>
                 </div>
@@ -124,28 +81,12 @@
                 <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-history mr-2"></i>1. Component & Oil History</h3></div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-left pl-4">Component</th>
-                                <th>Serial</th>
-                                <th>Part No</th>
-                                <th>Lifetime</th>
-                                <th>Model</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th class="text-left pl-4">Component</th><th>Serial</th><th>Part No</th><th>Lifetime</th><th>Model</th></tr></thead>
                         <tbody>
                             <script>
                                 const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8"];
                                 comps.forEach(c => {
-                                    document.write(`
-                                        <tr>
-                                            <td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td>
-                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                            <td><input type="number" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                            <td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td>
-                                        </tr>
-                                    `);
+                                    document.write(`<tr><td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td><td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td><td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td><td><input type="number" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td><td><input type="text" class="input-glacial !p-1.5 !rounded-md !text-[10px] bg-transparent border-0 focus:bg-white data-comp"></td></tr>`);
                                 });
                             </script>
                         </tbody>
@@ -158,9 +99,7 @@
                 <div class="p-5 grid grid-cols-4 gap-4">
                     <script>
                         for(let i=1; i<=8; i++) {
-                            document.write(`
-                                <div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i}</label><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320" placeholder="-"></div>
-                            `);
+                            document.write(`<div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i}</label><input type="number" class="input-glacial text-center validate-range data-pump" data-min="300" data-max="320" placeholder="-"></div>`);
                         }
                     </script>
                 </div>
@@ -171,14 +110,7 @@
                 <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-bolt mr-2"></i>3. Engine Speed (RPM)</h3></div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-left pl-4">Condition</th>
-                                <th>Standard</th>
-                                <th class="text-blue-600">Before</th>
-                                <th class="text-green-600">After</th>
-                            </tr>
-                        </thead>
+                        <thead><tr><th class="text-left pl-4">Condition</th><th>Standard</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
                         <tbody>
                             <tr class="border-b border-slate-50"><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">Low Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">780-820</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="780" data-max="820"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="780" data-max="820"></td></tr>
                             <tr class="border-b border-slate-50"><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">High Idle</td><td class="text-center text-[10px] text-slate-400 font-bold">1850-1950</td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1850" data-max="1950"></td><td class="p-1"><input type="number" class="input-glacial validate-range data-eng text-center !p-1.5" data-min="1850" data-max="1950"></td></tr>
@@ -196,24 +128,9 @@
                         <thead><tr><th class="text-left pl-4">Action</th><th>Std</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
                         <tbody>
                             <script>
-                                const actions = [
-                                    {n: "Boom Raise", s: "8.2±0.5", t: 8.2, l: 0.5},
-                                    {n: "Arm Roll-in", s: "7.0±0.5", t: 7.0, l: 0.5},
-                                    {n: "Arm Roll-out", s: "7.0±0.5", t: 7.0, l: 0.5},
-                                    {n: "Bucket Roll-in", s: "4.7±0.5", t: 4.7, l: 0.5},
-                                    {n: "Bucket Roll-out", s: "4.2±0.5", t: 4.2, l: 0.5},
-                                    {n: "Swing RH", s: "57±3", t: 57, l: 3},
-                                    {n: "Swing LH", s: "57±3", t: 57, l: 3}
-                                ];
+                                const actions = [{n: "Boom Raise", s: "8.2±0.5", t: 8.2, l: 0.5},{n: "Arm Roll-in", s: "7.0±0.5", t: 7.0, l: 0.5},{n: "Arm Roll-out", s: "7.0±0.5", t: 7.0, l: 0.5},{n: "Bucket Roll-in", s: "4.7±0.5", t: 4.7, l: 0.5},{n: "Bucket Roll-out", s: "4.2±0.5", t: 4.2, l: 0.5},{n: "Swing RH", s: "57±3", t: 57, l: 3},{n: "Swing LH", s: "57±3", t: 57, l: 3}];
                                 actions.forEach(a => {
-                                    document.write(`
-                                        <tr>
-                                            <td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td>
-                                            <td class="std-text">${a.s}</td>
-                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
-                                            <td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td>
-                                        </tr>
-                                    `);
+                                    document.write(`<tr><td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td><td class="std-text">${a.s}</td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center validate-tol data-cyc" data-target="${a.t}" data-tol="${a.l}"></td></tr>`);
                                 });
                             </script>
                         </tbody>
@@ -226,11 +143,7 @@
             <div class="bg-slate-900 p-2 flex justify-between items-center"><h3 class="text-[9px] font-black text-white uppercase px-2">Recent Cloud Syncs</h3></div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
-                    <thead>
-                        <tr class="text-[8px] uppercase font-black text-slate-400 border-b">
-                            <th class="p-2 pl-4">Date</th><th>Unit Details</th><th>Technician</th><th class="text-center">Edit</th>
-                        </tr>
-                    </thead>
+                    <thead><tr class="text-[8px] uppercase font-black text-slate-400 border-b"><th class="p-2 pl-4">Date</th><th>Unit Details</th><th>Technician</th><th class="text-center">Edit</th></tr></thead>
                     <tbody id="dbTableBody" class="text-[10px] font-bold text-slate-600"></tbody>
                 </table>
             </div>
@@ -243,42 +156,44 @@
 
     <script>
         const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
-        
-        // Global Role
         let currentUserRole = localStorage.getItem('userRole') || 'technician';
 
-        function setupNikSync() {
-            // Logika baru: Pengecekan data kiriman dari History
-            const isEditMode = localStorage.getItem('editMode') === 'true';
-            const editDataRaw = localStorage.getItem('editData');
-
-            if (isEditMode && editDataRaw) {
-                try {
-                    const item = JSON.parse(editDataRaw);
-                    // Pastikan DOM sudah siap sepenuhnya sebelum memuat data
-                    if (document.readyState === 'complete') {
-                        editRecord(item);
-                    } else {
-                        window.addEventListener('load', () => editRecord(item));
+        // --- SOLUSI UTAMA: LIVE WATCHER ---
+        function startLiveWatcher() {
+            // Cek setiap 500ms apakah ada data masuk dari History
+            setInterval(() => {
+                const isEditMode = localStorage.getItem('editMode') === 'true';
+                if (isEditMode) {
+                    const raw = localStorage.getItem('editData');
+                    if (raw) {
+                        console.log("NIK Terminal: New data detected from history...");
+                        const data = JSON.parse(raw);
+                        editRecord(data);
+                        localStorage.setItem('editMode', 'false'); // Matikan flag setelah load
                     }
-                    localStorage.setItem('editMode', 'false'); // Reset flag agar tidak loop
-                } catch (e) { console.error("History parse error:", e); }
-            } else {
-                // Sinkronisasi input manual biasa (fitur asli tetap dijaga)
-                const fields = ['unit_model', 'serial_num'];
-                fields.forEach(id => {
-                    const el = document.getElementById(id);
-                    const saved = localStorage.getItem('nik_sync_' + id);
-                    if (saved) el.value = saved;
-                    el.addEventListener('input', () => { localStorage.setItem('nik_sync_' + id, el.value); });
-                });
-            }
+                }
+            }, 500);
+        }
+
+        function setupNikSync() {
+            // Fitur asli tetap jalan untuk input manual
+            const fields = ['unit_model', 'serial_num'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                const saved = localStorage.getItem('nik_sync_' + id);
+                if (saved) el.value = saved;
+                el.addEventListener('input', () => { localStorage.setItem('nik_sync_' + id, el.value); });
+            });
 
             window.addEventListener('storage', (e) => {
                 if (e.key && e.key.startsWith('nik_sync_')) {
                     const id = e.key.replace('nik_sync_', '');
                     const el = document.getElementById(id);
                     if (el) el.value = e.newValue;
+                }
+                // Jika storage editData berubah di tab lain
+                if (e.key === 'editData' && e.newValue) {
+                    editRecord(JSON.parse(e.newValue));
                 }
             });
         }
@@ -324,13 +239,13 @@
         }
 
         function editRecord(item) {
+            if(!item) return;
             const userNik = localStorage.getItem('userNIK');
             const btnSave = document.getElementById('btnSave');
             const badge = document.getElementById('accessBadge');
             const watermark = document.getElementById('watermark');
             const formInputs = document.querySelectorAll('#pumpForm input:not([readonly])');
             
-            // Logic Access
             const canEdit = (currentUserRole === 'admin' || item.nik === userNik);
 
             if (canEdit) {
@@ -348,14 +263,12 @@
                 formInputs.forEach(i => i.disabled = true);
             }
 
-            // Map Parameters
             document.getElementById('recordId').value = item.id || '';
             document.getElementById('test_date').value = item.test_date || '';
             document.getElementById('unit_model').value = item.unit_model || '';
             document.getElementById('serial_num').value = item.serial_number || '';
             document.getElementById('hour_meter').value = item.hour_meter || '';
             
-            // Sync identity for other modules
             localStorage.setItem('nik_sync_unit_model', item.unit_model || '');
             localStorage.setItem('nik_sync_serial_num', item.serial_number || '');
 
@@ -363,28 +276,13 @@
             if(item.component_history) item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
             
             const pump = document.querySelectorAll('.data-pump');
-            if(item.pump_relief_values) item.pump_relief_values.forEach((v, i) => { 
-                if(pump[i]) { 
-                    pump[i].value = v; 
-                    validateInput(pump[i], 'range'); 
-                } 
-            });
+            if(item.pump_relief_values) item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateInput(pump[i], 'range'); } });
             
             const eng = document.querySelectorAll('.data-eng');
-            if(item.engine_speed_values) item.engine_speed_values.forEach((v, i) => { 
-                if(eng[i]) { 
-                    eng[i].value = v; 
-                    validateInput(eng[i], 'range'); 
-                } 
-            });
+            if(item.engine_speed_values) item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
             
             const cyc = document.querySelectorAll('.data-cyc');
-            if(item.cycle_time_values) item.cycle_time_values.forEach((v, i) => { 
-                if(cyc[i]) { 
-                    cyc[i].value = v; 
-                    validateInput(cyc[i], 'tol'); 
-                } 
-            });
+            if(item.cycle_time_values) item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -393,7 +291,6 @@
             const val = parseFloat(el.value);
             el.classList.remove('is-valid-custom', 'is-invalid-custom');
             if (isNaN(val)) return;
-
             if (type === 'range') {
                 const min = parseFloat(el.dataset.min);
                 const max = parseFloat(el.dataset.max);
@@ -411,7 +308,6 @@
             const id = document.getElementById('recordId').value;
             const overlay = document.getElementById('loadingOverlay');
             overlay.style.display = 'flex';
-
             const record = {
                 test_date: document.getElementById('test_date').value,
                 nama_pic: document.getElementById('nama_pic').value,
@@ -424,18 +320,10 @@
                 engine_speed_values: Array.from(document.querySelectorAll('.data-eng')).map(i => i.value),
                 cycle_time_values: Array.from(document.querySelectorAll('.data-cyc')).map(i => i.value)
             };
-
-            const { error } = id 
-                ? await sb.from('pump_performance_reports').update(record).eq('id', id)
-                : await sb.from('pump_performance_reports').insert([record]);
-
+            const { error } = id ? await sb.from('pump_performance_reports').update(record).eq('id', id) : await sb.from('pump_performance_reports').insert([record]);
             overlay.style.display = 'none';
             if (error) alert("Error: " + error.message);
-            else { 
-                alert("✅ Data Synchronized!"); 
-                newForm();
-                fetchData(); 
-            }
+            else { alert("✅ Data Synchronized!"); newForm(); fetchData(); }
         }
 
         function newForm() {
@@ -444,18 +332,13 @@
                 const btnSave = document.getElementById('btnSave');
                 const watermark = document.getElementById('watermark');
                 const formInputs = document.querySelectorAll('#pumpForm input:not([readonly])');
-
                 document.getElementById('pumpForm').reset();
                 document.getElementById('recordId').value = "";
-                
-                // UI Reset
-                btnSave.style.display = 'block';
-                btnSave.innerText = "Sync Data";
+                btnSave.style.display = 'block'; btnSave.innerText = "Sync Data";
                 badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600";
                 badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> New Entry Mode';
                 watermark.style.display = 'none';
                 formInputs.forEach(i => i.disabled = false);
-
                 document.getElementById('test_date').valueAsDate = new Date();
                 document.querySelectorAll('.input-glacial').forEach(i => i.classList.remove('is-valid-custom', 'is-invalid-custom'));
                 loadUserProfile();
@@ -465,6 +348,7 @@
         window.onload = async () => {
             await loadUserProfile();
             setupNikSync();
+            startLiveWatcher(); // Jalankan pemantau data real-time
             document.getElementById('test_date').valueAsDate = new Date();
             fetchData();
             runAutoScale();
