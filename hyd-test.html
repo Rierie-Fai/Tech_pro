@@ -56,6 +56,20 @@
         .is-valid-custom { border-color: #10b981 !important; background-color: #f0fdf4 !important; color: #065f46 !important; }
         .is-invalid-custom { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
 
+        /* Watermark & Access UI */
+        #watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 60px; font-weight: 900;
+            color: rgba(239, 68, 68, 0.07);
+            pointer-events: none; z-index: 50;
+            white-space: nowrap; display: none;
+            text-transform: uppercase; letter-spacing: 0.2em;
+        }
+        #pumpForm { position: relative; }
+        #accessBadge { transition: all 0.3s ease; }
+
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         
         @media print { .no-print { display: none; } #scaler-context { transform: scale(1) !important; margin: 0 !important; width: 100%; } }
@@ -75,6 +89,9 @@
                 <div>
                     <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">Hydraulic <span class="text-blue-600">Test Pro</span></h1>
                     <p class="text-[7px] font-bold text-slate-400 tracking-widest uppercase mt-1">Diagnostic Terminal Active</p>
+                    <div id="accessBadge" class="inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">
+                        <i class="fas fa-pen-nib mr-1"></i> New Entry Mode
+                    </div>
                 </div>
             </div>
             <div class="flex gap-2">
@@ -84,6 +101,7 @@
         </header>
 
         <form id="pumpForm" class="space-y-4">
+            <div id="watermark">RESTRICTED VIEW</div>
             <input type="hidden" id="recordId">
 
             <div class="glass-card p-6">
@@ -225,6 +243,9 @@
 
     <script>
         const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
+        
+        // Global Role
+        let currentUserRole = localStorage.getItem('userRole') || 'technician';
 
         function setupNikSync() {
             const fields = ['unit_model', 'serial_num'];
@@ -245,6 +266,7 @@
 
         async function loadUserProfile() {
             const userNik = localStorage.getItem('userNIK') || 'GUEST';
+            currentUserRole = localStorage.getItem('userRole') || 'technician';
             document.getElementById('display-nik').innerText = userNik;
             document.getElementById('nik').value = userNik;
             try {
@@ -283,6 +305,29 @@
         }
 
         function editRecord(item) {
+            const userNik = localStorage.getItem('userNIK');
+            const btnSave = document.getElementById('btnSave');
+            const badge = document.getElementById('accessBadge');
+            const watermark = document.getElementById('watermark');
+            
+            // Logic Access
+            const canEdit = (currentUserRole === 'admin' || item.nik === userNik);
+
+            if (canEdit) {
+                btnSave.style.display = 'block';
+                btnSave.innerText = "Update Data";
+                badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
+                badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
+                watermark.style.display = 'none';
+            } else {
+                btnSave.style.display = 'none';
+                badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
+                badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
+                watermark.style.display = 'block';
+                alert("Restricted: Mode lihat saja diaktifkan.");
+            }
+
+            // Map Parameters
             document.getElementById('recordId').value = item.id;
             document.getElementById('test_date').value = item.test_date;
             document.getElementById('unit_model').value = item.unit_model;
@@ -297,6 +342,7 @@
             item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
             const cyc = document.querySelectorAll('.data-cyc');
             item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
+            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -342,15 +388,32 @@
 
             overlay.style.display = 'none';
             if (error) alert("Error: " + error.message);
-            else { alert("✅ Data Synchronized!"); fetchData(); }
+            else { 
+                alert("✅ Data Synchronized!"); 
+                newForm();
+                fetchData(); 
+            }
         }
 
         function newForm() {
             if(confirm("Clear form?")) {
+                const badge = document.getElementById('accessBadge');
+                const btnSave = document.getElementById('btnSave');
+                const watermark = document.getElementById('watermark');
+
                 document.getElementById('pumpForm').reset();
                 document.getElementById('recordId').value = "";
+                
+                // UI Reset
+                btnSave.style.display = 'block';
+                btnSave.innerText = "Sync Data";
+                badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600";
+                badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> New Entry Mode';
+                watermark.style.display = 'none';
+
                 document.getElementById('test_date').valueAsDate = new Date();
                 document.querySelectorAll('.input-glacial').forEach(i => i.classList.remove('is-valid-custom', 'is-invalid-custom'));
+                loadUserProfile();
             }
         }
 
