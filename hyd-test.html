@@ -248,17 +248,23 @@
         let currentUserRole = localStorage.getItem('userRole') || 'technician';
 
         function setupNikSync() {
-            // Check if we are coming from Master History
+            // Logika baru: Pengecekan data kiriman dari History
             const isEditMode = localStorage.getItem('editMode') === 'true';
             const editDataRaw = localStorage.getItem('editData');
 
             if (isEditMode && editDataRaw) {
-                const item = JSON.parse(editDataRaw);
-                setTimeout(() => {
-                    editRecord(item);
-                    localStorage.setItem('editMode', 'false'); // Reset flag
-                }, 500);
+                try {
+                    const item = JSON.parse(editDataRaw);
+                    // Pastikan DOM sudah siap sepenuhnya sebelum memuat data
+                    if (document.readyState === 'complete') {
+                        editRecord(item);
+                    } else {
+                        window.addEventListener('load', () => editRecord(item));
+                    }
+                    localStorage.setItem('editMode', 'false'); // Reset flag agar tidak loop
+                } catch (e) { console.error("History parse error:", e); }
             } else {
+                // Sinkronisasi input manual biasa (fitur asli tetap dijaga)
                 const fields = ['unit_model', 'serial_num'];
                 fields.forEach(id => {
                     const el = document.getElementById(id);
@@ -343,27 +349,42 @@
             }
 
             // Map Parameters
-            document.getElementById('recordId').value = item.id;
-            document.getElementById('test_date').value = item.test_date;
-            document.getElementById('unit_model').value = item.unit_model;
-            document.getElementById('serial_num').value = item.serial_number;
+            document.getElementById('recordId').value = item.id || '';
+            document.getElementById('test_date').value = item.test_date || '';
+            document.getElementById('unit_model').value = item.unit_model || '';
+            document.getElementById('serial_num').value = item.serial_number || '';
             document.getElementById('hour_meter').value = item.hour_meter || '';
             
             // Sync identity for other modules
-            localStorage.setItem('nik_sync_unit_model', item.unit_model);
-            localStorage.setItem('nik_sync_serial_num', item.serial_number);
+            localStorage.setItem('nik_sync_unit_model', item.unit_model || '');
+            localStorage.setItem('nik_sync_serial_num', item.serial_number || '');
 
             const comp = document.querySelectorAll('.data-comp');
             if(item.component_history) item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
             
             const pump = document.querySelectorAll('.data-pump');
-            if(item.pump_relief_values) item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateInput(pump[i], 'range'); } });
+            if(item.pump_relief_values) item.pump_relief_values.forEach((v, i) => { 
+                if(pump[i]) { 
+                    pump[i].value = v; 
+                    validateInput(pump[i], 'range'); 
+                } 
+            });
             
             const eng = document.querySelectorAll('.data-eng');
-            if(item.engine_speed_values) item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
+            if(item.engine_speed_values) item.engine_speed_values.forEach((v, i) => { 
+                if(eng[i]) { 
+                    eng[i].value = v; 
+                    validateInput(eng[i], 'range'); 
+                } 
+            });
             
             const cyc = document.querySelectorAll('.data-cyc');
-            if(item.cycle_time_values) item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
+            if(item.cycle_time_values) item.cycle_time_values.forEach((v, i) => { 
+                if(cyc[i]) { 
+                    cyc[i].value = v; 
+                    validateInput(cyc[i], 'tol'); 
+                } 
+            });
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
