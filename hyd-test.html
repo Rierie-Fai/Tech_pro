@@ -248,13 +248,26 @@
         let currentUserRole = localStorage.getItem('userRole') || 'technician';
 
         function setupNikSync() {
-            const fields = ['unit_model', 'serial_num'];
-            fields.forEach(id => {
-                const el = document.getElementById(id);
-                const saved = localStorage.getItem('nik_sync_' + id);
-                if (saved) el.value = saved;
-                el.addEventListener('input', () => { localStorage.setItem('nik_sync_' + id, el.value); });
-            });
+            // Check if we are coming from Master History
+            const isEditMode = localStorage.getItem('editMode') === 'true';
+            const editDataRaw = localStorage.getItem('editData');
+
+            if (isEditMode && editDataRaw) {
+                const item = JSON.parse(editDataRaw);
+                setTimeout(() => {
+                    editRecord(item);
+                    localStorage.setItem('editMode', 'false'); // Reset flag
+                }, 500);
+            } else {
+                const fields = ['unit_model', 'serial_num'];
+                fields.forEach(id => {
+                    const el = document.getElementById(id);
+                    const saved = localStorage.getItem('nik_sync_' + id);
+                    if (saved) el.value = saved;
+                    el.addEventListener('input', () => { localStorage.setItem('nik_sync_' + id, el.value); });
+                });
+            }
+
             window.addEventListener('storage', (e) => {
                 if (e.key && e.key.startsWith('nik_sync_')) {
                     const id = e.key.replace('nik_sync_', '');
@@ -309,22 +322,24 @@
             const btnSave = document.getElementById('btnSave');
             const badge = document.getElementById('accessBadge');
             const watermark = document.getElementById('watermark');
+            const formInputs = document.querySelectorAll('#pumpForm input:not([readonly])');
             
             // Logic Access
             const canEdit = (currentUserRole === 'admin' || item.nik === userNik);
 
             if (canEdit) {
                 btnSave.style.display = 'block';
-                btnSave.innerText = "Update Data";
+                btnSave.innerText = "Update Data Cloud";
                 badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
                 badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
                 watermark.style.display = 'none';
+                formInputs.forEach(i => i.disabled = false);
             } else {
                 btnSave.style.display = 'none';
                 badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
                 badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
                 watermark.style.display = 'block';
-                alert("Restricted: Mode lihat saja diaktifkan.");
+                formInputs.forEach(i => i.disabled = true);
             }
 
             // Map Parameters
@@ -334,14 +349,21 @@
             document.getElementById('serial_num').value = item.serial_number;
             document.getElementById('hour_meter').value = item.hour_meter || '';
             
+            // Sync identity for other modules
+            localStorage.setItem('nik_sync_unit_model', item.unit_model);
+            localStorage.setItem('nik_sync_serial_num', item.serial_number);
+
             const comp = document.querySelectorAll('.data-comp');
-            item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
+            if(item.component_history) item.component_history.forEach((v, i) => { if(comp[i]) comp[i].value = v; });
+            
             const pump = document.querySelectorAll('.data-pump');
-            item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateInput(pump[i], 'range'); } });
+            if(item.pump_relief_values) item.pump_relief_values.forEach((v, i) => { if(pump[i]) { pump[i].value = v; validateInput(pump[i], 'range'); } });
+            
             const eng = document.querySelectorAll('.data-eng');
-            item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
+            if(item.engine_speed_values) item.engine_speed_values.forEach((v, i) => { if(eng[i]) { eng[i].value = v; validateInput(eng[i], 'range'); } });
+            
             const cyc = document.querySelectorAll('.data-cyc');
-            item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
+            if(item.cycle_time_values) item.cycle_time_values.forEach((v, i) => { if(cyc[i]) { cyc[i].value = v; validateInput(cyc[i], 'tol'); } });
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -400,6 +422,7 @@
                 const badge = document.getElementById('accessBadge');
                 const btnSave = document.getElementById('btnSave');
                 const watermark = document.getElementById('watermark');
+                const formInputs = document.querySelectorAll('#pumpForm input:not([readonly])');
 
                 document.getElementById('pumpForm').reset();
                 document.getElementById('recordId').value = "";
@@ -410,6 +433,7 @@
                 badge.className = "inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600";
                 badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> New Entry Mode';
                 watermark.style.display = 'none';
+                formInputs.forEach(i => i.disabled = false);
 
                 document.getElementById('test_date').valueAsDate = new Date();
                 document.querySelectorAll('.input-glacial').forEach(i => i.classList.remove('is-valid-custom', 'is-invalid-custom'));
