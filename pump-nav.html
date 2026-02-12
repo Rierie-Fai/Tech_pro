@@ -26,12 +26,20 @@
         .status-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
         .status-empty { background: #cbd5e1; }
         .status-filled { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        
+        /* Animasi pulsa untuk mode edit */
+        .pulse-edit { animation: pulse-border 2s infinite; }
+        @keyframes pulse-border {
+            0% { border-color: #e2e8f0; }
+            50% { border-color: #10b981; }
+            100% { border-color: #e2e8f0; }
+        }
     </style>
 </head>
 <body>
 
 <div class="nav-container">
-    <div class="bg-white rounded-2xl p-5 mb-6 border border-slate-200 shadow-sm border-l-8 border-blue-600">
+    <div id="status-card" class="bg-white rounded-2xl p-5 mb-6 border border-slate-200 shadow-sm border-l-8 border-blue-600 transition-all">
         <div class="flex justify-between items-start">
             <div>
                 <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Select Component</p>
@@ -49,6 +57,10 @@
 
     <div class="pump-grid" id="pump-buttons-container">
         </div>
+    
+    <div class="mt-8 text-center">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NIK Terminal System v2.0</p>
+    </div>
 </div>
 
 <script>
@@ -60,20 +72,22 @@
                 <button onclick="goToPump(${i})" class="pump-btn group">
                     <div class="flex items-center mb-1">
                         <span id="dot-p${i}" class="status-dot status-empty"></span>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Hydraulic System</span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter italic">NIK Component</span>
                     </div>
                     <h2 class="text-lg font-black text-slate-800 tracking-tighter">PUMP ${i}</h2>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase">Performance Test</p>
+                    <p id="desc-p${i}" class="text-[9px] font-bold text-slate-400 uppercase">Ready for Test</p>
                 </button>
             `;
         }
         container.innerHTML = html;
+        updateStatusVisuals();
     }
 
     function syncDataBridge() {
-        // Ambil data dari "Gudang Utama"
         const isEditMode = localStorage.getItem('editMode') === 'true';
         const rawData = localStorage.getItem('editData');
+        const badge = document.getElementById('mode-badge');
+        const card = document.getElementById('status-card');
 
         if (isEditMode && rawData) {
             try {
@@ -83,39 +97,61 @@
                 document.getElementById('label-unit').innerText = data.unit_model || 'N/A';
                 document.getElementById('label-sn').innerText = data.serial_number || 'N/A';
                 
-                const badge = document.getElementById('mode-badge');
                 badge.innerText = "EDIT MODE / CLOUD SYNC";
-                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-emerald-100 text-emerald-600";
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-emerald-100 text-emerald-600 shadow-sm";
+                card.classList.add('pulse-edit');
+                card.style.borderLeftColor = "#10b981";
 
-                // PENTING: Pindahkan data ke master_store agar Pump Analysis bisa membaca isinya
+                // Pindahkan data ke master_store agar Pump Analysis konsisten
                 if (data.all_pumps_data) {
                     localStorage.setItem('nik_master_store', JSON.stringify(data.all_pumps_data));
-                    
-                    // Tandai pompa yang sudah ada isinya
-                    for (let i = 1; i <= 8; i++) {
-                        if (data.all_pumps_data[i] && (data.all_pumps_data[i].before || data.all_pumps_data[i].after)) {
-                            const dot = document.getElementById(`dot-p${i}`);
-                            if (dot) {
-                                dot.classList.remove('status-empty');
-                                dot.classList.add('status-filled');
-                            }
-                        }
-                    }
                 }
             } catch (e) {
-                console.error("Gagal sinkronisasi data navigasi:", e);
+                console.error("Gagal sinkronisasi navigasi:", e);
             }
+        } else {
+            // Reset to New Entry Mode
+            badge.innerText = "NEW ENTRY";
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-slate-100 text-slate-400";
+            card.classList.remove('pulse-edit');
+            card.style.borderLeftColor = "#2563eb";
+        }
+        
+        updateStatusVisuals();
+    }
+
+    function updateStatusVisuals() {
+        const storeRaw = localStorage.getItem('nik_master_store');
+        if (!storeRaw) return;
+
+        try {
+            const masterStore = JSON.parse(storeRaw);
+            for (let i = 1; i <= 8; i++) {
+                const pumpData = masterStore[i];
+                const dot = document.getElementById(`dot-p${i}`);
+                const desc = document.getElementById(`desc-p${i}`);
+                
+                // Cek apakah ada data di pump tersebut (minimal ada 1 nilai input)
+                const hasBefore = pumpData && pumpData.before && pumpData.before.some(v => v !== null && v !== "");
+                const hasAfter = pumpData && pumpData.after && pumpData.after.some(v => v !== null && v !== "");
+
+                if (dot && (hasBefore || hasAfter)) {
+                    dot.classList.remove('status-empty');
+                    dot.classList.add('status-filled');
+                    if (desc) {
+                        desc.innerText = "Data Recorded";
+                        desc.classList.replace('text-slate-400', 'text-emerald-600');
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Gagal update visual status:", e);
         }
     }
 
     function goToPump(num) {
-        // Sebelum pindah, pastikan flag editMode tetap menyala
-        // agar Pump Analysis tahu dia harus meload data dari localStorage
-        const currentMode = localStorage.getItem('editMode');
-        if(currentMode === 'true') {
-            console.log("Navigating in Edit Mode for Pump " + num);
-        }
-        
+        // Efek transisi sederhana sebelum pindah halaman
+        document.body.style.opacity = "0.5";
         window.location.href = `pump-analysis.html?p=${num}`;
     }
 
@@ -123,9 +159,9 @@
         renderButtons();
         syncDataBridge();
         
-        // Watcher jika user tiba-tiba klik Master History di tab sebelah (Iframe)
+        // Listener untuk mendeteksi perubahan storage dari tab/iframe lain
         window.addEventListener('storage', (e) => {
-            if (e.key === 'editData' || e.key === 'editMode') {
+            if (e.key === 'editData' || e.key === 'editMode' || e.key === 'nik_master_store') {
                 syncDataBridge();
             }
         });
