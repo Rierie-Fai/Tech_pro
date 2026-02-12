@@ -172,7 +172,7 @@
 
     function fillTable(id, type) {
         const container = document.getElementById(id);
-        container.innerHTML = ""; // Bersihkan sebelum isi ulang
+        container.innerHTML = "";
         tableData.forEach((item, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -215,21 +215,19 @@
         if(nikChart) nikChart.update();
     }
 
-    // --- PERBAIKAN: LIVE WATCHER UNTUK PUMP ANALYSIS ---
     function startPumpLiveWatcher() {
         setInterval(() => {
             const mode = localStorage.getItem('editMode') === 'true';
             if (mode) {
                 const raw = localStorage.getItem('editData');
                 if (raw) {
-                    console.log("Pump Analysis: Refreshing master data...");
                     const data = JSON.parse(raw);
                     isEditMode = true;
                     editId = data.id;
                     applyLoadedData(data);
                 }
             }
-        }, 600);
+        }, 800);
     }
 
     function applyLoadedData(ed) {
@@ -262,18 +260,29 @@
         const badge = document.getElementById('accessBadge');
         const btnSave = document.getElementById('btn-save');
 
-        if (!canEdit && isEditMode) {
-            watermark.style.display = 'block';
-            btnSave.style.display = 'none';
-            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
-            badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
-            document.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
-        } else if (isEditMode) {
+        // Pastikan membaca state terbaru dari storage
+        const currentEditState = localStorage.getItem('editMode') === 'true';
+
+        if (currentEditState) {
+            if (!canEdit && ownerNik) { // Jika ada ownerNik tapi tidak punya akses
+                watermark.style.display = 'block';
+                btnSave.style.display = 'none';
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
+                badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
+                document.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
+            } else {
+                watermark.style.display = 'none';
+                btnSave.style.display = 'block';
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
+                badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
+                document.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
+            }
+        } else {
+            // New Entry Mode
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600";
+            badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> New Entry Mode';
             watermark.style.display = 'none';
             btnSave.style.display = 'block';
-            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
-            badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
-            document.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
         }
     }
 
@@ -298,7 +307,6 @@
         if (error) alert("Error: " + error.message);
         else {
             alert("✅ Pump Master Data Synchronized!");
-            localStorage.setItem('editMode', 'false'); 
         }
     }
 
@@ -348,10 +356,14 @@
 
         // Load data awal jika ada
         const initialData = localStorage.getItem('editData');
-        if(initialData) {
+        const initialMode = localStorage.getItem('editMode') === 'true';
+
+        if(initialMode && initialData) {
+            isEditMode = true;
             applyLoadedData(JSON.parse(initialData));
         } else {
             document.getElementById('test_date').valueAsDate = new Date();
+            checkAccess(); // Set ke New Entry jika tidak ada data edit
         }
 
         startPumpLiveWatcher();
