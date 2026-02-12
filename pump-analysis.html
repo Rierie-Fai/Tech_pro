@@ -36,7 +36,7 @@
         .qc-output { font-size: 12px; font-weight: 900; color: #1e293b; font-family: 'JetBrains Mono', monospace; }
         .chart-container { height: 320px; width: 100%; padding: 15px; }
 
-        #watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 60px; font-weight: 900; color: rgba(239, 68, 68, 0.07); pointer-events: none; z-index: 50; white-space: nowrap; display: none; text-transform: uppercase; letter-spacing: 0.2em; }
+        #watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 60px; font-weight: 900; color: rgba(239, 68, 68, 0.08); pointer-events: none; z-index: 50; white-space: nowrap; display: none; text-transform: uppercase; letter-spacing: 0.2em; }
         #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         
         @media print { .no-print { display: none; } #nik-scaler { transform: scale(1) !important; width: 100%; } }
@@ -54,13 +54,13 @@
 
     <div class="mb-3 no-print flex justify-between items-center px-1">
         <button onclick="history.back()" class="group flex items-center text-[10px] font-black text-slate-400 uppercase hover:text-blue-600 transition-all">
-            <div class="w-6 h-6 rounded-full bg-slate-200 group-hover:bg-blue-100 flex items-center justify-center mr-2 transition-all">
+            <div class="w-6 h-6 rounded-full bg-slate-200 group-hover:bg-blue-100 flex items-center justify-center mr-2">
                 <i class="fas fa-arrow-left text-[8px]"></i>
             </div>
             Back to Selection
         </button>
-        <div id="accessBadge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">
-            <i class="fas fa-pen-nib mr-1"></i> New Entry Mode
+        <div id="accessBadge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter">
+            INITIALIZING...
         </div>
     </div>
 
@@ -83,43 +83,24 @@
             </div>
         </div>
         <div class="text-right">
-            <div class="bg-slate-900 px-3 py-1 rounded-full inline-block mb-2 border border-slate-700">
-                <p id="user-nik-display" class="text-[9px] font-black text-white font-mono">NIK: LOADING...</p>
+            <div class="bg-slate-900 px-3 py-1 rounded-full inline-block border border-slate-700">
+                <p id="user-nik-display" class="text-[9px] font-black text-white font-mono"></p>
             </div>
             <br>
-            <button onclick="createNewReport()" class="text-[9px] font-bold text-slate-400 hover:text-red-500 uppercase transition-colors">
+            <button onclick="createNewReport()" class="text-[9px] font-bold text-red-400 hover:text-red-600 uppercase mt-2 no-print">
                 <i class="fas fa-redo-alt mr-1"></i> Reset Form
             </button>
         </div>
     </div>
 
-    <div class="space-y-4" id="main-content-area">
+    <div class="space-y-4">
         <div>
-            <h2 class="text-[9px] font-black text-slate-500 uppercase mb-2 px-1 flex items-center">
-                <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mr-2"></span> 1. Before Readjustment
-            </h2>
-            <div class="glass-card">
-                <table class="table-custom">
-                    <thead>
-                        <tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr>
-                    </thead>
-                    <tbody id="measurement-body"></tbody>
-                </table>
-            </div>
+            <h2 class="text-[9px] font-black text-slate-500 uppercase mb-2 px-1">1. Before Readjustment</h2>
+            <div class="glass-card"><table class="table-custom"><thead><tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr></thead><tbody id="measurement-body"></tbody></table></div>
         </div>
-
         <div>
-            <h2 class="text-[9px] font-black text-blue-600 uppercase mb-2 px-1 flex items-center">
-                <span class="w-1.5 h-1.5 bg-blue-600 rounded-full mr-2"></span> 2. After Readjustment
-            </h2>
-            <div class="glass-card">
-                <table class="table-custom">
-                    <thead>
-                        <tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr>
-                    </thead>
-                    <tbody id="readjustment-body"></tbody>
-                </table>
-            </div>
+            <h2 class="text-[9px] font-black text-blue-600 uppercase mb-2 px-1">2. After Readjustment</h2>
+            <div class="glass-card"><table class="table-custom"><thead><tr><th>Point</th><th>Press</th><th>Ne</th><th class="text-blue-600">Measured Q</th><th>i</th><th>Np</th><th>Qc</th><th>Standard</th><th>Guidance</th></tr></thead><tbody id="readjustment-body"></tbody></table></div>
         </div>
     </div>
 
@@ -130,11 +111,9 @@
     </div>
 
     <div class="grid grid-cols-3 gap-3 mt-4 no-print">
-        <div class="col-span-2 glass-card p-3 bg-white border-dashed border-2 flex items-start gap-3">
-            <textarea id="nik-notes" class="w-full bg-transparent text-[11px] font-semibold h-12 focus:outline-none" placeholder="Input manual analysis or technical notes here..."></textarea>
-        </div>
+        <textarea id="nik-notes" class="col-span-2 glass-card p-3 text-[11px] font-semibold h-12 focus:outline-none" placeholder="Technical analysis notes..."></textarea>
         <div class="flex flex-col gap-2">
-            <button id="btn-save" onclick="saveMasterToSupabase()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-200 transition-all active:scale-95">
+            <button id="btn-save" onclick="saveMasterToSupabase()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-200 transition-all">
                 <i class="fas fa-cloud-upload-alt mr-1"></i> Sync Cloud
             </button>
             <button onclick="window.print()" class="flex-1 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-xl font-bold text-[10px] uppercase transition-all">
@@ -147,37 +126,44 @@
 <script>
     const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const pumpNum = urlParams.get('p') || '1';
-    
+    const pumpNum = new URLSearchParams(window.location.search).get('p') || '1';
+    let userNik = localStorage.getItem('userNIK') || 'GUEST';
+    let userRole = localStorage.getItem('userRole') || 'technician';
     let masterStore = JSON.parse(localStorage.getItem('nik_master_store')) || {};
     let isEditMode = localStorage.getItem('editMode') === 'true';
     let editId = localStorage.getItem('editId');
-    let userNik = localStorage.getItem('userNIK') || 'GUEST';
-    let userRole = localStorage.getItem('userRole') || 'technician';
+    let nikChart;
 
     const tableData = [
-        { p: '50 ± 2', label: 'P50', min: 524, max: 535, std: '502 ± 5' },
-        { p: '137 ± 5', label: 'P137', min: 512, max: 523, std: '491 ± 5' },
-        { p: '170', label: 'P170', min: 422, max: 453, std: '415 ± 15' },
-        { p: '250 ± 5', label: 'P250', min: 284, max: 315, std: '284 ± 15' },
-        { p: '300 ± 2', label: 'P300', min: 234, max: 245, std: '227 ± 5' }
+        { label: 'P50', p: '50 ± 2', min: 524, max: 535, std: '502 ± 5' },
+        { label: 'P137', p: '137 ± 5', min: 512, max: 523, std: '491 ± 5' },
+        { label: 'P170', p: '170', min: 422, max: 453, std: '415 ± 15' },
+        { label: 'P250', p: '250 ± 5', min: 284, max: 315, std: '284 ± 15' },
+        { label: 'P300', p: '300 ± 2', min: 234, max: 245, std: '227 ± 5' }
     ];
 
-    let nikChart;
-    const beforeValues = [null, null, null, null, null];
-    const afterValues = [null, null, null, null, null];
+    function handleAutoScale() {
+        const scaler = document.getElementById('nik-scaler');
+        const winW = window.innerWidth;
+        if (winW < 720) {
+            const scale = winW / 720;
+            scaler.style.transform = `scale(${scale})`;
+            scaler.style.marginBottom = `-${(1 - scale) * scaler.offsetHeight}px`;
+        } else {
+            scaler.style.transform = `scale(1)`;
+            scaler.style.marginBottom = `0px`;
+        }
+    }
 
     function convertToQc(val) { return val ? Math.round((1838 * val) / (1.02 * 1900)) : null; }
 
     function fillTable(id, type) {
         const container = document.getElementById(id);
-        container.innerHTML = "";
         tableData.forEach((item, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="font-black text-slate-800">${item.label}</td>
-                <td class="text-left px-2 font-bold text-slate-400 italic">${item.p}</td>
+                <td class="text-slate-400 font-bold italic">${item.p}</td>
                 <td class="text-slate-400">1900</td>
                 <td><input type="number" class="input-q ${type}-q" oninput="handleNikInput(this, '${type}', ${index})" data-min="${item.min}" data-max="${item.max}"></td>
                 <td class="text-slate-400">1.02</td>
@@ -190,14 +176,37 @@
         });
     }
 
+    function checkAccess(ownerNik) {
+        const canEdit = (userRole === 'admin' || ownerNik === userNik);
+        const badge = document.getElementById('accessBadge');
+        const btnSave = document.getElementById('btn-save');
+        const watermark = document.getElementById('watermark');
+
+        if (isEditMode) {
+            if (!canEdit) {
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black bg-red-100 text-red-600";
+                badge.innerHTML = '<i class="fas fa-lock mr-1"></i> READ ONLY (LOCKED)';
+                btnSave.style.display = 'none';
+                watermark.style.display = 'block';
+                document.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
+            } else {
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-600";
+                badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> EDIT AUTHORIZED';
+                btnSave.style.display = 'block';
+                watermark.style.display = 'none';
+                document.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
+            }
+        } else {
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black bg-blue-100 text-blue-600";
+            badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> NEW ENTRY MODE';
+        }
+    }
+
     function handleNikInput(el, type, index, skipSave = false) {
         const val = parseFloat(el.value);
-        const qcResult = convertToQc(val);
-        document.getElementById(`qc-${type}-${index}`).innerText = qcResult || "-";
+        const qc = convertToQc(val);
+        document.getElementById(`qc-${type}-${index}`).innerText = qc || "-";
         
-        if (type === 'before') beforeValues[index] = qcResult;
-        else afterValues[index] = qcResult;
-
         const min = parseFloat(el.dataset.min);
         const max = parseFloat(el.dataset.max);
         el.classList.remove('val-low', 'val-ok', 'val-high');
@@ -212,84 +221,15 @@
             masterStore[pumpNum][type][index] = el.value;
             localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
         }
-        if(nikChart) nikChart.update();
-    }
-
-    function startPumpLiveWatcher() {
-        setInterval(() => {
-            const mode = localStorage.getItem('editMode') === 'true';
-            if (mode) {
-                const raw = localStorage.getItem('editData');
-                if (raw) {
-                    const data = JSON.parse(raw);
-                    isEditMode = true;
-                    editId = data.id;
-                    applyLoadedData(data);
-                }
-            }
-        }, 800);
-    }
-
-    function applyLoadedData(ed) {
-        if(!ed) return;
-        masterStore = ed.all_pumps_data || {};
-        localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
-        
-        document.getElementById('unit_model').value = ed.unit_model || '';
-        document.getElementById('serial_num').value = ed.serial_number || '';
-        document.getElementById('test_date').value = ed.test_date || '';
-        document.getElementById('nik-notes').value = ed.diagnosis || '';
-        
-        checkAccess(ed.nik);
-        refreshTableInputs();
-    }
-
-    function refreshTableInputs() {
-        const cur = masterStore[pumpNum];
-        if(cur) {
-            const bIn = document.querySelectorAll('.before-q');
-            const aIn = document.querySelectorAll('.after-q');
-            if(cur.before) cur.before.forEach((v, i) => { if(bIn[i]) { bIn[i].value = v || ''; handleNikInput(bIn[i], 'before', i, true); }});
-            if(cur.after) cur.after.forEach((v, i) => { if(aIn[i]) { aIn[i].value = v || ''; handleNikInput(aIn[i], 'after', i, true); }});
-        }
-    }
-
-    function checkAccess(ownerNik) {
-        const canEdit = (userRole === 'admin' || ownerNik === userNik);
-        const watermark = document.getElementById('watermark');
-        const badge = document.getElementById('accessBadge');
-        const btnSave = document.getElementById('btn-save');
-
-        // Pastikan membaca state terbaru dari storage
-        const currentEditState = localStorage.getItem('editMode') === 'true';
-
-        if (currentEditState) {
-            if (!canEdit && ownerNik) { // Jika ada ownerNik tapi tidak punya akses
-                watermark.style.display = 'block';
-                btnSave.style.display = 'none';
-                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-red-100 text-red-600";
-                badge.innerHTML = '<i class="fas fa-lock mr-1"></i> View Only (Locked)';
-                document.querySelectorAll('input, textarea').forEach(el => el.disabled = true);
-            } else {
-                watermark.style.display = 'none';
-                btnSave.style.display = 'block';
-                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-emerald-100 text-emerald-600";
-                badge.innerHTML = '<i class="fas fa-user-check mr-1"></i> Edit Mode';
-                document.querySelectorAll('input, textarea').forEach(el => el.disabled = false);
-            }
-        } else {
-            // New Entry Mode
-            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600";
-            badge.innerHTML = '<i class="fas fa-pen-nib mr-1"></i> New Entry Mode';
-            watermark.style.display = 'none';
-            btnSave.style.display = 'block';
+        if(nikChart) {
+            const dsIdx = type === 'before' ? 2 : 3;
+            nikChart.data.datasets[dsIdx].data[index] = qc;
+            nikChart.update('none');
         }
     }
 
     async function saveMasterToSupabase() {
-        const overlay = document.getElementById('loadingOverlay');
-        overlay.style.display = 'flex';
-        
+        document.getElementById('loadingOverlay').style.display = 'flex';
         const payload = {
             test_date: document.getElementById('test_date').value,
             unit_model: document.getElementById('unit_model').value,
@@ -298,20 +238,17 @@
             nik: userNik,
             all_pumps_data: masterStore 
         };
-
         const { error } = (isEditMode && editId)
             ? await sb.from('pump_performance_reports').update(payload).eq('id', editId)
             : await sb.from('pump_performance_reports').insert([payload]);
 
-        overlay.style.display = 'none';
+        document.getElementById('loadingOverlay').style.display = 'none';
         if (error) alert("Error: " + error.message);
-        else {
-            alert("✅ Pump Master Data Synchronized!");
-        }
+        else alert("✅ Data Synchronized to Cloud!");
     }
 
     function createNewReport() {
-        if(confirm("Reset form?")) {
+        if(confirm("Hapus semua data input dan buat laporan baru?")) {
             localStorage.removeItem('nik_master_store');
             localStorage.removeItem('editMode');
             localStorage.removeItem('editData');
@@ -320,19 +257,10 @@
         }
     }
 
-    function handleAutoScale() {
-        const scaler = document.getElementById('nik-scaler');
-        const winW = window.innerWidth;
-        if (winW < 720) {
-            const scale = winW / 720;
-            scaler.style.transform = `scale(${scale})`;
-            scaler.style.marginBottom = `-${(1 - scale) * scaler.offsetHeight}px`;
-        }
-    }
-
     window.onload = () => {
         handleAutoScale();
         window.addEventListener('resize', handleAutoScale);
+
         document.getElementById('p-label').innerText = pumpNum;
         document.getElementById('user-nik-display').innerText = `NIK: ${userNik}`;
         
@@ -345,29 +273,41 @@
             data: {
                 labels: tableData.map(d => d.label),
                 datasets: [
-                    { label: 'Min Std', data: tableData.map(d => convertToQc(d.min)), borderColor: '#facc15', borderDash: [5,5], pointRadius: 0, fill: false },
-                    { label: 'Max Std', data: tableData.map(d => convertToQc(d.max)), borderColor: '#ef4444', borderDash: [5,5], pointRadius: 0, fill: false },
-                    { label: 'Before', data: beforeValues, borderColor: '#94a3b8', tension: 0.2, pointRadius: 5, borderWidth: 2 },
-                    { label: 'After', data: afterValues, borderColor: '#3b82f6', tension: 0.2, pointRadius: 7, borderWidth: 4 }
+                    { label: 'Min', data: tableData.map(d => convertToQc(d.min)), borderColor: '#facc15', borderDash: [5,5], pointRadius: 0, fill: false },
+                    { label: 'Max', data: tableData.map(d => convertToQc(d.max)), borderColor: '#ef4444', borderDash: [5,5], pointRadius: 0, fill: false },
+                    { label: 'Before', data: [null,null,null,null,null], borderColor: '#94a3b8', tension: 0.3, pointRadius: 4 },
+                    { label: 'After', data: [null,null,null,null,null], borderColor: '#3b82f6', tension: 0.3, pointRadius: 6, borderWidth: 3 }
                 ]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: { legend: { labels: { font: { size: 10, weight: '800' } } } }
+            }
         });
 
-        // Load data awal jika ada
         const initialData = localStorage.getItem('editData');
-        const initialMode = localStorage.getItem('editMode') === 'true';
-
-        if(initialMode && initialData) {
-            isEditMode = true;
-            applyLoadedData(JSON.parse(initialData));
+        if(isEditMode && initialData) {
+            const ed = JSON.parse(initialData);
+            document.getElementById('unit_model').value = ed.unit_model || '';
+            document.getElementById('serial_num').value = ed.serial_number || '';
+            document.getElementById('test_date').value = ed.test_date || '';
+            document.getElementById('nik-notes').value = ed.diagnosis || '';
+            masterStore = ed.all_pumps_data || {};
+            checkAccess(ed.nik);
+            
+            const cur = masterStore[pumpNum];
+            if(cur) {
+                const bIn = document.querySelectorAll('.before-q');
+                const aIn = document.querySelectorAll('.after-q');
+                if(cur.before) cur.before.forEach((v, i) => { if(bIn[i]) { bIn[i].value = v; handleNikInput(bIn[i], 'before', i, true); }});
+                if(cur.after) cur.after.forEach((v, i) => { if(aIn[i]) { aIn[i].value = v; handleNikInput(aIn[i], 'after', i, true); }});
+            }
         } else {
             document.getElementById('test_date').valueAsDate = new Date();
-            checkAccess(); // Set ke New Entry jika tidak ada data edit
+            checkAccess();
         }
-
-        startPumpLiveWatcher();
     };
 </script>
 </body>
-</html>
+    </html>
