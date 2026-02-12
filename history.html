@@ -38,7 +38,7 @@
     <div class="max-w-3xl mx-auto">
         <div class="flex justify-between items-end mb-8 border-b border-slate-800 pb-6">
             <div>
-                <p class="text-blue-500 text-[9px] font-black uppercase tracking-[0.3em] mb-1">Global Database Access</p>
+                <p class="text-blue-500 text-[9px] font-black uppercase tracking-[0.3em] mb-1">NIK System Interface</p>
                 <h2 class="text-2xl font-black uppercase tracking-tighter italic">Adjustment <span class="text-blue-500">Master History</span></h2>
             </div>
             <div class="live-indicator">
@@ -49,13 +49,13 @@
         <div id="logs-container" class="space-y-3">
             <div class="flex flex-col items-center justify-center py-20 text-slate-500">
                 <i class="fas fa-circle-notch animate-spin text-2xl mb-4"></i>
-                <p class="text-xs font-bold uppercase tracking-widest">Querying Global NIK Session...</p>
+                <p class="text-xs font-bold uppercase tracking-widest">Memuat Riwayat Global...</p>
             </div>
         </div>
     </div>
 
     <script>
-        // Supabase Configuration
+        // Supabase Initialization
         const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
 
         const currentUserNik = localStorage.getItem('userNIK') || 'GUEST';
@@ -73,7 +73,7 @@
         function renderLogs(logs) {
             const container = document.getElementById('logs-container');
             if (!logs || logs.length === 0) {
-                container.innerHTML = `<div class="text-center py-20 text-slate-600 text-xs font-bold italic tracking-widest">NO RECORDS FOUND</div>`;
+                container.innerHTML = `<div class="text-center py-20 text-slate-600 text-xs font-bold italic tracking-widest">BELUM ADA DATA TERSIMPAN</div>`;
                 return;
             }
 
@@ -84,7 +84,7 @@
                     <div class="log-card">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center border border-slate-700">
-                                <i class="fas fa-microchip text-blue-500 text-sm"></i>
+                                <i class="fas fa-history text-blue-500 text-sm"></i>
                             </div>
                             <div>
                                 <div class="flex items-center gap-2">
@@ -92,9 +92,9 @@
                                     <span class="text-[8px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-bold">${log.serial_number}</span>
                                 </div>
                                 <p class="text-[9px] text-slate-500 font-bold uppercase mt-1 tracking-wider">
-                                    <i class="fas fa-id-badge mr-1"></i> ${log.nik || 'GUEST'} 
+                                    <i class="fas fa-id-card mr-1"></i> ${log.nik || 'GUEST'} 
                                     <span class="mx-2 text-slate-700">|</span> 
-                                    <i class="fas fa-clock mr-1"></i> ${new Date(log.test_date).toLocaleDateString('id-ID')}
+                                    <i class="fas fa-calendar mr-1"></i> ${new Date(log.test_date).toLocaleDateString('id-ID')}
                                 </p>
                             </div>
                         </div>
@@ -103,7 +103,7 @@
                             <button onclick='initEdit("${log.id}", ${JSON.stringify(log)})' 
                                 class="btn-action ${canEdit ? 'btn-edit hover:bg-blue-600' : 'btn-view hover:bg-slate-800'} active:scale-95">
                                 <i class="fas ${canEdit ? 'fa-edit' : 'fa-eye'} mr-1"></i>
-                                ${canEdit ? 'Edit / View Data' : 'View Only Mode'}
+                                ${canEdit ? 'Buka Master' : 'Lihat Data'}
                             </button>
                         </div>
                     </div>
@@ -112,7 +112,7 @@
         }
 
         function initEdit(id, logData) {
-            // 1. CLEAR PREVIOUS SESSION DATA
+            // 1. CLEAR SESSION LAMA
             localStorage.removeItem('editMode');
             localStorage.removeItem('editId');
             localStorage.removeItem('editData');
@@ -120,31 +120,30 @@
             localStorage.removeItem('nik_sync_unit_model');
             localStorage.removeItem('nik_sync_serial_num');
 
-            // 2. SET NEW SESSION (Shared Identity)
+            // 2. SET SESSION IDENTITAS (Untuk Hydraulic Test)
             localStorage.setItem('editMode', 'true');
             localStorage.setItem('editId', id);
             localStorage.setItem('editData', JSON.stringify(logData));
-            
-            // Sync data identitas ke modul Hydraulic Test
             localStorage.setItem('nik_sync_unit_model', logData.unit_model || '');
             localStorage.setItem('nik_sync_serial_num', logData.serial_number || '');
 
-            // 3. SET TECHNICAL DATA (8 Pumps Performance)
+            // 3. SET DATA TEKNIS (Untuk Pump Performance)
             if (logData.all_pumps_data) {
                 localStorage.setItem('nik_master_store', JSON.stringify(logData.all_pumps_data));
             }
             
-            // 4. NAVIGATION
-            // Secara default diarahkan ke Pump Analysis p=1 (Halaman Performance)
+            // 4. NAVIGASI: Buka Tab Hydraulic Test Dahulu
             if(window.parent && window.parent.switchTab) {
-                window.parent.switchTab('pump-perform', '1');
+                // Diarahkan ke tab 'hyd-test'
+                window.parent.switchTab('hyd-test');
             } else {
-                window.location.href = `pump-analysis.html?p=1`;
+                // Fallback jika tidak dalam iframe terminal
+                window.location.href = `hydraulic-test.html`;
             }
         }
 
         function subscribeToChanges() {
-            sb.channel('global-sync')
+            sb.channel('db-watch')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pump_performance_reports' }, () => {
                 fetchLogs();
             }).subscribe();
