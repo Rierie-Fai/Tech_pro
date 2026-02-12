@@ -2,194 +2,134 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pump Selection | NIK Terminal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
-        
-        body { 
-            background: #f1f5f9; /* Sama dengan background pump-analysis */
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            overflow-x: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { background: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; padding: 20px; }
+        .nav-container { width: 100%; max-width: 600px; }
+        .pump-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        .pump-btn {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 20px; text-align: left; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
         }
-
-        .container {
-            width: 100%;
-            max-width: 680px;
+        .pump-btn:hover { transform: translateY(-4px); border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); }
+        .pump-btn::after {
+            content: '\f105'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            color: #cbd5e1; transition: 0.3s;
         }
-
-        /* Card Styling yang lebih modern & senada */
-        .pump-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            padding: 20px 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .pump-card:hover {
-            transform: translateY(-5px);
-            border-color: #3b82f6;
-            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.1);
-        }
-
-        .pump-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            padding: 2px; 
-            background: linear-gradient(135deg, #3b82f6, transparent);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .pump-card:hover::before { opacity: 1; }
-
-        .pump-icon {
-            width: 52px;
-            height: 52px;
-            background: #f8fafc;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 14px;
-            color: #94a3b8;
-            transition: all 0.3s;
-            border: 1px solid #f1f5f9;
-        }
-
-        .pump-card:hover .pump-icon {
-            background: #eff6ff;
-            color: #3b82f6;
-            transform: rotate(45deg);
-        }
-
-        .status-badge {
-            font-size: 8px;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 3px 10px;
-            border-radius: 100px;
-            background: #f0fdf4;
-            color: #16a34a;
-            margin-top: 10px;
-            letter-spacing: 0.05em;
-            border: 1px solid #dcfce7;
-        }
-
-        /* NIK Persistence Info Bar */
-        .info-bar {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+        .pump-btn:hover::after { color: #3b82f6; transform: translate(5px, -50%); }
+        .status-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .status-empty { background: #cbd5e1; }
+        .status-filled { background: #10b981; box-shadow: 0 0 8px #10b981; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="flex items-end justify-between mb-8 border-b-2 border-slate-200 pb-5">
-        <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="h-2 w-8 bg-blue-600 rounded-full"></span>
-                <span class="text-[9px] font-black text-blue-600 uppercase tracking-widest">Diagnostic Terminal</span>
+<div class="nav-container">
+    <div class="bg-white rounded-2xl p-5 mb-6 border border-slate-200 shadow-sm border-l-8 border-blue-600">
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Select Component</p>
+                <h1 id="unit-title" class="text-xl font-black text-slate-900 uppercase italic">MAIN PUMP <span class="text-blue-600">ANALYSIS</span></h1>
+                <div class="flex gap-3 mt-2">
+                    <span id="label-unit" class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 uppercase">NO UNIT</span>
+                    <span id="label-sn" class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 uppercase">NO SERIAL</span>
+                </div>
             </div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic leading-none">
-                Mainpump <span class="text-blue-600">Modules</span>
-            </h1>
-        </div>
-        <div class="text-right">
-            <span id="active-nik" class="text-[10px] font-black text-slate-400 font-mono bg-slate-200 px-3 py-1 rounded-md">NIK: ------</span>
+            <div id="mode-badge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase bg-slate-100 text-slate-400">
+                NEW ENTRY
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="pump-grid">
+    <div class="pump-grid" id="pump-buttons-container">
         </div>
-
-    <div class="mt-8 info-bar">
-        <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 shrink-0">
-            <i class="fas fa-sync-alt animate-spin-slow"></i>
-        </div>
-        <div>
-            <p class="text-[10px] font-black text-slate-800 uppercase tracking-tight">Real-time Data Persistence Active</p>
-            <p class="text-[9px] font-bold text-slate-400 uppercase leading-none mt-1">
-                Setiap perubahan pada PUMP 1-8 akan tersimpan otomatis di NIK Cloud Session.
-            </p>
-        </div>
-    </div>
 </div>
 
 <script>
-    const grid = document.getElementById('pump-grid');
-    const userNik = localStorage.getItem('userNIK') || 'GUEST';
-    document.getElementById('active-nik').innerText = `NIK: ${userNik}`;
-    
-    // Generate 8 Pump Modules
-    for (let i = 1; i <= 8; i++) {
-        const card = document.createElement('div');
-        card.className = 'pump-card';
-        
-        card.onclick = () => {
-            // Animasi tekan sebelum pindah
-            card.style.transform = "scale(0.95)";
-            setTimeout(() => {
-                if (window.parent && window.parent.parentNavigate) {
-                    window.parent.parentNavigate('pump-analysis', `pump-analysis.html?p=${i}`);
-                } else {
-                    window.location.href = `pump-analysis.html?p=${i}`;
-                }
-            }, 100);
-        };
-        
-        // Cek apakah ada data tersimpan untuk pump ini di Master Store
-        const masterStore = JSON.parse(localStorage.getItem('nik_master_store')) || {};
-        const hasData = masterStore[i] ? true : false;
-        
-        card.innerHTML = `
-            <div class="pump-icon">
-                <i class="fas fa-gauge-high text-xl"></i>
-            </div>
-            <div class="text-[8px] font-black text-slate-400 uppercase tracking-tighter">Diagnostic 0${i}</div>
-            <div class="text-xl font-black text-slate-800 italic">PUMP ${i}</div>
-            <div class="status-badge ${hasData ? 'bg-blue-50 text-blue-600 border-blue-100' : ''}">
-                <i class="fas ${hasData ? 'fa-database' : 'fa-check-circle'} mr-1"></i> 
-                ${hasData ? 'In Session' : 'Ready'}
-            </div>
-        `;
-        grid.appendChild(card);
+    function renderButtons() {
+        const container = document.getElementById('pump-buttons-container');
+        let html = '';
+        for(let i=1; i<=8; i++) {
+            html += `
+                <button onclick="goToPump(${i})" class="pump-btn group">
+                    <div class="flex items-center mb-1">
+                        <span id="dot-p${i}" class="status-dot status-empty"></span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Hydraulic System</span>
+                    </div>
+                    <h2 class="text-lg font-black text-slate-800 tracking-tighter">PUMP ${i}</h2>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Performance Test</p>
+                </button>
+            `;
+        }
+        container.innerHTML = html;
     }
 
-    // CSS Spin slow
-    const style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+    function syncDataBridge() {
+        // Ambil data dari "Gudang Utama"
+        const isEditMode = localStorage.getItem('editMode') === 'true';
+        const rawData = localStorage.getItem('editData');
+
+        if (isEditMode && rawData) {
+            try {
+                const data = JSON.parse(rawData);
+                
+                // Update UI Header
+                document.getElementById('label-unit').innerText = data.unit_model || 'N/A';
+                document.getElementById('label-sn').innerText = data.serial_number || 'N/A';
+                
+                const badge = document.getElementById('mode-badge');
+                badge.innerText = "EDIT MODE / CLOUD SYNC";
+                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-emerald-100 text-emerald-600";
+
+                // PENTING: Pindahkan data ke master_store agar Pump Analysis bisa membaca isinya
+                if (data.all_pumps_data) {
+                    localStorage.setItem('nik_master_store', JSON.stringify(data.all_pumps_data));
+                    
+                    // Tandai pompa yang sudah ada isinya
+                    for (let i = 1; i <= 8; i++) {
+                        if (data.all_pumps_data[i] && (data.all_pumps_data[i].before || data.all_pumps_data[i].after)) {
+                            const dot = document.getElementById(`dot-p${i}`);
+                            if (dot) {
+                                dot.classList.remove('status-empty');
+                                dot.classList.add('status-filled');
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Gagal sinkronisasi data navigasi:", e);
+            }
         }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
-    `;
-    document.head.appendChild(style);
+    }
+
+    function goToPump(num) {
+        // Sebelum pindah, pastikan flag editMode tetap menyala
+        // agar Pump Analysis tahu dia harus meload data dari localStorage
+        const currentMode = localStorage.getItem('editMode');
+        if(currentMode === 'true') {
+            console.log("Navigating in Edit Mode for Pump " + num);
+        }
+        
+        window.location.href = `pump-analysis.html?p=${num}`;
+    }
+
+    window.onload = () => {
+        renderButtons();
+        syncDataBridge();
+        
+        // Watcher jika user tiba-tiba klik Master History di tab sebelah (Iframe)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'editData' || e.key === 'editMode') {
+                syncDataBridge();
+            }
+        });
+    };
 </script>
 
 </body>
