@@ -2,171 +2,246 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pump Selection | NIK Terminal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NIK Terminal | Control Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
-        body { background: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .nav-container { width: 100%; max-width: 600px; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+        
+        body { background: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .nav-container { width: 100%; max-width: 720px; margin: 0 auto; padding: 15px; }
+        
+        /* Grid Styles */
         .pump-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
         .pump-btn {
-            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
-            padding: 20px; text-align: left; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white; border: 1px solid #e2e8f0; border-radius: 20px;
+            padding: 24px 20px; text-align: left; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative; overflow: hidden;
         }
-        .pump-btn:hover { transform: translateY(-4px); border-color: #3b82f6; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1); }
-        .pump-btn::after {
-            content: '\f105'; font-family: 'Font Awesome 5 Free'; font-weight: 900;
-            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            color: #cbd5e1; transition: 0.3s;
-        }
-        .pump-btn:hover::after { color: #3b82f6; transform: translate(5px, -50%); }
-        .status-dot { height: 6px; width: 6px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .pump-btn:hover { transform: translateY(-4px); border-color: #3b82f6; box-shadow: 0 12px 20px -5px rgba(59, 130, 246, 0.15); }
+        .pump-btn:active { transform: scale(0.98); }
+
+        /* Status Indicators */
+        .status-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; position: relative; }
         .status-empty { background: #cbd5e1; }
-        .status-filled { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .status-filled { background: #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+        .status-filled::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; border: 2px solid #10b981; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; opacity: 0.4; }
         
-        /* Animasi pulsa untuk mode edit */
-        .pulse-edit { animation: pulse-border 2s infinite; }
-        @keyframes pulse-border {
-            0% { border-color: #e2e8f0; }
-            50% { border-color: #10b981; }
-            100% { border-color: #e2e8f0; }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+
+        /* History Panel */
+        #historyPanel {
+            position: fixed; right: -100%; top: 0; width: 100%; max-width: 450px;
+            height: 100%; background: #ffffff; box-shadow: -15px 0 35px rgba(0,0,0,0.15);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
         }
+        #historyPanel.open { right: 0; }
+        .overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); 
+            display: none; z-index: 90; backdrop-filter: blur(4px); transition: opacity 0.3s;
+        }
+
+        /* History Cards */
+        .history-card {
+            background: #f8fafc; border: 2px solid transparent; border-radius: 16px;
+            padding: 16px; transition: all 0.2s; cursor: pointer;
+        }
+        .history-card:hover { background: #ffffff; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        
+        .pulse-edit { animation: pulse-border 2s infinite; }
+        @keyframes pulse-border { 0%, 100% { border-color: #e2e8f0; } 50% { border-color: #10b981; } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body>
 
+<div class="overlay" id="overlay" onclick="toggleHistory()"></div>
+
 <div class="nav-container">
-    <div id="status-card" class="bg-white rounded-2xl p-5 mb-6 border border-slate-200 shadow-sm border-l-8 border-blue-600 transition-all">
+    <div id="status-card" class="bg-white rounded-3xl p-6 mb-6 border border-slate-200 shadow-sm border-l-[10px] border-blue-600 transition-all">
         <div class="flex justify-between items-start">
-            <div>
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Select Component</p>
-                <h1 id="unit-title" class="text-xl font-black text-slate-900 uppercase italic">MAIN PUMP <span class="text-blue-600">ANALYSIS</span></h1>
-                <div class="flex gap-3 mt-2">
-                    <span id="label-unit" class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 uppercase">NO UNIT</span>
-                    <span id="label-sn" class="text-[10px] font-bold bg-slate-100 px-2 py-1 rounded text-slate-600 uppercase">NO SERIAL</span>
+            <div class="space-y-1">
+                <p class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-2">NIK Terminal System</p>
+                <h1 class="text-2xl font-extrabold text-slate-900 italic leading-none">CONTROL <span class="text-blue-600">CENTER</span></h1>
+                <div class="flex gap-2 pt-3">
+                    <div class="flex flex-col">
+                        <span class="text-[7px] font-black text-slate-400 uppercase">Unit Model</span>
+                        <span id="label-unit" class="text-[11px] font-extrabold text-slate-700 uppercase">New Session</span>
+                    </div>
+                    <div class="w-[1px] h-6 bg-slate-200 mx-2"></div>
+                    <div class="flex flex-col">
+                        <span class="text-[7px] font-black text-slate-400 uppercase">Serial Number</span>
+                        <span id="label-sn" class="text-[11px] font-extrabold text-slate-700 uppercase">No Data Selected</span>
+                    </div>
                 </div>
             </div>
-            <div id="mode-badge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase bg-slate-100 text-slate-400">
-                NEW ENTRY
+            <div class="flex flex-col gap-3 items-end">
+                <button onclick="toggleHistory()" class="bg-slate-900 text-white px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-tighter hover:bg-blue-600 transition-all shadow-lg shadow-slate-200">
+                    <i class="fas fa-folder-open mr-2"></i> Master History
+                </button>
+                <div id="mode-badge" class="px-3 py-1 rounded-full text-[8px] font-black uppercase bg-slate-100 text-slate-400">
+                    NEW ENTRY
+                </div>
             </div>
         </div>
     </div>
 
     <div class="pump-grid" id="pump-buttons-container">
         </div>
-    
-    <div class="mt-8 text-center">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NIK Terminal System v2.0</p>
+
+    <div class="mt-8 flex justify-between items-center px-4">
+        <div class="text-[9px] font-black text-slate-300 uppercase tracking-widest">v2.4 Production NIK</div>
+        <button onclick="createNewEntry()" class="text-[10px] font-black text-red-400 hover:text-red-600 uppercase">
+            <i class="fas fa-trash-alt mr-1"></i> Clear Session
+        </button>
+    </div>
+</div>
+
+<div id="historyPanel">
+    <div class="p-6 h-full flex flex-col">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-xl font-black text-slate-900 uppercase italic">Cloud <span class="text-blue-600">History</span></h2>
+                <p class="text-[9px] font-bold text-slate-400 uppercase">Recent Maintenance Reports</p>
+            </div>
+            <button onclick="toggleHistory()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div id="history-list" class="flex-1 overflow-y-auto space-y-4 pr-2">
+            </div>
+
+        <div class="pt-6 border-t border-slate-100 mt-auto">
+            <button onclick="createNewEntry()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-[11px] uppercase shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">
+                <i class="fas fa-plus-circle mr-2"></i> Create New Performance Report
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
+    const sb = supabase.createClient('https://corpgiuxyhfxdnqwwmlv.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E');
+
+    function toggleHistory() {
+        const panel = document.getElementById('historyPanel');
+        const overlay = document.getElementById('overlay');
+        panel.classList.toggle('open');
+        overlay.style.display = panel.classList.contains('open') ? 'block' : 'none';
+        if(panel.classList.contains('open')) loadHistory();
+    }
+
+    async function loadHistory() {
+        const container = document.getElementById('history-list');
+        container.innerHTML = `<div class="flex flex-col items-center py-20"><div class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div></div>`;
+
+        const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false }).limit(15);
+
+        if (error) { 
+            container.innerHTML = `<p class="text-red-500 text-[10px] font-bold text-center">FAILED TO LOAD: ${error.message}</p>`; 
+            return; 
+        }
+        
+        let html = '';
+        data.forEach(item => {
+            const dateObj = new Date(item.test_date);
+            const formattedDate = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+            
+            html += `
+                <div onclick="selectHistoryItem('${JSON.stringify(item).replace(/'/g, "&apos;")}')" class="history-card group">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-600 text-[8px] font-black rounded uppercase">${item.unit_model || 'N/A'}</span>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase italic">${formattedDate}</span>
+                    </div>
+                    <h3 class="text-[13px] font-black text-slate-800 uppercase mb-1 tracking-tight">${item.serial_number || 'NO SERIAL'}</h3>
+                    <div class="flex justify-between items-end">
+                        <p class="text-[9px] font-bold text-slate-400 uppercase"><i class="fas fa-user-circle mr-1"></i> ${item.nik || 'GUEST'}</p>
+                        <i class="fas fa-chevron-right text-[10px] text-slate-300 group-hover:text-blue-500 group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html || '<div class="text-center py-20 text-slate-400 text-[10px] font-bold uppercase">No records found</div>';
+    }
+
+    function selectHistoryItem(jsonStr) {
+        const item = JSON.parse(jsonStr);
+        localStorage.setItem('editMode', 'true');
+        localStorage.setItem('editData', JSON.stringify(item));
+        localStorage.setItem('editId', item.id);
+        localStorage.setItem('nik_master_store', JSON.stringify(item.all_pumps_data || {}));
+        
+        toggleHistory();
+        syncUI();
+    }
+
+    function createNewEntry() {
+        if(confirm("Buka sesi baru? Data yang belum tersimpan ke cloud akan hilang.")) {
+            localStorage.removeItem('editMode');
+            localStorage.removeItem('editData');
+            localStorage.removeItem('editId');
+            localStorage.removeItem('nik_master_store');
+            if(document.getElementById('historyPanel').classList.contains('open')) toggleHistory();
+            syncUI();
+        }
+    }
+
+    function syncUI() {
+        const isEdit = localStorage.getItem('editMode') === 'true';
+        const raw = localStorage.getItem('editData');
+        const badge = document.getElementById('mode-badge');
+        const card = document.getElementById('status-card');
+
+        if (isEdit && raw) {
+            const data = JSON.parse(raw);
+            document.getElementById('label-unit').innerText = data.unit_model || 'UNKNOWN';
+            document.getElementById('label-sn').innerText = data.serial_number || 'NO S/N';
+            badge.innerText = "EDIT MODE / CLOUD SYNC";
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black bg-emerald-100 text-emerald-600";
+            card.classList.add('pulse-edit');
+            card.style.borderLeftColor = "#10b981";
+        } else {
+            document.getElementById('label-unit').innerText = "NEW SESSION";
+            document.getElementById('label-sn').innerText = "NO DATA SELECTED";
+            badge.innerText = "NEW ENTRY";
+            badge.className = "px-3 py-1 rounded-full text-[8px] font-black bg-slate-100 text-slate-400";
+            card.classList.remove('pulse-edit');
+            card.style.borderLeftColor = "#2563eb";
+        }
+        renderButtons();
+    }
+
     function renderButtons() {
         const container = document.getElementById('pump-buttons-container');
+        const store = JSON.parse(localStorage.getItem('nik_master_store') || '{}');
         let html = '';
         for(let i=1; i<=8; i++) {
+            const hasData = store[i] && (
+                (store[i].before && store[i].before.some(v => v)) || 
+                (store[i].after && store[i].after.some(v => v))
+            );
             html += `
-                <button onclick="goToPump(${i})" class="pump-btn group">
-                    <div class="flex items-center mb-1">
-                        <span id="dot-p${i}" class="status-dot status-empty"></span>
-                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter italic">NIK Component</span>
+                <button onclick="window.location.href='pump-analysis.html?p=${i}'" class="pump-btn">
+                    <div class="flex items-center mb-2">
+                        <span class="status-dot ${hasData ? 'status-filled' : 'status-empty'}"></span>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter italic">Hydraulic Section</span>
                     </div>
-                    <h2 class="text-lg font-black text-slate-800 tracking-tighter">PUMP ${i}</h2>
-                    <p id="desc-p${i}" class="text-[9px] font-bold text-slate-400 uppercase">Ready for Test</p>
+                    <h2 class="text-xl font-black text-slate-800 tracking-tighter leading-none mb-1">PUMP ${i}</h2>
+                    <p class="text-[9px] font-bold ${hasData ? 'text-emerald-600' : 'text-slate-400'} uppercase">
+                        ${hasData ? '<i class="fas fa-check-circle mr-1"></i> Data Recorded' : 'Ready for Analysis'}
+                    </p>
                 </button>
             `;
         }
         container.innerHTML = html;
-        updateStatusVisuals();
     }
 
-    function syncDataBridge() {
-        const isEditMode = localStorage.getItem('editMode') === 'true';
-        const rawData = localStorage.getItem('editData');
-        const badge = document.getElementById('mode-badge');
-        const card = document.getElementById('status-card');
-
-        if (isEditMode && rawData) {
-            try {
-                const data = JSON.parse(rawData);
-                
-                // Update UI Header
-                document.getElementById('label-unit').innerText = data.unit_model || 'N/A';
-                document.getElementById('label-sn').innerText = data.serial_number || 'N/A';
-                
-                badge.innerText = "EDIT MODE / CLOUD SYNC";
-                badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-emerald-100 text-emerald-600 shadow-sm";
-                card.classList.add('pulse-edit');
-                card.style.borderLeftColor = "#10b981";
-
-                // Pindahkan data ke master_store agar Pump Analysis konsisten
-                if (data.all_pumps_data) {
-                    localStorage.setItem('nik_master_store', JSON.stringify(data.all_pumps_data));
-                }
-            } catch (e) {
-                console.error("Gagal sinkronisasi navigasi:", e);
-            }
-        } else {
-            // Reset to New Entry Mode
-            badge.innerText = "NEW ENTRY";
-            badge.className = "px-3 py-1 rounded-full text-[8px] font-black uppercase bg-slate-100 text-slate-400";
-            card.classList.remove('pulse-edit');
-            card.style.borderLeftColor = "#2563eb";
-        }
-        
-        updateStatusVisuals();
-    }
-
-    function updateStatusVisuals() {
-        const storeRaw = localStorage.getItem('nik_master_store');
-        if (!storeRaw) return;
-
-        try {
-            const masterStore = JSON.parse(storeRaw);
-            for (let i = 1; i <= 8; i++) {
-                const pumpData = masterStore[i];
-                const dot = document.getElementById(`dot-p${i}`);
-                const desc = document.getElementById(`desc-p${i}`);
-                
-                // Cek apakah ada data di pump tersebut (minimal ada 1 nilai input)
-                const hasBefore = pumpData && pumpData.before && pumpData.before.some(v => v !== null && v !== "");
-                const hasAfter = pumpData && pumpData.after && pumpData.after.some(v => v !== null && v !== "");
-
-                if (dot && (hasBefore || hasAfter)) {
-                    dot.classList.remove('status-empty');
-                    dot.classList.add('status-filled');
-                    if (desc) {
-                        desc.innerText = "Data Recorded";
-                        desc.classList.replace('text-slate-400', 'text-emerald-600');
-                    }
-                }
-            }
-        } catch (e) {
-            console.error("Gagal update visual status:", e);
-        }
-    }
-
-    function goToPump(num) {
-        // Efek transisi sederhana sebelum pindah halaman
-        document.body.style.opacity = "0.5";
-        window.location.href = `pump-analysis.html?p=${num}`;
-    }
-
-    window.onload = () => {
-        renderButtons();
-        syncDataBridge();
-        
-        // Listener untuk mendeteksi perubahan storage dari tab/iframe lain
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'editData' || e.key === 'editMode' || e.key === 'nik_master_store') {
-                syncDataBridge();
-            }
-        });
-    };
+    window.onload = syncUI;
 </script>
-
 </body>
 </html>
