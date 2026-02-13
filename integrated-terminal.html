@@ -40,12 +40,71 @@
             z-index: 10;
         }
 
+        /* Glacial Card Style */
         .glass-card { background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 1.5rem; overflow: hidden; margin-bottom: 1rem; }
         .header-label { font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; display: block; }
         .input-glacial { width: 100%; padding: 10px; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 0.75rem; font-size: 12px; font-weight: 700; outline: none; color: #1e3a8a; transition: 0.2s; }
         .input-glacial:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
         .input-readonly { background: #f1f5f9 !important; color: #94a3b8 !important; cursor: not-allowed; border-style: dashed; }
         
+        /* Side Drawer NIK Riwayat */
+        #history-panel { 
+            position: fixed; 
+            top: 0; 
+            right: 0; 
+            height: 100vh;
+            width: 320px; 
+            z-index: 1000; 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 2px solid #3b82f6;
+            background: white;
+            box-shadow: -10px 0 25px -5px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+        }
+        #history-panel.minimized { transform: translateX(320px); }
+
+        #history-trigger {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #3b82f6;
+            color: white;
+            padding: 15px 6px;
+            border-radius: 12px 0 0 12px;
+            cursor: pointer;
+            z-index: 999;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            box-shadow: -2px 0 10px rgba(59, 130, 246, 0.3);
+            transition: 0.3s;
+        }
+        #history-trigger:hover { padding-right: 12px; background: #1d4ed8; }
+
+        .history-header { 
+            padding: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            background: #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .history-content { flex: 1; overflow-y: auto; padding: 12px; background: white; }
+        .history-item { 
+            background: #f8fafc; 
+            border: 2px solid #f1f5f9; 
+            border-radius: 1rem; 
+            padding: 10px; 
+            margin-bottom: 8px; 
+            transition: 0.2s;
+        }
+        .history-item:hover { border-color: #3b82f6; background: #eff6ff; transform: translateX(-4px); }
+        
+        /* Table Styles */
         .table-custom { width: 100%; border-collapse: collapse; }
         th { background: #f8fafc !important; color: #64748b !important; font-size: 7px; text-transform: uppercase; padding: 8px 2px !important; font-weight: 800; border-bottom: 2px solid #e2e8f0; text-align: center; }
         td { border-bottom: 1px solid #f1f5f9; padding: 8px 4px; font-size: 10px; text-align: center; font-weight: 600; }
@@ -54,12 +113,10 @@
         .qc-output { font-size: 11px; font-weight: 900; font-family: 'JetBrains Mono', monospace; }
         .chart-container { height: 320px; width: 100%; padding: 15px; }
         
-        #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        #loadingOverlay { position: fixed; inset: 0; background: rgba(30, 58, 138, 0.9); z-index: 1001; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
         .tab-btn.active { border-bottom: 3px solid #3b82f6; color: #3b82f6; }
-
-        #history-panel { position: fixed; bottom: 20px; right: 20px; width: 280px; z-index: 1000; transition: all 0.3s ease; }
-        #history-panel.minimized { width: 140px; height: 40px; overflow: hidden; }
-        .history-content { max-height: 350px; overflow-y: auto; background: #f8fafc; }
+        .status-badge-new { background: #dcfce7; color: #166534; }
+        .status-badge-edit { background: #fef9c3; color: #854d0e; }
     </style>
 </head>
 <body>
@@ -69,30 +126,41 @@
         <p class="mt-4 font-black text-white text-[10px] tracking-widest uppercase italic">NIK Cloud Sync Active...</p>
     </div>
 
-    <div id="history-panel" class="minimized glass-card border-2 border-blue-600 shadow-2xl">
-        <div onclick="toggleHistory()" class="bg-blue-600 p-3 flex justify-between items-center cursor-pointer">
-            <h3 class="text-[9px] font-black text-white uppercase"><i class="fas fa-database mr-2"></i>NIK Riwayat</h3>
-            <i id="hist-icon" class="fas fa-chevron-up text-white text-[9px]"></i>
+    <div id="history-panel" class="minimized">
+        <div class="history-header">
+            <h3 class="text-[10px] font-black text-slate-800 uppercase tracking-tight">
+                <i class="fas fa-database text-blue-600 mr-2"></i>NIK RIWAYAT
+            </h3>
+            <button onclick="toggleHistory()" class="text-slate-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="history-content p-2">
-            <div id="history-list" class="space-y-2"><p class="text-[8px] text-center text-slate-400 italic py-4">Loading cloud data...</p></div>
+        <div class="history-content">
+            <div id="history-list" class="space-y-1">
+                <p class="text-[9px] text-center text-slate-400 italic py-6">Connecting to NIK Cloud...</p>
+            </div>
         </div>
+    </div>
+
+    <div id="history-trigger" onclick="toggleHistory()">
+        <i class="fas fa-history mb-2"></i> RIWAYAT DATA
     </div>
 
     <div id="scaler-context">
         <header class="glass-card p-5 flex justify-between items-center no-print border-l-8 border-blue-600">
             <div class="flex items-center gap-3">
                 <div>
-                    <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">Hydraulic <span class="text-blue-600">Tune-Up</span></h1>
-                    <div id="accessBadge" class="inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter bg-blue-100 text-blue-600">
-                        <i class="fas fa-sync-alt mr-1"></i> <span id="sync-status">New Entry Mode</span>
+                    <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">Diagnostic <span class="text-blue-600">Terminal</span></h1>
+                    <div id="accessBadge" class="status-badge-new inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter">
+                        <i class="fas fa-circle mr-1"></i> <span id="sync-status">New Entry Mode</span>
                     </div>
                 </div>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
                 <button onclick="switchTab('general')" id="tab-gen" class="tab-btn active px-3 py-1 text-[9px] font-black uppercase">General Test</button>
                 <button onclick="switchTab('pump')" id="tab-pump" class="tab-btn px-3 py-1 text-[9px] font-black uppercase">Pump Analysis</button>
-                <button type="button" id="btnSave" onclick="saveToCloud()" class="ml-4 bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[9px] uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">Sync Data</button>
+                <button onclick="prepareNewEntry()" class="bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-black text-[9px] uppercase hover:bg-slate-200 transition-all"><i class="fas fa-plus mr-1"></i> New</button>
+                <button type="button" id="btnSave" onclick="saveToCloud()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[9px] uppercase shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-95 transition-all">Sync Data</button>
             </div>
         </header>
 
@@ -104,7 +172,7 @@
                 <div class="col-span-1"><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial !p-2 uppercase" placeholder="SN12345"></div>
                 <div class="col-span-1">
                     <label class="header-label">NIK (Settings)</label>
-                    <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono italic tracking-widest">---</div>
+                    <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono">LOADING...</div>
                     <input type="hidden" id="nik">
                 </div>
                 <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
@@ -187,39 +255,42 @@
             }
         }
 
-        async function syncUserSession() {
-            const userNIK = localStorage.getItem('userNIK');
-            if (!userNIK) return;
-            const { data, error } = await sb.from('users').select('nik, full_name').eq('nik', userNIK).single();
-            if (data) {
-                document.getElementById('display-nik').innerText = data.nik;
-                document.getElementById('nik').value = data.nik;
-                document.getElementById('nama_pic').value = data.full_name;
-                localStorage.setItem('fullName', data.full_name);
-            }
-        }
-
         function toggleHistory() {
             const p = document.getElementById('history-panel');
+            const trigger = document.getElementById('history-trigger');
             p.classList.toggle('minimized');
-            if(!p.classList.contains('minimized')) fetchHistory();
+            
+            if(!p.classList.contains('minimized')) {
+                trigger.style.opacity = "0";
+                fetchHistory();
+            } else {
+                trigger.style.opacity = "1";
+            }
         }
 
         async function fetchHistory() {
             const list = document.getElementById('history-list');
             const { data, error } = await sb.from('pump_performance_reports').select('*').order('created_at', { ascending: false }).limit(10);
-            if (error) { list.innerHTML = `<p class="text-[7px] text-red-500 text-center">Error</p>`; return; }
-            list.innerHTML = data.map(rec => `
-                <div class="bg-white p-2 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
-                    <div class="overflow-hidden">
-                        <p class="text-[9px] font-black truncate">${rec.unit_model || 'UNIT'}</p>
-                        <p class="text-[7px] text-slate-400 font-bold">${new Date(rec.created_at).toLocaleDateString()}</p>
+            if (error) { list.innerHTML = `<p class="text-[7px] text-red-500 text-center">Sync Error</p>`; return; }
+            list.innerHTML = data.map(rec => {
+                const date = new Date(rec.test_date || rec.created_at).toLocaleDateString('id-ID', { day:'2-digit', month:'short' });
+                return `
+                    <div class="history-item flex justify-between items-center group">
+                        <div class="overflow-hidden">
+                            <p class="text-[10px] font-black uppercase text-slate-800 leading-tight">${rec.unit_model || 'UNIT'} - ${rec.serial_number || 'N/A'}</p>
+                            <p class="text-[8px] text-blue-500 font-bold uppercase tracking-wider">${date} • ${rec.hour_meter || 0} HM</p>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="loadRecord('${rec.id}')" class="w-7 h-7 bg-white text-blue-600 rounded-lg shadow-sm flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all border border-slate-100">
+                                <i class="fas fa-folder-open text-[9px]"></i>
+                            </button>
+                            <button onclick="deleteRecord('${rec.id}')" class="w-7 h-7 bg-white text-red-500 rounded-lg shadow-sm flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-slate-100">
+                                <i class="fas fa-trash-alt text-[9px]"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex gap-1">
-                        <button onclick="loadRecord('${rec.id}')" class="text-blue-500 p-1"><i class="fas fa-edit"></i></button>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function loadRecord(id) {
@@ -227,6 +298,7 @@
             const { data, error } = await sb.from('pump_performance_reports').select('*').eq('id', id).single();
             if (data) {
                 document.getElementById('current_record_id').value = data.id;
+                setMode('edit', data.id);
                 document.getElementById('test_date').value = data.test_date;
                 document.getElementById('unit_model').value = data.unit_model;
                 document.getElementById('serial_num').value = data.serial_number;
@@ -237,10 +309,44 @@
                 setVal('.data-eng', data.engine_speed_values || []);
                 setVal('.data-cyc', data.cycle_time_values || []);
                 masterStore = data.all_pumps_data || {};
+                localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
                 renderPumpAnalysis();
                 toggleHistory();
             }
             document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        async function deleteRecord(id) {
+            if(!confirm("Hapus data secara permanen?")) return;
+            await sb.from('pump_performance_reports').delete().eq('id', id);
+            if(document.getElementById('current_record_id').value === id) prepareNewEntry();
+            fetchHistory();
+        }
+
+        function setMode(mode, id = '') {
+            const badge = document.getElementById('accessBadge');
+            const statusText = document.getElementById('sync-status');
+            if (mode === 'edit') {
+                badge.className = "status-badge-edit inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter";
+                statusText.innerText = "Edit Mode: " + id.substring(0, 8);
+            } else {
+                badge.className = "status-badge-new inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter";
+                statusText.innerText = "New Entry Mode";
+            }
+        }
+
+        function prepareNewEntry() {
+            document.getElementById('current_record_id').value = "";
+            setMode('new');
+            document.getElementById('unit_model').value = "";
+            document.getElementById('serial_num').value = "";
+            document.getElementById('hour_meter').value = "";
+            document.getElementById('test_date').valueAsDate = new Date();
+            document.querySelectorAll('.input-glacial:not(.input-readonly)').forEach(i => i.value = "");
+            masterStore = {};
+            localStorage.removeItem('nik_master_store');
+            if(document.getElementById('section-pump').classList.contains('hidden') === false) renderPumpAnalysis();
+            initGeneralForms();
         }
 
         function renderPumpAnalysis() {
@@ -248,22 +354,49 @@
             const pumpData = masterStore[currentPump] || { valuesBefore: [], valuesAfter: [] };
             const buildTable = (title, type) => {
                 const values = (type === 'after' ? pumpData.valuesAfter : pumpData.valuesBefore) || [];
+                let allPass = true;
+                if (type === 'after') {
+                    pumpFlowStd.forEach((item, i) => {
+                        const val = values[i];
+                        if (!val) { allPass = false; return; }
+                        const qc = Math.round((item.np * val) / (item.i * item.ne));
+                        const stdBase = parseInt(item.std.split('±')[0]);
+                        const stdTol = parseInt(item.std.split('±')[1]);
+                        if (qc < (stdBase - stdTol) || qc > (stdBase + stdTol)) allPass = false;
+                    });
+                }
                 return `
-                    <div class="glass-card mb-6">
-                        <div class="bg-slate-50 p-2 border-b border-slate-100"><h3 class="text-[9px] font-black text-blue-600 uppercase px-2">${title}</h3></div>
+                    <div class="glass-card mb-6 ${type === 'after' && values.filter(v => v).length === 5 ? (allPass ? 'border-green-500 shadow-lg' : 'border-red-400') : ''}">
+                        <div class="bg-slate-50 p-2 border-b border-slate-100 flex justify-between items-center">
+                            <h3 class="text-[9px] font-black text-blue-600 uppercase px-2">${title}</h3>
+                            ${type === 'after' && values.filter(v => v).length === 5 ? 
+                                `<span class="px-3 py-1 rounded-full text-[8px] font-black uppercase ${allPass ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600 animate-pulse'}">
+                                    ${allPass ? '<i class="fas fa-check-circle mr-1"></i> PASS' : '<i class="fas fa-exclamation-triangle mr-1"></i> OUT OF SPEC'}
+                                </span>` : ''
+                            }
+                        </div>
                         <table class="table-custom">
-                            <thead><tr><th>Point</th><th>Press</th><th>Measured Q</th><th>QC</th><th>Standard</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Point</th><th>Press</th><th class="text-blue-600">Measured Q</th><th>QC (Calc)</th><th>Standard (QC)</th><th class="opacity-40">Guidance (MQ)</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 ${pumpFlowStd.map((item, i) => {
                                     const val = values[i] || '';
                                     const qc = val ? Math.round((item.np * val) / (item.i * item.ne)) : '-';
+                                    let statusColor = 'text-blue-600';
+                                    if (type === 'after' && val) {
+                                        const stdBase = parseInt(item.std.split('±')[0]);
+                                        const stdTol = parseInt(item.std.split('±')[1]);
+                                        statusColor = (qc >= (stdBase - stdTol) && qc <= (stdBase + stdTol)) ? 'text-green-600' : 'text-red-500 font-black';
+                                    }
                                     return `
                                         <tr>
-                                            <td class="font-black">${item.label}</td>
-                                            <td class="text-slate-400">${item.p}</td>
-                                            <td><input type="number" class="input-glacial !p-1 text-center w-16" value="${val}" oninput="updatePumpVal(${i}, this.value, '${type}')"></td>
-                                            <td class="qc-output text-blue-600" id="qc-${type}-${i}">${qc}</td>
-                                            <td class="font-bold text-slate-500">${item.std}</td>
+                                            <td class="font-black">${item.label}</td><td class="text-slate-400 italic">${item.p}</td>
+                                            <td><input type="number" class="input-glacial !p-1 text-center w-20" value="${val}" oninput="updatePumpVal(${i}, this.value, '${type}')"></td>
+                                            <td class="qc-output ${statusColor}" id="qc-${type}-${i}">${qc}</td>
+                                            <td class="font-bold text-slate-500">${item.std}</td><td class="opacity-30 italic text-[8px] font-bold">${item.min} - ${item.max}</td>
                                         </tr>
                                     `;
                                 }).join('')}
@@ -284,24 +417,20 @@
             const item = pumpFlowStd[idx];
             const qcTarget = document.getElementById(`qc-${type}-${idx}`);
             if (qcTarget) qcTarget.innerText = val ? Math.round((item.np * val) / (item.i * item.ne)) : '-';
-            updateChart();
+            if (type === 'after') renderPumpAnalysis(); else updateChart();
             localStorage.setItem('nik_master_store', JSON.stringify(masterStore));
         }
 
         function initGeneralForms() {
             const comps = ["ENGINE", "PUMP 1-2", "PUMP 3-4", "PUMP 5-6", "PUMP 7-8"];
             const cBody = document.getElementById('comp-history-body');
-            cBody.innerHTML = "";
-            comps.forEach(c => cBody.innerHTML += `<tr><td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="number" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td></tr>`);
+            cBody.innerHTML = comps.map(c => `<tr><td class="p-2 font-black text-[9px] text-slate-700 pl-4 bg-slate-50/50">${c}</td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="number" class="input-glacial !p-1.5 border-0 data-comp"></td><td><input type="text" class="input-glacial !p-1.5 border-0 data-comp"></td></tr>`).join('');
             const rGrid = document.getElementById('pump-relief-grid');
-            rGrid.innerHTML = "";
-            for(let i=1; i<=8; i++) rGrid.innerHTML += `<div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i}</label><input type="number" class="input-glacial text-center data-pump"></div>`;
+            rGrid.innerHTML = Array.from({length:8}, (_,i)=>`<div><label class="text-[9px] font-black text-slate-400 mb-1 block">P${i+1}</label><input type="number" class="input-glacial text-center data-pump"></div>`).join('');
             const engData = [{n: "Low Idle", s: "780-820"}, {n: "High Idle", s: "1850-1950"}, {n: "Auto Idle", s: "1350-1450"}, {n: "Relief Idle", s: "1770-1830"}];
-            const eBody = document.getElementById('engine-speed-body'); eBody.innerHTML = "";
-            engData.forEach(e => eBody.innerHTML += `<tr><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">${e.n}</td><td class="text-center text-[10px] text-slate-400 font-bold">${e.s}</td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td></tr>`);
+            document.getElementById('engine-speed-body').innerHTML = engData.map(e => `<tr><td class="p-3 font-bold text-slate-700 text-[10px] pl-4">${e.n}</td><td class="text-center text-[10px] text-slate-400 font-bold">${e.s}</td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td><td class="p-1"><input type="number" class="input-glacial data-eng text-center !p-1.5"></td></tr>`).join('');
             const actions = [{n: "Boom Raise", s: "8.2±0.5"},{n: "Arm Roll-in", s: "7.0±0.5"},{n: "Arm Roll-out", s: "7.0±0.5"},{n: "Bucket Roll-in", s: "4.7±0.5"},{n: "Bucket Roll-out", s: "4.2±0.5"},{n: "Swing RH", s: "57±3"},{n: "Swing LH", s: "57±3"}];
-            const cycBody = document.getElementById('cycle-time-body'); cycBody.innerHTML = "";
-            actions.forEach(a => cycBody.innerHTML += `<tr><td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td><td class="std-text">${a.s}</td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td></tr>`);
+            document.getElementById('cycle-time-body').innerHTML = actions.map(a => `<tr><td class="text-[9px] text-left font-black p-2 pl-4 text-slate-700 bg-slate-50/30">${a.n}</td><td class="std-text">${a.s}</td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td><td class="p-1"><input type="number" step="0.1" class="input-glacial !p-1.5 text-center data-cyc"></td></tr>`).join('');
         }
 
         function initChart() {
@@ -312,13 +441,13 @@
                 data: {
                     labels: pumpFlowStd.map(d => d.label),
                     datasets: [
-                        { label: 'Min', data: pumpFlowStd.map(d => d.min), borderColor: '#facc15', borderDash: [5,5], pointRadius: 0, fill: false },
-                        { label: 'Max', data: pumpFlowStd.map(d => d.max), borderColor: '#ef4444', borderDash: [5,5], pointRadius: 0, fill: false },
+                        { label: 'Min Std (QC)', data: pumpFlowStd.map(item => parseInt(item.std.split('±')[0]) - parseInt(item.std.split('±')[1])), borderColor: '#facc15', borderDash: [5,5], pointRadius: 0, fill: false },
+                        { label: 'Max Std (QC)', data: pumpFlowStd.map(item => parseInt(item.std.split('±')[0]) + parseInt(item.std.split('±')[1])), borderColor: '#ef4444', borderDash: [5,5], pointRadius: 0, fill: false },
                         { label: 'Before', data: [], borderColor: '#94a3b8', tension: 0.3, pointRadius: 4, fill: false },
                         { label: 'After', data: [], borderColor: '#3b82f6', tension: 0.3, pointRadius: 4, fill: false }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { title: { display: true, text: 'QC Flow (L/min)', font: { size: 9, weight: 'bold' } } } } }
             });
         }
 
@@ -348,7 +477,7 @@
             };
             let res = recId ? await sb.from('pump_performance_reports').update(record).eq('id', recId) : await sb.from('pump_performance_reports').insert([record]);
             document.getElementById('loadingOverlay').style.display = 'none';
-            if (res.error) alert("Sync Error!"); else alert("✅ Synchronized!");
+            if (res.error) alert("Sync Error!"); else { alert("✅ Synchronized!"); prepareNewEntry(); fetchHistory(); switchTab('general'); }
         }
 
         function switchTab(t) {
@@ -363,10 +492,12 @@
 
         window.onload = async () => {
             initGeneralForms();
+            document.getElementById('display-nik').innerText = localStorage.getItem('userNIK') || 'GUEST';
+            document.getElementById('nik').value = localStorage.getItem('userNIK') || 'GUEST';
+            document.getElementById('nama_pic').value = localStorage.getItem('fullName') || 'Unknown';
+            document.getElementById('test_date').valueAsDate = new Date();
             runAutoScale();
             window.addEventListener('resize', runAutoScale);
-            await syncUserSession();
-            document.getElementById('test_date').valueAsDate = new Date();
             fetchHistory();
         };
     </script>
