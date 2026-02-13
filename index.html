@@ -3,303 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Portal Utama | Hexindo Fleet Pro</title>
-    <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
-
+    <title>Hydraulic Pump Tune-Up</title>
+    
     <script>
         if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
     </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
-        
-        :root { --base-width: 720px; }
-
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 50%, #0f172a 100%); 
-            min-height: 100vh; margin: 0; padding: 0;
-            overflow-x: hidden; display: flex; justify-content: center; align-items: flex-start;
-            visibility: hidden;
-        }
-
-        #snow-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-
-        #scaler-context {
-            width: var(--base-width);
-            transform-origin: top center;
-            transition: transform 0.2s ease-out;
-            flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
-        }
-
-        .glass-ice { 
-            background: rgba(255, 255, 255, 0.15); 
-            backdrop-filter: blur(20px) saturate(180%); 
-            border: 1px solid rgba(255, 255, 255, 0.3); 
-            box-shadow: 0 15px 35px 0 rgba(0, 0, 0, 0.2); 
-        }
-        
-        .marquee-container { width: 100%; overflow: hidden; white-space: nowrap; position: relative; }
-        .marquee-text { display: inline-block; animation: marquee 15s linear infinite; }
-        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-
-        .menu-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2rem; background: rgba(255, 255, 255, 0.1); }
-        .menu-card:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
-
-        /* Status Dot Animation */
-        .status-pulse { animation: pulse-animation 2s infinite; }
-        @keyframes pulse-animation { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-
-        #loadingOverlay { visibility: visible !important; position: fixed; inset: 0; background: #1e3a8a; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <canvas id="snow-canvas"></canvas>
-
     <div id="loadingOverlay">
         <div class="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 font-black text-white text-[10px] tracking-widest uppercase italic">Optimizing NIK Terminal...</p>
+        <p class="mt-4 font-black text-white text-[10px] tracking-widest uppercase italic">NIK Cloud Sync Active...</p>
     </div>
 
-    <div id="scaler-context" class="space-y-4">
-        
-        <header class="glass-ice rounded-[2rem] p-5">
-            <div class="flex justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-white/20 p-2 rounded-xl border border-white/40 flex items-center justify-center">
-                        <img src="logo.png" alt="Logo" class="w-full h-full object-contain brightness-200">
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-black text-white italic leading-none">HEXINDO <span class="text-blue-200">FLEET</span></h1>
-                        <p class="text-[7px] text-blue-100 font-bold uppercase mt-1 tracking-tighter">Adaro Project Terminal</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-2">
-                    <a href="settings.html" class="bg-white/20 p-4 rounded-2xl border border-white/30 text-white hover:bg-white/40 transition-all">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-                    </a>
-                    <button onclick="handleLogout()" class="bg-red-500/30 p-4 rounded-2xl border border-red-400/50 text-red-200 hover:bg-red-500 transition-all">
-                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    </button>
+    <div id="history-panel" class="minimized">
+        <div class="history-header p-4 border-b flex justify-between items-center bg-slate-50">
+            <h3 class="text-[10px] font-black text-slate-800 uppercase tracking-tight">
+                <i class="fas fa-database text-blue-600 mr-2"></i>NIK RIWAYAT
+            </h3>
+            <button onclick="toggleHistory()" class="text-slate-400 hover:text-red-500 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="history-content flex-1 overflow-y-auto p-3">
+            <div id="history-list" class="space-y-1"></div>
+        </div>
+    </div>
+
+    <div id="history-trigger" onclick="toggleHistory(event)">
+        <i class="fas fa-history mb-2"></i> RIWAYAT DATA
+    </div>
+
+    <div id="scaler-context">
+        <header class="glass-card p-5 flex justify-between items-center no-print border-l-8 border-blue-600">
+            <div>
+                <h1 class="text-sm font-black italic text-slate-900 uppercase tracking-tighter leading-none">
+                    Hydraulic <span class="text-blue-600">Tune-Up</span>
+                </h1>
+                <div id="accessBadge" class="status-badge-new inline-block mt-2 px-2 py-0.5 rounded text-[7px] font-black uppercase tracking-tighter">
+                    <i class="fas fa-circle mr-1"></i> <span id="sync-status">New Entry Mode</span>
                 </div>
             </div>
-
-            <div class="mt-4 pt-4 border-t border-white/20 flex justify-between items-center">
-                <div id="connectionStatus" class="flex items-center gap-2 bg-black/20 px-3 py-1.5 rounded-full border border-white/10">
-                    <div id="statusDot" class="w-2 h-2 rounded-full bg-green-500 status-pulse"></div>
-                    <span id="statusText" class="text-[9px] font-black text-white uppercase tracking-wider">Online</span>
-                </div>
-
-                <div class="flex flex-col items-end">
-                    <p id="userNameDisplay" class="text-xs font-black text-white italic uppercase tracking-tight">Loading Name...</p>
-                    <p id="userNikDisplay" class="text-[10px] text-blue-200 font-bold font-mono">NIK: ------</p>
-                </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="switchTab('general')" id="tab-gen" class="tab-btn active px-3 py-1 text-[9px] font-black uppercase">General Test</button>
+                <button onclick="switchTab('pump')" id="tab-pump" class="tab-btn px-3 py-1 text-[9px] font-black uppercase">Pump Analysis</button>
+                <button onclick="prepareNewEntry()" class="bg-slate-100 text-slate-600 px-3 py-2 rounded-xl font-black text-[9px] uppercase hover:bg-slate-200 transition-all">New</button>
+                <button type="button" onclick="saveToCloud()" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[9px] uppercase shadow-lg shadow-blue-200">Sync Data</button>
             </div>
         </header>
 
-        <div class="glass-ice rounded-[2rem] p-4">
-            <div id="roleBadge" class="bg-white text-blue-800 w-fit px-3 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest mb-2 mx-auto shadow-sm">Verifying...</div>
-            <div class="marquee-container bg-white/10 rounded-xl py-3 border border-white/20">
-                <h2 class="marquee-text text-sm font-extrabold text-white uppercase italic">
-                    Selamat Datang di Terminal Pro — User Terverifikasi: <span class="text-blue-200" id="fullNameMarquee">...</span> — Silahkan pilih modul pekerjaan Anda — Status Sistem: Aktif —
-                </h2>
+        <div class="glass-card p-6">
+            <input type="hidden" id="current_record_id">
+            <div class="grid grid-cols-4 gap-4">
+                <div class="col-span-1"><label class="header-label text-blue-600">Date</label><input type="date" id="test_date" class="input-glacial !p-2"></div>
+                <div class="col-span-1"><label class="header-label">Unit Model</label><input type="text" id="unit_model" class="input-glacial !p-2 uppercase" placeholder="EX3600-6"></div>
+                <div class="col-span-1"><label class="header-label">Serial No</label><input type="text" id="serial_num" class="input-glacial !p-2 uppercase" placeholder="SN12345"></div>
+                <div class="col-span-1">
+                    <label class="header-label">NIK (Settings)</label>
+                    <div id="display-nik" class="text-[11px] font-black text-blue-600 mt-2 font-mono">LOADING...</div>
+                    <input type="hidden" id="nik">
+                </div>
+                <div class="col-span-2"><label class="header-label">Technician Name</label><input type="text" id="nama_pic" class="input-glacial input-readonly" readonly></div>
+                <div class="col-span-2"><label class="header-label">Hour Meter (HM)</label><input type="number" id="hour_meter" class="input-glacial" placeholder="0.0"></div>
             </div>
         </div>
 
-        <div id="adminSection" class="hidden">
-            <a href="admin-dashboard.html" class="glass-ice rounded-[2rem] p-4 border-l-4 border-red-400 flex items-center justify-between group active:scale-95 transition-all">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center text-white shadow-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 022 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xs font-black text-white uppercase italic">Admin Center</h2>
-                        <p class="text-[7px] font-bold text-blue-100 uppercase">System Management</p>
-                    </div>
+        <div id="section-general" class="space-y-4">
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-history mr-2"></i>1. Component & Oil History</h3>
                 </div>
-                <span class="text-[9px] font-black text-red-200 bg-red-500/20 px-3 py-1 rounded-full uppercase">Enter</span>
-            </a>
+                <table class="w-full">
+                    <thead><tr><th class="text-left pl-4">Component</th><th>Serial</th><th>Part No</th><th>Lifetime</th><th>Model</th></tr></thead>
+                    <tbody id="comp-history-body"></tbody>
+                </table>
+            </div>
+
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-gauge-high mr-2"></i>2. Main Relief Pressure (Kgf/cm²)</h3>
+                </div>
+                <div class="p-5 grid grid-cols-4 gap-4" id="pump-relief-grid"></div>
+                <div class="bg-blue-50 py-2 text-center border-t border-blue-100">
+                    <span class="text-[9px] font-black text-blue-400 tracking-widest uppercase italic">STANDARD: 300 - 320 Kgf/cm²</span>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-bolt mr-2"></i>3. Engine Speed (RPM)</h3>
+                </div>
+                <table class="w-full">
+                    <thead><tr><th class="text-left pl-4">Condition</th><th>Standard</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
+                    <tbody id="engine-speed-body"></tbody>
+                </table>
+            </div>
+
+            <div class="glass-card">
+                <div class="bg-slate-50 p-2 border-b border-slate-100">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase px-2"><i class="fas fa-stopwatch mr-2"></i>4. Cycle Time (Sec)</h3>
+                </div>
+                <table class="w-full text-center">
+                    <thead><tr><th class="text-left pl-4">Action</th><th>Std</th><th class="text-blue-600">Before</th><th class="text-green-600">After</th></tr></thead>
+                    <tbody id="cycle-time-body"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="glass-ice rounded-[2rem] p-4 flex flex-col items-center justify-center text-center">
-            <p id="liveDate" class="text-[9px] font-black text-blue-100 uppercase tracking-[0.3em] mb-1">---</p>
-            <h3 id="liveTime" class="text-4xl font-bold text-white" style="font-family: 'JetBrains Mono', monospace;">00:00</h3>
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-            <a href="integrated-terminal.html" class="menu-card glass-ice p-6 flex flex-col justify-between min-h-[160px]">
-                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 border border-white/40">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                </div>
-                <h3 class="text-xs font-black text-white uppercase italic leading-tight">Hydraulic <br><span class="text-blue-200">Test Pro</span></h3>
-            </a>
-
-            <a href="daily-activity.html" class="menu-card glass-ice p-6 flex flex-col justify-between min-h-[160px]">
-                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 border border-white/40">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
-                </div>
-                <h3 class="text-xs font-black text-white uppercase italic leading-tight">Daily <br><span class="text-blue-200">Activity</span></h3>
-            </a>
-
-            <a href="undercarriage.html" class="menu-card glass-ice p-6 flex flex-col justify-between min-h-[160px]">
-                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 border border-white/40">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4"/></svg>
-                </div>
-                <h3 class="text-xs font-black text-white uppercase italic leading-tight">UC <br><span class="text-blue-200">Inspection</span></h3>
-            </a>
-
-            <a href="toolbox.html" class="menu-card glass-ice p-6 flex flex-col justify-between min-h-[160px]">
-                <div class="w-12 h-12 bg-yellow-400/30 rounded-2xl flex items-center justify-center mb-4 border border-yellow-200/50">
-                    <svg class="w-6 h-6 text-yellow-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3"/></svg>
-                </div>
-                <h3 class="text-xs font-black text-white uppercase italic leading-tight">Toolbox <br><span class="text-yellow-200">Checklist</span></h3>
-            </a>
+        <div id="section-pump" class="hidden space-y-4">
+            <div class="flex justify-between items-center bg-slate-800 text-white p-3 rounded-xl mb-2">
+                <span class="text-[10px] font-black uppercase">Active Analysis: Pump <span id="active-p-num">1</span></span>
+                <select id="pump-select" onchange="changePump(this.value)" class="bg-slate-700 text-[10px] font-bold border-none rounded px-2 py-1 outline-none">
+                    <option value="1">PUMP 1</option><option value="2">PUMP 2</option>
+                    <option value="3">PUMP 3</option><option value="4">PUMP 4</option>
+                    <option value="5">PUMP 5</option><option value="6">PUMP 6</option>
+                    <option value="7">PUMP 7</option><option value="8">PUMP 8</option>
+                </select>
+            </div>
+            <div id="pump-tables-container"></div>
+            <div class="glass-card bg-white chart-container"><canvas id="nikChart"></canvas></div>
+            <textarea id="nik-notes" class="w-full glass-card p-3 text-[11px] font-semibold h-20 focus:outline-none" placeholder="Technical analysis notes..."></textarea>
         </div>
 
         <footer class="text-center py-6">
-            <p class="text-white/40 text-[8px] uppercase font-black tracking-[0.4em]">© 2026 PT HEXINDO ADARO | NIK SECURED</p>
+            <p class="text-slate-300 text-[8px] uppercase font-black tracking-[0.4em] italic">© 2026 PT HEXINDO ADARO | NIK SECURED TERMINAL</p>
         </footer>
     </div>
 
-    <script>
-        // --- CONNECTION MONITOR ---
-        function updateConnectionStatus() {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            if (navigator.onLine) {
-                dot.className = 'w-2 h-2 rounded-full bg-green-500 status-pulse';
-                text.innerText = 'Online';
-                text.className = 'text-[9px] font-black text-white uppercase tracking-wider';
-            } else {
-                dot.className = 'w-2 h-2 rounded-full bg-red-500';
-                text.innerText = 'Offline';
-                text.className = 'text-[9px] font-black text-red-400 uppercase tracking-wider';
-            }
-        }
-        window.addEventListener('online', updateConnectionStatus);
-        window.addEventListener('offline', updateConnectionStatus);
-
-        // --- SNOWSTORM ENGINE ---
-        const canvas = document.getElementById('snow-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        class Particle {
-            constructor() { this.reset(); }
-            reset() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height - canvas.height;
-                this.size = Math.random() * 2 + 1;
-                this.speed = Math.random() * 3 + 2;
-                this.wind = Math.random() * 2 + 0.5;
-                this.opacity = Math.random() * 0.6 + 0.2;
-            }
-            update() {
-                this.y += this.speed;
-                this.x += this.wind;
-                if (this.y > canvas.height || this.x > canvas.width) this.reset();
-            }
-            draw() {
-                ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        function initSnow() {
-            particles = [];
-            for (let i = 0; i < 120; i++) particles.push(new Particle());
-        }
-
-        function animateSnow() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(animateSnow);
-        }
-
-        // --- CORE SYSTEM ---
-        function runAutoScale() {
-            const scaler = document.getElementById('scaler-context');
-            const targetWidth = 720;
-            const windowWidth = window.innerWidth;
-            const scaleRatio = windowWidth / targetWidth;
-            if (windowWidth < targetWidth) {
-                scaler.style.transform = `scale(${scaleRatio})`;
-                scaler.style.marginBottom = `-${(1 - scaleRatio) * scaler.offsetHeight}px`;
-            } else {
-                scaler.style.transform = `scale(1)`;
-                scaler.style.marginBottom = `0px`;
-            }
-        }
-
-        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
-        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
-        const sb = supabase.createClient(SB_URL, SB_KEY);
-
-        async function initSession() {
-            const userNik = localStorage.getItem('userNIK') || localStorage.getItem('userNRP');
-            if (!userNik) return handleLogout();
-            try {
-                const { data: user, error } = await sb.from('users').select('*').eq('nik', userNik).single();
-                if (error || !user) throw new Error("Invalid Session");
-                
-                document.getElementById('userNameDisplay').innerText = user.full_name;
-                document.getElementById('userNikDisplay').innerText = `NIK: ${user.nik}`;
-                document.getElementById('fullNameMarquee').innerText = user.full_name;
-                
-                if(user.role === 'admin') {
-                    document.getElementById('adminSection').classList.remove('hidden');
-                    document.getElementById('roleBadge').innerText = '🛡️ SYSTEM ADMINISTRATOR';
-                } else {
-                    document.getElementById('roleBadge').innerText = '🔧 FIELD TECHNICIAN';
-                }
-                
-                document.body.style.visibility = 'visible';
-                document.getElementById('loadingOverlay').style.display = 'none';
-                runAutoScale();
-            } catch (err) { handleLogout(); }
-        }
-
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('liveTime').innerText = now.toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' });
-            document.getElementById('liveDate').innerText = now.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
-        }
-
-        function handleLogout() { localStorage.clear(); window.location.replace('login.html'); }
-
-        window.addEventListener('resize', () => { resizeCanvas(); runAutoScale(); });
-        
-        window.onload = () => { 
-            resizeCanvas(); 
-            initSnow(); 
-            animateSnow(); 
-            initSession(); 
-            updateConnectionStatus();
-            setInterval(updateTime, 1000); 
-            updateTime(); 
-            setTimeout(runAutoScale, 300); 
-        };
-    </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('NIK Service Worker: Active', reg.scope))
-        .catch(err => console.error('NIK Service Worker: Failed', err));
-    });
-  }
-</script>
+    <script src="app.js"></script>
 </body>
 </html>
