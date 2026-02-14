@@ -2,7 +2,7 @@
   "name": "Hexindo Fleet Pro",
   "short_name": "HexFleet",
   "description": "Secure NIK Terminal & Fleet Management System",
-  "start_url": "./index.html",
+  "start_url": "login.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
   "theme_color": "#f59e0b",
