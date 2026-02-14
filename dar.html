@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Activity Mecha White | Hexindo Fleet</title>
-    
+    <link rel="manifest" href="manifest.json">
+
     <script>
         if (localStorage.getItem('isLoggedIn') !== 'true') {
             window.location.replace('../login.html');
@@ -61,13 +62,12 @@
         .header-val { border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; width: 100%; padding: 12px 14px; background: rgba(255, 255, 255, 0.6); font-size: 15px; outline: none; transition: 0.3s; color: var(--text-primary); }
         .header-val:focus { border-color: var(--accent-color); background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
 
-        /* --- MASTER LIST SCROLL (Perbaikan Disini) --- */
+        /* --- MASTER LIST SCROLL --- */
         .master-scroll-container {
-            max-height: 600px; /* Batas tinggi scroll */
+            max-height: 600px;
             overflow-y: auto;
             padding-right: 8px;
             margin-top: 1rem;
-            /* Scrollbar Styling */
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
         }
@@ -167,7 +167,7 @@
         
         <header class="glass-mecha p-5 flex justify-between items-center no-print gap-3 shadow-lg">
             <div class="flex items-center gap-4">
-                <a href="index.html" class="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 hover:text-blue-600 transition-all">
+                <a href="../index.html" class="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 hover:text-blue-600 transition-all">
                     <i class="fas fa-home"></i>
                 </a>
                 <div>
@@ -198,8 +198,12 @@
             <div class="flex justify-between items-end mb-4 border-b border-slate-200 pb-2">
                 <span class="text-xs font-bold text-slate-400 font-mono">/// INPUT_PARAMETERS</span>
                 <div class="flex gap-3">
-                    <button onclick="pullFromCloud()" class="text-[9px] font-bold text-blue-500 uppercase hover:text-blue-700"><i class="fas fa-cloud-download-alt mr-1"></i> Pull</button>
-                    <button onclick="syncToCloud()" id="btnSyncSmall" class="text-[9px] font-bold text-amber-500 uppercase hover:text-amber-700"><i class="fas fa-cloud-upload-alt mr-1"></i> Push</button>
+                    <button onclick="pullFromCloud()" class="text-[9px] font-bold text-blue-500 uppercase hover:text-blue-700">
+                        <i class="fas fa-cloud-download-alt mr-1"></i> Pull
+                    </button>
+                    <button onclick="syncToCloud()" id="btnSyncSmall" class="text-[9px] font-bold text-amber-500 uppercase hover:text-amber-700">
+                        <i class="fas fa-cloud-upload-alt mr-1"></i> Push
+                    </button>
                 </div>
             </div>
 
@@ -305,7 +309,8 @@
             if(!document.getElementById('detailRowsContainer').children.length) addDetailRow();
             
             refreshTable();
-            pullFromCloud();
+            // Auto pull dihilangkan agar tidak menimpa data tanpa konfirmasi
+            // pullFromCloud(); 
             setTimeout(runAutoScale, 100);
         };
 
@@ -370,6 +375,81 @@
             }]);
 
             clearForm(); refreshTable(); 
+        }
+
+        // --- FIXED PUSH FUNCTION ---
+        async function syncToCloud() {
+            const btn = document.getElementById('btnSyncSmall');
+            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            
+            if (logs.length === 0) return alert("No data to sync.");
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Pushing...`;
+            btn.disabled = true;
+
+            try {
+                // Map data sesuai schema tabel Supabase (id, nik, log_data)
+                const payload = logs.map(l => ({ 
+                    id: l.id, 
+                    nik: userNik, 
+                    log_data: { ...l, isSynced: true } 
+                }));
+                
+                const { error } = await sb.from('tech_logs').upsert(payload);
+                if (error) throw error;
+
+                // Update lokal storage jadi synced
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
+                
+                refreshTable(); 
+                alert("✅ Sync Success to Cloud!");
+            } catch (err) { 
+                console.error(err);
+                alert("Sync Failed: " + err.message); 
+            } finally { 
+                btn.innerHTML = originalText;
+                btn.disabled = false; 
+            }
+        }
+
+        // --- FIXED PULL FUNCTION ---
+        async function pullFromCloud() {
+            const btn = document.querySelector('button[onclick="pullFromCloud()"]');
+            const originalText = btn ? btn.innerHTML : "Pull";
+            if(btn) {
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Pulling...`;
+                btn.disabled = true;
+            }
+
+            try {
+                const { data, error } = await sb.from('tech_logs')
+                    .select('log_data')
+                    .eq('nik', userNik)
+                    .order('id', { ascending: false });
+                
+                if(error) throw error;
+
+                if(data && data.length > 0) {
+                    if(confirm(`Found ${data.length} records in Cloud. Overwrite local data?`)) {
+                        // Extract log_data dari hasil query
+                        const cloudLogs = data.map(item => item.log_data);
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudLogs));
+                        refreshTable();
+                        alert("✅ Data Pulled Successfully!");
+                    }
+                } else {
+                    alert("☁️ Cloud is Empty for this NIK.");
+                }
+            } catch (err) { 
+                console.error(err); 
+                alert("Pull Error: " + err.message);
+            } finally {
+                if(btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
         }
 
         function applyFilter() {
@@ -458,28 +538,6 @@
             runAutoScale();
         }
 
-        async function syncToCloud() {
-            const btn = document.getElementById('btnSync');
-            let logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            btn.innerText = "Connecting..."; btn.disabled = true;
-            try {
-                const payload = logs.map(l => ({ id: l.id, nik: l.nik, log_data: { ...l, isSynced: true } }));
-                await sb.from('tech_logs').upsert(payload);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(logs.map(l => ({ ...l, isSynced: true }))));
-                refreshTable(); alert("❄️ Sync Success!");
-            } catch (err) { alert(err.message); } finally { btn.innerText = "☁️ Sync"; btn.disabled = false; }
-        }
-
-        async function pullFromCloud() {
-            try {
-                const { data } = await sb.from('tech_logs').select('log_data').eq('nik', userNik).order('id', { ascending: false });
-                if(data) {
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data.map(item => item.log_data)));
-                    refreshTable();
-                }
-            } catch (err) { console.error(err); }
-        }
-
         function editLog(id) {
             const logs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
             const log = logs.find(l => l.id === id);
@@ -551,5 +609,15 @@
             XLSX.writeFile(wb, "Activity_Report.xlsx");
         }
     </script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Terminal Synced:', reg.scope))
+                .catch(err => console.log('Sync Failed:', err));
+        });
+    }
+</script>
+
 </body>
 </html>
