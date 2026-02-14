@@ -1,0 +1,22 @@
+{
+  "name": "Hexindo Fleet Pro",
+  "short_name": "HexFleet",
+  "description": "Secure NIK Terminal & Fleet Management System",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#f59e0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

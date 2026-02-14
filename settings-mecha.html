@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Settings Mecha | NIK Terminal</title>
+    
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('../login.html'); }
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --base-width: 720px;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 1);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #f59e0b; /* Amber for Settings/Security */
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body { 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: #f1f5f9;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,96%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(210,100%,93%,1) 0, transparent 50%), 
+                linear-gradient(0deg, #e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            min-height: 100vh; 
+            color: var(--text-primary);
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #mecha-canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 1; opacity: 0.6;
+        }
+
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out;
+            flex-shrink: 0;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Mecha Components --- */
+        .glass-mecha { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(20px) saturate(120%); 
+            border: 1px solid var(--glass-border); 
+            box-shadow: var(--glass-shadow);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .glass-mecha::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background: linear-gradient(180deg, var(--accent-color), transparent); opacity: 0.5;
+        }
+
+        .input-mecha { 
+            border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; width: 100%; 
+            padding: 12px 14px; background: rgba(255, 255, 255, 0.6); font-size: 14px; 
+            outline: none; transition: 0.3s; color: var(--text-primary); 
+            font-family: 'Rajdhani', sans-serif;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .input-mecha:focus { 
+            border-color: var(--accent-color); background: #ffffff; 
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1); 
+        }
+
+        /* --- Buttons --- */
+        .btn-mecha {
+            position: relative; overflow: hidden; transition: all 0.3s; transform: skew(-10deg);
+            display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .btn-mecha span, .btn-mecha i { transform: skew(10deg); }
+        .btn-mecha:active { transform: skew(-10deg) scale(0.95); }
+        .btn-mecha:disabled { opacity: 0.7; cursor: not-allowed; filter: grayscale(1); }
+
+        /* --- Table Styling --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        
+        thead th { 
+            background: #f8fafc; font-size: 10px; text-transform: uppercase; 
+            color: var(--text-secondary); border-bottom: 2px solid #e2e8f0; 
+            padding: 12px; font-weight: 700; letter-spacing: 0.1em; text-align: left;
+        }
+        
+        tbody td { 
+            border-bottom: 1px solid #f1f5f9; padding: 12px; font-size: 13px; 
+            vertical-align: middle; color: var(--text-primary);
+        }
+
+        /* --- Loader --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #f8fafc; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .loader-mecha {
+            width: 50px; height: 50px; border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--accent-color); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-out { opacity: 0; visibility: hidden; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    
+    <canvas id="mecha-canvas"></canvas>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <div class="mt-6 text-center">
+            <p class="text-slate-800 font-bold text-sm tracking-[0.3em] uppercase italic">SYSTEM CONFIG</p>
+            <p class="text-amber-500 text-[9px] font-mono font-bold tracking-widest mt-1">ACCESS CONTROL V.2.0.MECHA</p>
+        </div>
+    </div>
+
+    <div id="scaler-context">
+        
+        <header class="glass-mecha p-5 flex justify-between items-center no-print">
+            <div class="flex items-center gap-4">
+                <a href="../index.html" class="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 hover:text-amber-600 transition-all">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 leading-none tracking-tight uppercase" style="font-family: 'JetBrains Mono'">NIK <span class="text-amber-500">MANAGEMENT</span></h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <p class="text-[9px] font-bold text-slate-400 tracking-widest uppercase">SECURE TERMINAL</p>
+                    </div>
+                </div>
+            </div>
+            <div id="roleBadge" class="px-3 py-1 bg-slate-100 rounded text-[10px] font-bold text-slate-500 uppercase border border-slate-200 font-mono">
+                <i class="fas fa-spinner fa-spin mr-1"></i> VERIFYING...
+            </div>
+        </header>
+
+        <section class="glass-mecha p-6">
+            <div class="flex items-center gap-3 mb-4 pb-2 border-b border-slate-200">
+                <div class="w-8 h-8 bg-amber-100 rounded flex items-center justify-center text-amber-600">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <h2 class="text-[12px] font-bold uppercase text-slate-700 tracking-wider">Security Update</h2>
+                    <p class="text-[9px] text-slate-400">Change your personal NIK password</p>
+                </div>
+            </div>
+            <form id="changePassForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="password" id="newPass" class="input-mecha" placeholder="New Password" required>
+                    <input type="password" id="confirmPass" class="input-mecha" placeholder="Confirm Password" required>
+                </div>
+                <button type="submit" class="btn-mecha w-full bg-amber-500 text-white font-bold py-3 rounded shadow-md shadow-amber-200 hover:bg-amber-400">
+                    <span class="text-[11px] uppercase tracking-wider">UPDATE SECURITY KEY</span>
+                </button>
+            </form>
+        </section>
+
+        <section id="adminPanel" class="glass-mecha p-6 hidden border-l-4 border-amber-500">
+            <div class="flex items-center gap-3 mb-4 pb-2 border-b border-slate-200">
+                <div class="w-8 h-8 bg-slate-800 rounded flex items-center justify-center text-white">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h2 class="text-[12px] font-bold uppercase text-slate-800 tracking-wider">Deploy Technician</h2>
+                    <p class="text-[9px] text-slate-400">Authorize new NIK access</p>
+                </div>
+            </div>
+            <form id="addUserForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="regNik" class="input-mecha font-mono text-amber-600" placeholder="Input NIK (e.g. H123...)" required>
+                    <input type="text" id="regName" class="input-mecha uppercase" placeholder="Full Name..." required>
+                </div>
+                <button type="submit" id="btnDeploy" class="btn-mecha w-full bg-slate-800 text-white font-bold py-3 rounded shadow-lg hover:bg-slate-700">
+                    <span class="text-[11px] uppercase tracking-wider"><i class="fas fa-rocket mr-2"></i>AUTHORIZE ACCESS</span>
+                </button>
+            </form>
+        </section>
+
+        <section id="userListPanel" class="glass-mecha p-0 hidden overflow-hidden">
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <div>
+                    <h2 class="text-[11px] font-bold uppercase text-slate-600 tracking-wider">NIK IDENTITY DATABASE</h2>
+                </div>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="searchBar" onkeyup="searchNIK()" class="pl-8 pr-3 py-1.5 text-[11px] border border-slate-300 rounded-full bg-white outline-none focus:border-amber-400 w-40" placeholder="Search NIK...">
+                </div>
+            </div>
+            <div class="overflow-x-auto max-h-[400px]">
+                <table class="w-full">
+                    <thead class="sticky top-0 z-20 shadow-sm">
+                        <tr>
+                            <th class="pl-4">NIK ID</th>
+                            <th>IDENTITY</th>
+                            <th>STATUS</th>
+                            <th class="text-right pr-4">CONTROL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="text-center py-8">
+            <p class="text-slate-300 text-[9px] uppercase font-bold tracking-[0.4em]">HEXINDO FLEET SYSTEM</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        const currentNik = localStorage.getItem('userNIK');
+
+        // --- MECHA PARTICLE ENGINE ---
+        const canvas = document.getElementById('mecha-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+        }
+
+        class MechaParticle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5; 
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            update() { 
+                this.y += this.speedY; this.x += this.speedX; 
+                if (this.y < 0 || this.y > canvas.height || this.x < 0 || this.x > canvas.width) this.reset(); 
+            }
+            draw() { 
+                ctx.fillStyle = `rgba(148, 163, 184, ${this.opacity})`; 
+                ctx.beginPath(); ctx.rect(this.x, this.y, this.size, this.size); ctx.fill(); 
+            }
+        }
+
+        function initParticles() { 
+            particles = []; 
+            for (let i = 0; i < 60; i++) particles.push(new MechaParticle()); 
+        }
+        function animateParticles() { 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            particles.forEach(p => { p.update(); p.draw(); }); 
+            requestAnimationFrame(animateParticles); 
+        }
+
+        // --- UI SCALING ---
+        function runAutoScale() {
+            const s = document.getElementById('scaler-context');
+            const targetWidth = 720;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth < targetWidth ? windowWidth / targetWidth : 1;
+            
+            s.style.transform = `scale(${scaleRatio})`;
+            s.style.marginBottom = windowWidth < targetWidth ? `-${(1 - scaleRatio) * s.offsetHeight}px` : "0px";
+        }
+
+        // --- CORE LOGIC ---
+        async function initPage() {
+            if (!currentNik) { window.location.href = "../login.html"; return; }
+
+            try {
+                // Check Role
+                const { data: user, error } = await sb.from('users').select('role').eq('nik', currentNik).single();
+                
+                if (error || !user) throw new Error("Access Denied");
+
+                const isAdmin = (user.role === 'admin');
+                const badge = document.getElementById('roleBadge');
+                
+                badge.innerHTML = isAdmin 
+                    ? `<i class="fas fa-user-shield mr-1"></i> ADMIN ACCESS` 
+                    : `<i class="fas fa-tools mr-1"></i> TECH ACCESS`;
+                
+                if(isAdmin) {
+                    badge.classList.remove('bg-slate-100', 'text-slate-500');
+                    badge.classList.add('bg-amber-100', 'text-amber-600', 'border-amber-200');
+                    document.getElementById('adminPanel').classList.remove('hidden');
+                    document.getElementById('userListPanel').classList.remove('hidden');
+                    await fetchUsers();
+                } else {
+                     document.getElementById('adminPanel').remove();
+                     document.getElementById('userListPanel').remove();
+                }
+
+            } catch (err) {
+                console.error(err);
+                // Optional: Redirect or show error
+            }
+
+            // Init Visuals
+            resizeCanvas(); 
+            initParticles(); 
+            animateParticles();
+            runAutoScale();
+
+            setTimeout(() => {
+                document.getElementById('splash-screen').classList.add('fade-out');
+                setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 500);
+            }, 800);
+        }
+
+        // --- ADMIN FUNCTIONS ---
+        async function fetchUsers() {
+            const { data } = await sb.from('users').select('*').order('full_name');
+            const tbody = document.getElementById('userTableBody');
+            if(!tbody) return;
+
+            tbody.innerHTML = (data || []).map(u => `
+                <tr class="hover:bg-slate-50 transition-colors ${u.status === 'suspended' ? 'opacity-50 grayscale' : ''}">
+                    <td class="pl-4 font-mono font-bold text-amber-600 text-[11px]">${u.nik}</td>
+                    <td>
+                        <div class="font-bold text-slate-700 text-[12px] uppercase">${u.full_name}</div>
+                        <div class="text-[9px] text-slate-400 font-mono">${u.role}</div>
+                    </td>
+                    <td>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${u.status === 'active' || !u.status ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500'}">
+                            ${u.status || 'active'}
+                        </span>
+                    </td>
+                    <td class="text-right pr-4 space-x-1">
+                        <button onclick="toggleStatus('${u.nik}', '${u.status}')" class="btn-mecha bg-white border border-slate-300 text-slate-500 h-7 w-7 rounded hover:text-amber-600" title="Toggle Status">
+                            <i class="fas fa-power-off text-[10px]"></i>
+                        </button>
+                        <button onclick="resetUserPass('${u.nik}')" class="btn-mecha bg-white border border-slate-300 text-slate-500 h-7 w-7 rounded hover:text-red-500" title="Reset Password">
+                            <i class="fas fa-key text-[10px]"></i>
+                        </button>
+                    </td>
+                </tr>`).join('');
+            runAutoScale();
+        }
+
+        async function toggleStatus(targetNik, currentStatus) {
+            const newStatus = (currentStatus === 'active' || !currentStatus) ? 'suspended' : 'active';
+            const { error } = await sb.from('users').update({ status: newStatus }).eq('nik', targetNik);
+            if (!error) fetchUsers();
+        }
+
+        async function resetUserPass(targetNik) {
+            const newPass = prompt(`Enter new password for NIK ${targetNik}:`, "hexindo123");
+            if (newPass) {
+                const { error } = await sb.from('users').update({ password: newPass }).eq('nik', targetNik);
+                if (!error) alert("✅ Password Reset Successful.");
+            }
+        }
+
+        function searchNIK() {
+            const input = document.getElementById("searchBar").value.toUpperCase();
+            const rows = document.querySelector("#userTableBody").rows;
+            for (let i = 0; i < rows.length; i++) {
+                const nikCol = rows[i].cells[0].textContent.toUpperCase();
+                const nameCol = rows[i].cells[1].textContent.toUpperCase();
+                rows[i].style.display = (nikCol.includes(input) || nameCol.includes(input)) ? "" : "none";
+            }
+        }
+
+        // --- FORM HANDLERS ---
+        document.getElementById('addUserForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnDeploy');
+            const originalText = btn.innerHTML;
+            const newNik = document.getElementById('regNik').value;
+            const newName = document.getElementById('regName').value;
+
+            btn.innerHTML = `<span><i class="fas fa-spinner fa-spin mr-2"></i>CHECKING...</span>`;
+            btn.disabled = true;
+
+            const { data: existing } = await sb.from('users').select('nik').eq('nik', newNik).single();
+            if(existing) {
+                alert("⚠️ NIK already exists!");
+                btn.innerHTML = originalText; btn.disabled = false;
+                return;
+            }
+
+            const { error } = await sb.from('users').insert([{ 
+                nik: newNik, 
+                full_name: newName, 
+                password: 'hexindo123', 
+                role: 'technician', 
+                status: 'active' 
+            }]);
+
+            if (!error) {
+                alert("✅ NIK Deployed Successfully!");
+                document.getElementById('addUserForm').reset();
+                fetchUsers();
+            }
+            btn.innerHTML = originalText; btn.disabled = false;
+        };
+
+        document.getElementById('changePassForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const p1 = document.getElementById('newPass').value;
+            const p2 = document.getElementById('confirmPass').value;
+            if(p1 !== p2) return alert("⚠️ Passwords do not match!");
+
+            const { error } = await sb.from('users').update({ password: p1 }).eq('nik', currentNik);
+            if (!error) {
+                alert("✅ Security Key Updated!");
+                document.getElementById('changePassForm').reset();
+            }
+        };
+
+        window.onload = initPage;
+        window.addEventListener('resize', () => { resizeCanvas(); runAutoScale(); });
+    </script>
+</body>
+</html>

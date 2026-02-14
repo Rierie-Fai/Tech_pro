@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Terminal Login | Hexindo Fleet</title>
+    <meta name="theme-color" content="#f1f5f9">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --base-width: 420px;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --accent-color: #f59e0b;
+        }
+
+        body { 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: #f1f5f9;
+            background-image: radial-gradient(at 0% 0%, hsla(210,100%,96%,1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(210,100%,93%,1) 0, transparent 50%);
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden;
+        }
+
+        #mecha-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: 0.5; }
+
+        #scaler-context { width: var(--base-width); transform-origin: center center; position: relative; z-index: 10; padding: 1.5rem; }
+
+        .glass-mecha { 
+            background: var(--glass-bg); backdrop-filter: blur(20px) saturate(150%); 
+            border: 1px solid white; box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border-radius: 32px; padding: 3rem 2rem; position: relative; overflow: hidden;
+        }
+
+        /* Scanline Animation */
+        .scanner-line {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: 0.3s; z-index: 5;
+        }
+        .input-mecha:focus ~ .scanner-line { opacity: 1; }
+        .scanner-line::after {
+            content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 40%;
+            background: linear-gradient(to bottom, transparent, rgba(245, 158, 11, 0.08));
+            animation: scan 2.5s linear infinite;
+        }
+        @keyframes scan { 0% { top: -100%; } 100% { top: 100%; } }
+
+        /* Glitch Animation */
+        @keyframes glitch-shake {
+            0% { transform: translate(0); }
+            20% { transform: translate(-3px, 1px); filter: hue-rotate(90deg); }
+            40% { transform: translate(3px, -1px); }
+            100% { transform: translate(0); }
+        }
+        .glitch-active { animation: glitch-shake 0.2s infinite; }
+
+        .input-mecha { 
+            border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; width: 100%; 
+            padding: 14px 16px 14px 44px; background: rgba(255, 255, 255, 0.5); font-size: 15px; 
+            outline: none; transition: 0.3s; font-family: 'JetBrains Mono', monospace;
+        }
+        .input-mecha:focus { border-color: var(--accent-color); background: white; box-shadow: 0 0 15px rgba(245, 158, 11, 0.1); }
+
+        .btn-mecha {
+            transform: skew(-10deg); transition: all 0.3s;
+            display: inline-flex; align-items: center; justify-content: center; width: 100%;
+        }
+        .btn-mecha span { transform: skew(10deg); }
+        .btn-mecha:active { transform: skew(-10deg) scale(0.96); }
+    </style>
+</head>
+<body>
+    
+    <canvas id="mecha-canvas"></canvas>
+
+    <div id="scaler-context">
+        <div class="glass-mecha" id="loginCard">
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-amber-500 rounded-b-full"></div>
+
+            <div class="flex flex-col items-center mb-8">
+                <div class="w-14 h-14 bg-white rounded-2xl border border-slate-100 shadow-sm mb-4 flex items-center justify-center text-2xl text-slate-700">
+                    <i class="fas fa-shield-halved text-amber-500"></i>
+                </div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic leading-none">Fleet<span class="text-amber-500">Pro</span> Terminal</h1>
+                <p class="text-[9px] font-bold text-slate-400 tracking-[0.4em] uppercase mt-2 font-mono">Identity Verification Required</p>
+            </div>
+
+            <div id="loginAlert" class="hidden mb-6 p-3 rounded-xl bg-red-50 border border-red-100 text-red-500 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                <i class="fas fa-triangle-exclamation"></i> Access Denied
+            </div>
+
+            <form id="loginForm" class="space-y-4">
+                <div class="relative">
+                    <label class="text-[9px] font-bold uppercase text-slate-400 ml-1 mb-1 block tracking-widest">Authentication NIK</label>
+                    <div class="relative">
+                        <i class="fas fa-id-badge absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="nikInput" required class="input-mecha" placeholder="H000XXXX">
+                        <div class="scanner-line"></div>
+                    </div>
+                </div>
+                <div class="relative">
+                    <label class="text-[9px] font-bold uppercase text-slate-400 ml-1 mb-1 block tracking-widest">Security Key</label>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="password" id="passInput" required class="input-mecha" placeholder="••••••••">
+                        <div class="scanner-line"></div>
+                    </div>
+                </div>
+                
+                <button type="submit" id="btnLogin" class="btn-mecha bg-slate-800 text-white py-4 rounded-xl shadow-lg hover:bg-slate-700 mt-4">
+                    <span class="text-[11px] uppercase tracking-[0.2em] font-black italic">Initialize Session</span>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center">
+                <p id="statusMsg" class="text-[9px] text-slate-400 font-mono font-bold uppercase tracking-widest">/// Waiting for Credential_</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        // WEB AUDIO API - Mecha Beep
+        function playBeep(freq, dur) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + dur);
+            } catch(e) {}
+        }
+
+        // PARTICLE ENGINE
+        const canvas = document.getElementById('mecha-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        class P {
+            constructor() { this.reset(); }
+            reset() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.v = Math.random()*0.5; this.o = Math.random()*0.4; }
+            update() { this.y -= this.v; if(this.y < 0) this.reset(); }
+            draw() { ctx.fillStyle = `rgba(148, 163, 184, ${this.o})`; ctx.fillRect(this.x, this.y, 1, 1); }
+        }
+        function initP() { particles = []; for(let i=0; i<40; i++) particles.push(new P()); }
+        function anim() { ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.update();p.draw();}); requestAnimationFrame(anim); }
+
+        window.onload = () => {
+            resize(); initP(); anim();
+            const form = document.getElementById('loginForm');
+            const card = document.getElementById('loginCard');
+            const status = document.getElementById('statusMsg');
+
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const nik = document.getElementById('nikInput').value;
+                const pass = document.getElementById('passInput').value;
+                const btn = document.getElementById('btnLogin');
+                
+                btn.disabled = true;
+                status.innerText = "/// Authenticating_";
+                playBeep(440, 0.05);
+
+                try {
+                    const { data, error } = await sb.from('users').select('*').eq('nik', nik).single();
+
+                    if (error || !data || data.password !== pass) throw new Error("Denied");
+
+                    // SUCCESS SEQUENCE
+                    playBeep(880, 0.1); 
+                    setTimeout(() => playBeep(1200, 0.1), 120);
+                    
+                    status.innerHTML = "/// <span class='text-emerald-500'>Identity_Confirmed</span>";
+                    document.body.classList.add('glitch-active');
+                    
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userNIK', data.nik);
+                    localStorage.setItem('userRole', data.role);
+
+                    setTimeout(() => {
+                        window.location.replace('index.html');
+                    }, 800);
+
+                } catch (err) {
+                    playBeep(150, 0.2);
+                    document.getElementById('loginAlert').classList.remove('hidden');
+                    status.innerHTML = "/// <span class='text-red-500'>Access_Denied</span>";
+                    btn.disabled = false;
+                }
+            };
+        };
+
+        window.onresize = () => { resize(); };
+    </script>
+</body>
+</html>

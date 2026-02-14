@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Console | Hexindo Fleet</title>
+    
+    <script>
+        const userNik = localStorage.getItem('userNIK');
+        if (!userNik) window.location.replace('../login.html');
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 1);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --accent-color: #f59e0b;
+            --slate-text: #1e293b;
+            --sidebar-width: 260px;
+        }
+
+        body { 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: #f1f5f9;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--slate-text);
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* --- RESPONSIVE SIDEBAR (DRAWER) --- */
+        aside {
+            width: var(--sidebar-width); background: white; border-right: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; z-index: 50;
+            box-shadow: 4px 0 24px rgba(0,0,0,0.05);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed; height: 100%; top: 0; left: 0;
+        }
+
+        /* Mobile State: Hidden by default */
+        @media (max-width: 1024px) {
+            aside { transform: translateX(-100%); }
+            aside.open { transform: translateX(0); }
+            main { margin-left: 0 !important; width: 100%; }
+            #mobile-toggle { display: flex !important; }
+        }
+
+        /* Desktop State: Always visible */
+        @media (min-width: 1025px) {
+            aside { transform: translateX(0) !important; position: static; }
+            main { flex: 1; }
+            #mobile-overlay { display: none !important; }
+            #mobile-toggle { display: none !important; }
+        }
+
+        /* Overlay for Mobile */
+        #mobile-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); 
+            backdrop-filter: blur(4px); z-index: 40; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #mobile-overlay.show { opacity: 1; pointer-events: auto; }
+
+        /* Main Content Area */
+        main {
+            flex: 1; overflow-y: auto; padding: 1.5rem; position: relative; width: 100%;
+        }
+
+        /* --- Glass Components --- */
+        .glass-panel { 
+            background: var(--glass-bg); backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+            box-shadow: var(--glass-shadow); padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Nav Items --- */
+        .nav-item {
+            display: flex; items-center; gap: 12px; padding: 12px 20px;
+            margin: 4px 12px; border-radius: 12px; cursor: pointer;
+            color: #64748b; font-weight: 600; transition: all 0.2s;
+            font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .nav-item:hover { background: #f8fafc; color: var(--accent-color); }
+        .nav-item.active { 
+            background: #fffbeb; color: var(--accent-color); 
+            border: 1px solid #fcd34d; box-shadow: 0 2px 5px rgba(245, 158, 11, 0.1);
+        }
+
+        /* --- Stat Cards --- */
+        .stat-card {
+            background: white; border-radius: 16px; padding: 1.5rem;
+            border: 1px solid #e2e8f0; position: relative; overflow: hidden;
+        }
+        .stat-card::after {
+            content: ''; position: absolute; bottom: 0; left: 0; height: 3px; width: 100%;
+            background: var(--accent-color); opacity: 0.5;
+        }
+        .stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 1.8rem; color: #1e293b; }
+        .stat-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        /* --- Tables & Badge --- */
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { text-align: left; font-size: 10px; uppercase; color: #64748b; padding: 12px; border-bottom: 2px solid #e2e8f0; font-weight: 700; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+        .badge-amber { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+        .badge-slate { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        
+        #loader { position: fixed; inset: 0; background: #f8fafc; z-index: 999; display: flex; justify-content: center; align-items: center; }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="flex flex-col items-center">
+            <i class="fas fa-circle-notch fa-spin text-4xl text-amber-500 mb-4"></i>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Verifying Privileges...</p>
+        </div>
+    </div>
+
+    <div id="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <aside id="sidebar">
+        <div class="p-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white text-xl shadow-lg shadow-amber-500/30">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-black italic uppercase leading-none text-slate-800">ADMIN <span class="text-amber-500">PRO</span></h1>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Master Control</p>
+                </div>
+            </div>
+            <button onclick="toggleSidebar()" class="lg:hidden text-slate-400 hover:text-red-500 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-2 space-y-1">
+            <div onclick="switchTab('dashboard')" class="nav-item active" id="nav-dashboard">
+                <i class="fas fa-th-large w-5"></i> Dashboard
+            </div>
+            <div onclick="switchTab('users')" class="nav-item" id="nav-users">
+                <i class="fas fa-users-cog w-5"></i> User Manager
+            </div>
+            <div class="px-5 py-2 mt-4 text-[9px] font-bold text-slate-400 uppercase tracking-widest">Data Repository</div>
+            <div onclick="switchTab('reports-pump')" class="nav-item" id="nav-reports-pump">
+                <i class="fas fa-tachometer-alt w-5"></i> Pump Data
+            </div>
+            <div onclick="switchTab('reports-uc')" class="nav-item" id="nav-reports-uc">
+                <i class="fas fa-tractor w-5"></i> UC Inspection
+            </div>
+            <div onclick="switchTab('audit')" class="nav-item" id="nav-audit">
+                <i class="fas fa-file-contract w-5"></i> Audit Logs
+            </div>
+        </nav>
+
+        <div class="p-4 border-t border-slate-200">
+            <a href="../index.html" class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-slate-200 text-slate-500 font-bold text-xs hover:bg-slate-50 hover:text-amber-600 transition-all">
+                <i class="fas fa-arrow-left"></i> Back to Portal
+            </a>
+        </div>
+    </aside>
+
+    <main>
+        <header class="flex justify-between items-center mb-6">
+            <div class="flex items-center gap-4">
+                <button id="mobile-toggle" onclick="toggleSidebar()" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-600 shadow-sm border border-slate-200 active:scale-95 transition-all">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div>
+                    <h2 class="text-xl lg:text-2xl font-black text-slate-800 uppercase italic" id="pageTitle">Overview</h2>
+                    <p class="text-[10px] text-slate-500 font-mono" id="currentDate">LOADING DATE...</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs font-bold text-slate-700" id="adminName">...</p>
+                    <p class="text-[9px] text-amber-500 font-bold uppercase tracking-wider">Super Admin</p>
+                </div>
+                <div class="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-slate-500">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="tab-dashboard" class="space-y-6 fade-in">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="stat-value" id="stat-users">0</p>
+                            <p class="stat-label">Technicians</p>
+                        </div>
+                        <i class="fas fa-users text-slate-200 text-2xl lg:text-3xl"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="stat-value text-blue-600" id="stat-activity">0</p>
+                            <p class="stat-label">Daily Activities</p>
+                        </div>
+                        <i class="fas fa-clipboard-check text-blue-100 text-2xl lg:text-3xl"></i>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="stat-value text-emerald-600" id="stat-pump">0</p>
+                            <p class="stat-label">Pump Reports</p>
+                        </div>
+                        <i class="fas fa-gauge-high text-emerald-100 text-2xl lg:text-3xl"></i>
+                    </div>
+                </div>
+                <div class="stat-card border-red-200">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="stat-value text-red-500" id="stat-alerts">0</p>
+                            <p class="stat-label">Alerts</p>
+                        </div>
+                        <i class="fas fa-exclamation-triangle text-red-100 text-2xl lg:text-3xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-panel col-span-2">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black text-slate-700 uppercase">Weekly Volume</h3>
+                        <button class="text-xs text-amber-500 font-bold"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel">
+                    <h3 class="text-sm font-black text-slate-700 uppercase mb-4">Recent Audit Logs</h3>
+                    <div class="space-y-3 overflow-y-auto max-h-64 pr-2" id="mini-audit-log">
+                        <p class="text-xs text-slate-400 text-center italic">Loading logs...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-users" class="hidden fade-in">
+            <div class="glass-panel">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-3">
+                    <div class="relative w-full lg:w-auto">
+                        <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" placeholder="Search Technician..." class="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-amber-400 w-full lg:w-64">
+                    </div>
+                    <button onclick="document.getElementById('modalUser').classList.remove('hidden')" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase hover:bg-slate-700 shadow-lg w-full lg:w-auto">
+                        <i class="fas fa-plus mr-2"></i> Deploy New NIK
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-slate-50">
+                            <tr><th>NIK ID</th><th>Full Name</th><th>Role</th><th>Status</th><th class="text-right">Actions</th></tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-reports-pump" class="hidden fade-in">
+             <div class="glass-panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-black text-slate-700 uppercase">Hydraulic Pump DB</h3>
+                    <button class="bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-bold uppercase shadow"><i class="fas fa-file-excel mr-2"></i> Export</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead><tr><th>Date</th><th>Unit Model</th><th>Serial No</th><th>Tech NIK</th><th>Action</th></tr></thead>
+                        <tbody id="pumpTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-reports-uc" class="hidden fade-in">
+            </div>
+
+        <div id="tab-audit" class="hidden fade-in">
+             <div class="glass-panel">
+                <h3 class="text-sm font-black text-slate-700 uppercase mb-4">System Activity Log</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead><tr><th>Timestamp</th><th>NIK</th><th>Activity</th><th>Details</th></tr></thead>
+                        <tbody id="auditTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="modalUser" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-white/20">
+            <h3 class="text-lg font-black text-slate-800 uppercase italic mb-4">Deploy Technician</h3>
+            <form id="addUserForm" class="space-y-3">
+                <input type="text" id="newNik" placeholder="NIK (e.g. H12345)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-mono font-bold outline-none focus:border-amber-400">
+                <input type="text" id="newName" placeholder="Full Name" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold uppercase outline-none focus:border-amber-400">
+                <div class="flex gap-2 mt-4">
+                    <button type="button" onclick="document.getElementById('modalUser').classList.add('hidden')" class="flex-1 py-3 rounded-lg border border-slate-200 text-slate-500 text-xs font-bold uppercase hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="flex-1 py-3 rounded-lg bg-amber-500 text-white text-xs font-bold uppercase hover:bg-amber-600 shadow-lg">Authorize</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+        const myNik = localStorage.getItem('userNIK');
+
+        // --- DRAWER TOGGLE ---
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        // --- AUTH & INIT ---
+        window.onload = async () => {
+            document.getElementById('currentDate').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            
+            try {
+                if (!myNik) throw new Error("No Session");
+                const { data: user, error } = await sb.from('users').select('role, full_name').eq('nik', myNik).single();
+                
+                if(error || user.role !== 'admin') {
+                    alert("⛔ AKSES DITOLAK: Halaman ini khusus Administrator.");
+                    window.location.replace('../index.html');
+                    return;
+                }
+                
+                document.getElementById('adminName').innerText = user.full_name;
+                document.getElementById('loader').style.display = 'none';
+
+                loadDashboardStats();
+                initChart();
+                loadRecentAudit(); 
+
+            } catch (err) {
+                console.error(err);
+                window.location.replace('../login.html');
+            }
+        };
+
+        // --- NAVIGATION LOGIC (With Auto Close) ---
+        function switchTab(tabName) {
+            // Close sidebar on mobile when clicked
+            if (window.innerWidth <= 1024) toggleSidebar();
+
+            ['dashboard', 'users', 'reports-pump', 'reports-uc', 'audit'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const nav = document.getElementById(`nav-${t}`);
+                if(el) el.classList.add('hidden');
+                if(nav) nav.classList.remove('active');
+            });
+            
+            const targetEl = document.getElementById(`tab-${tabName}`);
+            const targetNav = document.getElementById(`nav-${tabName}`);
+            
+            if(targetEl) targetEl.classList.remove('hidden');
+            if(targetNav) targetNav.classList.add('active');
+            
+            const titles = {
+                'dashboard': 'System Overview',
+                'users': 'User Management',
+                'reports-pump': 'Hydraulic Pump Reports',
+                'reports-uc': 'Undercarriage Inspection',
+                'audit': 'System Audit Logs'
+            };
+            document.getElementById('pageTitle').innerText = titles[tabName] || 'Console';
+
+            if(tabName === 'users') fetchUsers();
+            if(tabName === 'reports-pump') fetchPumpReports();
+            if(tabName === 'reports-uc') fetchUCReports();
+            if(tabName === 'audit') fetchAuditLogsFull();
+        }
+
+        // --- DATA LOADERS (Stats, Users, Reports) ---
+        async function loadDashboardStats() {
+            const { count: userCount } = await sb.from('users').select('*', { count: 'exact', head: true });
+            const { count: pumpCount } = await sb.from('pump_performance_reports').select('*', { count: 'exact', head: true });
+            const { count: ucCount } = await sb.from('uc_reports').select('*', { count: 'exact', head: true });
+            
+            document.getElementById('stat-users').innerText = userCount || 0;
+            document.getElementById('stat-pump').innerText = pumpCount || 0;
+            document.getElementById('stat-activity').innerText = ucCount || 0;
+            document.getElementById('stat-alerts').innerText = "0"; 
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Reports Submitted',
+                        data: [5, 8, 12, 7, 10, 4, 6], 
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        async function loadRecentAudit() {
+            const { data, error } = await sb.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(5);
+            const container = document.getElementById('mini-audit-log');
+            if (error || !data || data.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center italic">No logs found.</p>`;
+                return;
+            }
+            container.innerHTML = data.map(l => `
+                <div class="flex justify-between items-center text-xs p-2 bg-slate-50 rounded border border-slate-100">
+                    <span class="font-bold text-slate-600 truncate w-32">${l.activity}</span>
+                    <span class="font-mono text-slate-400 text-[9px]">${new Date(l.created_at).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</span>
+                </div>
+            `).join('');
+        }
+
+        // --- USER MGMT ---
+        async function fetchUsers() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><i class="fas fa-spinner fa-spin text-amber-500"></i> Loading...</td></tr>`;
+            const { data } = await sb.from('users').select('*').order('created_at', { ascending: false });
+            tbody.innerHTML = data ? data.map(u => `
+                <tr class="hover:bg-slate-50 transition-colors border-b border-slate-100">
+                    <td class="p-3 font-mono font-bold text-amber-600 text-xs">${u.nik}</td>
+                    <td class="p-3 font-bold text-slate-700 text-xs uppercase">${u.full_name}</td>
+                    <td class="p-3"><span class="badge ${u.role === 'admin' ? 'badge-amber' : 'badge-slate'}">${u.role}</span></td>
+                    <td class="p-3"><span class="text-xs font-bold ${u.status === 'active' || !u.status ? 'text-emerald-500' : 'text-red-500'}">${u.status || 'Active'}</span></td>
+                    <td class="p-3 text-right"><button onclick="deleteUser('${u.nik}')" class="text-slate-400 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('') : '';
+        }
+
+        async function deleteUser(nik) {
+            if(confirm(`Hapus user ${nik}?`)) {
+                await sb.from('users').delete().eq('nik', nik);
+                fetchUsers();
+            }
+        }
+
+        document.getElementById('addUserForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const nik = document.getElementById('newNik').value;
+            const name = document.getElementById('newName').value;
+            const { error } = await sb.from('users').insert([{ nik, full_name: name, password: 'hexindo123', role: 'technician', status: 'active' }]);
+            if(!error) {
+                alert("✅ User Deployed!");
+                document.getElementById('modalUser').classList.add('hidden');
+                fetchUsers();
+            } else alert(error.message);
+        };
+
+        // --- REPORTS ---
+        async function fetchPumpReports() {
+            const tbody = document.getElementById('pumpTableBody');
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4"><i class="fas fa-spinner fa-spin text-emerald-500"></i> Loading...</td></tr>`;
+            const { data } = await sb.from('pump_performance_reports').select('*').order('test_date', { ascending: false }).limit(50);
+            tbody.innerHTML = (data || []).map(r => `
+                <tr class="hover:bg-emerald-50/30 border-b border-slate-100">
+                    <td class="p-3 text-xs font-mono text-slate-500">${new Date(r.test_date).toLocaleDateString()}</td>
+                    <td class="p-3 text-xs font-bold text-slate-700">${r.unit_model}</td>
+                    <td class="p-3 text-xs font-mono">${r.serial_number}</td>
+                    <td class="p-3 text-xs font-bold text-amber-600">${r.nik}</td>
+                    <td class="p-3 text-center"><button class="text-blue-500 font-bold text-xs">VIEW</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchUCReports() {
+            const container = document.getElementById('tab-reports-uc');
+            container.innerHTML = `
+                <div class="glass-panel">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black text-slate-700 uppercase">Undercarriage Inspections</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead><tr><th>Date</th><th>Unit SN</th><th>Technician</th><th>Status</th></tr></thead>
+                            <tbody id="ucTableBody"><tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin text-amber-500"></i> Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>`;
+            const { data } = await sb.from('uc_reports').select('*').order('inspection_date', { ascending: false }).limit(50);
+            document.getElementById('ucTableBody').innerHTML = (data || []).map(r => `
+                <tr class="hover:bg-amber-50/30 border-b border-slate-100">
+                    <td class="p-3 text-xs font-mono text-slate-500">${new Date(r.inspection_date).toLocaleDateString()}</td>
+                    <td class="p-3 text-xs font-bold text-slate-700">${r.unit_no || r.unit_model || '-'}</td>
+                    <td class="p-3 text-xs font-bold text-amber-600">${r.nik}</td>
+                    <td class="p-3 text-xs font-bold text-slate-400">Synced</td>
+                </tr>
+            `).join('');
+        }
+
+        async function fetchAuditLogsFull() {
+             const tbody = document.getElementById('auditTableBody');
+             tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4"><i class="fas fa-spinner fa-spin text-blue-500"></i> Loading...</td></tr>`;
+             const { data } = await sb.from('activity_logs').select('*').order('created_at', { ascending: false }).limit(100);
+             tbody.innerHTML = (data || []).map(l => `
+                <tr class="hover:bg-slate-50 border-b border-slate-100">
+                    <td class="p-3 text-xs font-mono text-slate-400">${new Date(l.created_at).toLocaleString()}</td>
+                    <td class="p-3 text-xs font-bold text-amber-600 font-mono">${l.nik}</td>
+                    <td class="p-3 text-xs font-bold text-slate-700">${l.activity}</td>
+                    <td class="p-3 text-xs text-slate-500 truncate max-w-xs">${l.details || '-'}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

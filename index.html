@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Mecha | Hexindo Fleet</title>
+    <meta name="theme-color" content="#f1f5f9">
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --base-width: 720px;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 1);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #f59e0b; /* Amber */
+            --highlight-color: #2563eb; /* Blue */
+        }
+
+        body { 
+            font-family: 'Rajdhani', sans-serif; 
+            background-color: #f1f5f9;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(210,100%,96%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(210,100%,93%,1) 0, transparent 50%), 
+                linear-gradient(0deg, #e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            min-height: 100vh; 
+            color: var(--text-primary);
+            margin: 0; padding: 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        #mecha-canvas { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 1; opacity: 0.6;
+        }
+
+        #scaler-context {
+            width: var(--base-width);
+            transform-origin: top center;
+            transition: transform 0.2s ease-out, opacity 0.8s ease;
+            flex-shrink: 0;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Mecha Components --- */
+        .glass-mecha { 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(20px) saturate(120%); 
+            border: 1px solid var(--glass-border); 
+            box-shadow: var(--glass-shadow);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .glass-mecha:active {
+            transform: scale(0.98);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Menu Card Specifics */
+        .menu-card {
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 160px; padding: 1.5rem; border-left: 4px solid transparent;
+        }
+        .menu-card:hover { border-left-color: var(--accent-color); }
+
+        .menu-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; margin-bottom: 1rem;
+            background: rgba(245, 158, 11, 0.1); color: var(--accent-color);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            transition: all 0.3s;
+        }
+        .menu-card:hover .menu-icon {
+            background: var(--accent-color); color: white;
+            transform: rotate(10deg);
+        }
+
+        /* --- Marquee --- */
+        .marquee-container { 
+            width: 100%; overflow: hidden; white-space: nowrap; 
+            position: relative; background: #f8fafc; border-radius: 8px;
+            border: 1px solid #e2e8f0; padding: 8px 0;
+        }
+        .marquee-text { 
+            display: inline-block; animation: marquee 20s linear infinite; 
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-secondary);
+        }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* --- Loader --- */
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #f8fafc; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 9999;
+            transition: opacity 0.5s;
+        }
+        .loader-mecha {
+            width: 60px; height: 60px; border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--accent-color); border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-out { opacity: 0; visibility: hidden; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    
+    <canvas id="mecha-canvas"></canvas>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <div class="mt-6 text-center">
+            <h1 class="text-2xl font-black text-slate-800 uppercase tracking-tight italic">HEXINDO <span class="text-amber-500">FLEET</span></h1>
+            <p class="text-slate-400 text-[9px] font-mono font-bold tracking-widest mt-1">INITIALIZING SYSTEM...</p>
+        </div>
+        <div class="mt-8 w-48 h-1 bg-slate-200 rounded-full overflow-hidden">
+            <div id="splashProgress" class="h-full bg-amber-500 w-0 transition-all duration-1000 ease-out"></div>
+        </div>
+    </div>
+
+    <div id="scaler-context" class="opacity-0">
+        
+        <header class="glass-mecha p-6 !rounded-[2rem] border-b-4 border-amber-500">
+            <div class="flex justify-between items-center gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm border border-slate-200 text-slate-800 text-xl">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-black text-slate-800 italic leading-none uppercase tracking-tight">HEXINDO <span class="text-amber-500">PORTAL</span></h1>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">SYSTEM ONLINE</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <a href="settings-mecha.html" class="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-slate-400 shadow-sm border border-slate-200 hover:text-amber-500 transition-all">
+                        <i class="fas fa-cog"></i>
+                    </a>
+                    <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-400 shadow-sm border border-red-100 hover:bg-red-500 hover:text-white transition-all">
+                        <i class="fas fa-power-off"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-between items-end border-t border-slate-100 pt-4">
+                <div>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">CURRENT USER</p>
+                    <p id="userNameDisplay" class="text-sm font-black text-slate-700 uppercase">LOADING...</p>
+                </div>
+                <div class="text-right">
+                    <p id="userNikDisplay" class="text-[10px] font-mono font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded">NIK: ------</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2 px-2">
+                <span id="roleBadge" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest bg-slate-200 px-2 py-1 rounded">...</span>
+                <span id="liveDate" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">...</span>
+            </div>
+            <div class="marquee-container">
+                <h2 class="marquee-text uppercase">
+                    WELCOME TO HEXINDO FLEET PRO SYSTEM — AUTHORIZED PERSONNEL ONLY — SAFETY FIRST — ALWAYS CHECK YOUR TOOLS —
+                </h2>
+            </div>
+        </div>
+
+        <div class="glass-mecha p-6 text-center">
+            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-1">LOCAL TERMINAL TIME</p>
+            <h3 id="liveTime" class="text-5xl font-black text-slate-800 tracking-tighter" style="font-family: 'JetBrains Mono', monospace;">00:00</h3>
+        </div>
+
+        <div id="adminSection" class="hidden mb-6">
+            <a href="admin.html" class="glass-mecha p-5 border border-slate-200 flex items-center justify-between hover:border-amber-400 group">
+                <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-slate-800 rounded-xl flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xs font-black text-slate-800 uppercase italic tracking-wider">ADMIN CONSOLE</h2>
+                        <p class="text-[8px] font-bold text-slate-400 uppercase">Master Control Access</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-slate-300 group-hover:text-amber-500 transition-colors"></i>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 pb-10">
+            <a href="pump-tuning.html" class="glass-mecha menu-card">
+                <div class="menu-icon text-blue-500 bg-blue-50 border-blue-100">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-slate-700 uppercase italic leading-none">HYDRAULIC</h3>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Pump Tuning System</p>
+                </div>
+            </a>
+
+            <a href="dar.html" class="glass-mecha menu-card">
+                <div class="menu-icon text-emerald-500 bg-emerald-50 border-emerald-100">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-slate-700 uppercase italic leading-none">ACTIVITY</h3>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Daily Log Report</p>
+                </div>
+            </a>
+
+            <a href="ppu.html" class="glass-mecha menu-card">
+                <div class="menu-icon text-amber-500 bg-amber-50 border-amber-100">
+                    <i class="fas fa-tractor"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-slate-700 uppercase italic leading-none">UNDERCARRIAGE</h3>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Inspection Tool</p>
+                </div>
+            </a>
+
+            <a href="toolbox.html" class="glass-mecha menu-card">
+                <div class="menu-icon text-slate-600 bg-slate-100 border-slate-200">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-slate-700 uppercase italic leading-none">TOOLBOX</h3>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mt-1">Checklist Pro</p>
+                </div>
+            </a>
+        </div>
+
+        <footer class="text-center py-6">
+            <p class="text-slate-300 text-[9px] uppercase font-bold tracking-[0.4em]">© 2026 HEXINDO ADARO PROJECT</p>
+        </footer>
+    </div>
+
+        <script>
+        // --- CONFIGURATION ---
+        const SB_URL = "https://corpgiuxyhfxdnqwwmlv.supabase.co";
+        const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E";
+        const sb = supabase.createClient(SB_URL, SB_KEY);
+
+        // --- MECHA PARTICLE ENGINE ---
+        const canvas = document.getElementById('mecha-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() { 
+            if(canvas) {
+                canvas.width = window.innerWidth; 
+                canvas.height = window.innerHeight;
+            }
+        }
+
+        class MechaParticle {
+            constructor() { this.reset(); }
+            reset() {
+                if(!canvas) return;
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedY = (Math.random() - 0.5) * 0.5; 
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            update() { 
+                this.y += this.speedY; this.x += this.speedX; 
+                if (canvas && (this.y < 0 || this.y > canvas.height || this.x < 0 || this.x > canvas.width)) this.reset(); 
+            }
+            draw() { 
+                ctx.fillStyle = `rgba(148, 163, 184, ${this.opacity})`; 
+                ctx.beginPath(); ctx.rect(this.x, this.y, this.size, this.size); ctx.fill(); 
+            }
+        }
+
+        function initParticles() { 
+            particles = []; 
+            for (let i = 0; i < 60; i++) particles.push(new MechaParticle()); 
+        }
+        function animateParticles() { 
+            if(!canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            particles.forEach(p => { p.update(); p.draw(); }); 
+            requestAnimationFrame(animateParticles); 
+        }
+
+        // --- UI SCALING (Safety Check Added) ---
+        function runAutoScale() {
+            const s = document.getElementById('scaler-context');
+            if (!s) return; // Mencegah error jika elemen belum ada
+
+            const targetWidth = 720;
+            const windowWidth = window.innerWidth;
+            const scaleRatio = windowWidth < targetWidth ? windowWidth / targetWidth : 1;
+            
+            s.style.transform = `scale(${scaleRatio})`;
+            s.style.marginBottom = windowWidth < targetWidth ? `-${(1 - scaleRatio) * s.offsetHeight}px` : "0px";
+        }
+
+        // --- APP LOGIC ---
+        async function startApp() {
+            // PERBAIKAN UTAMA DI SINI (ID disesuaikan dengan HTML)
+            const splash = document.getElementById('splash-screen'); 
+            const progress = document.getElementById('splashProgress');
+            
+            if(progress) progress.style.width = "40%";
+            
+            const userNik = localStorage.getItem('userNIK');
+
+            try {
+                if (!userNik) throw new Error("No Session");
+
+                const { data: user, error } = await sb.from('users').select('*').eq('nik', userNik).single();
+                if (error || !user) throw new Error("Invalid User");
+
+                if(progress) progress.style.width = "80%";
+                
+                // Safety check untuk elemen DOM
+                const elName = document.getElementById('userNameDisplay');
+                const elNik = document.getElementById('userNikDisplay');
+                const elRole = document.getElementById('roleBadge');
+                const elAdmin = document.getElementById('adminSection');
+
+                if(elName) elName.innerText = user.full_name;
+                if(elNik) elNik.innerText = `NIK: ${user.nik}`;
+                
+                if(elRole) {
+                    if(user.role === 'admin') {
+                        if(elAdmin) elAdmin.classList.remove('hidden');
+                        elRole.innerHTML = '<i class="fas fa-shield-alt mr-1"></i> ADMIN';
+                        elRole.classList.add('bg-amber-100', 'text-amber-600');
+                    } else {
+                        elRole.innerHTML = '<i class="fas fa-wrench mr-1"></i> TECHNICIAN';
+                    }
+                }
+
+                if(progress) progress.style.width = "100%";
+                
+                setTimeout(() => {
+                    if(splash) {
+                        splash.style.opacity = "0";
+                        setTimeout(() => {
+                            splash.style.display = 'none';
+                            const content = document.getElementById('scaler-context');
+                            if(content) {
+                                content.classList.remove('opacity-0');
+                                runAutoScale(); // Jalankan ulang scaling setelah visible
+                            }
+                        }, 500);
+                    }
+                }, 800);
+
+            } catch (err) {
+                console.error(err);
+                handleLogout();
+            }
+        }
+
+        function updateTime() {
+            const timeEl = document.getElementById('liveTime');
+            const dateEl = document.getElementById('liveDate');
+            
+            if (timeEl && dateEl) {
+                const now = new Date();
+                timeEl.innerText = now.toLocaleTimeString('id-ID', { hour12: false, hour: '2-digit', minute: '2-digit' });
+                dateEl.innerText = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+            }
+        }
+
+        function handleLogout() { 
+            if(confirm("Disconnect from terminal?")) {
+                localStorage.clear(); 
+                window.location.replace('login.html'); 
+            }
+        }
+
+        window.onload = () => { 
+            resizeCanvas(); 
+            initParticles(); 
+            animateParticles(); 
+            startApp(); 
+            setInterval(updateTime, 1000); 
+            updateTime(); 
+        };
+
+        window.addEventListener('resize', () => { 
+            resizeCanvas(); 
+            runAutoScale(); 
+        });
+    </script>
+
+</body>
+</html>
