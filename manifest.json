@@ -1,7 +1,7 @@
 {
   "name": "Hexindo Fleet Portal",
   "short_name": "Hexindo Fleet",
-  "start_url": "./index.html",
+  "start_url": "./login.html",
   "display": "standalone",
   "background_color": "#f1f5f9",
   "theme_color": "#f59e0b", 
