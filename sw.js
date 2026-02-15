@@ -1,74 +1,91 @@
-const CACHE_NAME = 'hexfleet-flat-v3';
+const CACHE_NAME = 'hexindo-fleet-mecha-v2';
 
-// Daftar file yang akan disimpan ke dalam cache (disesuaikan dengan screenshot file Anda)
-const urlsToCache = [
+// Daftar file yang akan disimpan ke memori HP (Offline Cache)
+const ASSETS_TO_CACHE = [
+    // 1. Halaman Utama (HTML)
     './',
     './index.html',
     './login.html',
-    
-    // Modul Utama (Sesuai nama file di screenshot)
     './admin.html',
-    './dar.html',           // Daily Activity Report
-    './ppu.html',           // Undercarriage/PPU
+    './dar.html',
+    './ppu.html',
     './pump-tuning.html',
     './settings-mecha.html',
     './toolbox.html',
+    
+    // 2. Ikon Aplikasi (PWA Icons) - TERBARU
+    './icon-192.png',
+    './icon-512.png',
 
-    // Aset Gambar & Manifest
-    './logo.png',
-    './manifest.json',
+    // 3. Styles (CSS) - Sesuai folder 'css' di gambar
+    './css/all.min.css',
+    './css/jetbrain.css',
+    './css/rajdhani.css',
 
-    // Library Eksternal (Optional: Cache CDN agar lebih cepat load ulang)
-    'https://cdn.tailwindcss.com',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-    'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700;800&display=swap'
+    // 4.Scripts (JS) - Sesuai folder 'js' di gambar
+    './js/chart.js',
+    './js/jspdf.plugin.autotable.min.js',
+    './js/jspdf.umd.min.js',
+    './js/supabase-js@2.js',
+    './js/tailwindcss.js',
+    './js/xlsx.full.min.js',
+
+    // 5. Fonts - Sesuai folder 'webfonts' di gambar
+    // FontAwesome
+    './webfonts/fa-brands-400.woff2',
+    './webfonts/fa-regular-400.woff2',
+    './webfonts/fa-solid-900.woff2',
+    './webfonts/fa-v4compatibility.woff2',
+    
+    // Custom Fonts (JetBrains & Rajdhani ada di dalam folder webfonts di gambar)
+    './webfonts/JetBrainsMono-Bold.ttf',
+    './webfonts/JetBrainsMono-Regular.ttf',
+    './webfonts/Rajdhani-Bold.ttf',
+    './webfonts/Rajdhani-Medium.ttf', 
+    './webfonts/Rajdhani-Regular.ttf'
 ];
 
-// 1. Install Service Worker
-self.addEventListener('install', event => {
-    self.skipWaiting(); // Paksa SW baru untuk segera aktif
+// --- 1. INSTALL EVENT (Menyimpan file saat pertama kali dibuka) ---
+self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => {
-                console.log('Opened cache');
-                return cache.addAll(urlsToCache);
-            })
+        caches.open(CACHE_NAME).then((cache) => {
+            console.log('[Service Worker] Caching App Assets...');
+            return cache.addAll(ASSETS_TO_CACHE);
+        })
     );
+    self.skipWaiting();
 });
 
-// 2. Activate & Clean Old Caches
-self.addEventListener('activate', event => {
+// --- 2. ACTIVATE EVENT (Menghapus cache lama jika ada update) ---
+self.addEventListener('activate', (event) => {
     event.waitUntil(
-        caches.keys().then(cacheNames => {
+        caches.keys().then((keyList) => {
             return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
+                keyList.map((key) => {
+                    if (key !== CACHE_NAME) {
+                        console.log('[Service Worker] Cleaning Old Cache:', key);
+                        return caches.delete(key);
                     }
                 })
             );
         })
     );
+    self.clients.claim();
 });
 
-// 3. Fetch Strategy: Network First (Coba internet dulu, baru cache)
-self.addEventListener('fetch', event => {
+// --- 3. FETCH EVENT (Strategi: Cache First, Network Fallback) ---
+self.addEventListener('fetch', (event) => {
+    // PENTING: Jangan cache request ke Supabase agar data database selalu update
+    if (event.request.url.includes('supabase.co')) {
+        return; 
+    }
+
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                if (!response || response.status !== 200 || response.type !== 'basic') {
-                    return response;
-                }
-                const responseToCache = response.clone();
-                caches.open(CACHE_NAME)
-                    .then(cache => {
-                        cache.put(event.request, responseToCache);
-                    });
-                return response;
-            })
-            .catch(() => {
-                return caches.match(event.request);
-            })
+        caches.match(event.request).then((response) => {
+            // Jika file ada di cache HP, pakai itu. Jika tidak, ambil dari internet.
+            return response || fetch(event.request).catch(() => {
+                // Opsional: Jika offline total dan file tidak ada (misal gambar baru), biarkan error/kosong
+            });
+        })
     );
 });
