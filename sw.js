@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hexindo-fleet-mecha-v2.2.1';
+const CACHE_NAME = 'hexindo-fleet-mecha-v3';
 
 // Daftar file yang akan disimpan ke memori HP (Offline Cache)
 const ASSETS_TO_CACHE = [
