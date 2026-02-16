@@ -8,34 +8,33 @@
 
     <script src="../js/tailwindcss.js"></script>
     <script src="../js/supabase-js@2.js"></script>
-    <link href="../all.min.css" rel="stylesheet">
-    <link href="../css/rajdhani.css" rel="stylesheet">
+    
+    <link href="../all.min.css" rel="stylesheet"> <link href="../css/rajdhani.css" rel="stylesheet">
     <link href="../css/jetbrain.css" rel="stylesheet">
 
     <style>
         /* --- WHITE MECHA PALETTE --- */
         :root {
             /* Backgrounds & Bases */
-            --mecha-bg: #f0f4f8;            /* Light silver-blue background */
-            --mecha-white: #ffffff;         /* Pure white elements */
-            --mecha-glass: rgba(255, 255, 255, 0.75); /* Frosted white glass */
+            --mecha-bg: #f0f4f8;            
+            --mecha-white: #ffffff;         
+            --mecha-glass: rgba(255, 255, 255, 0.85); 
             
             /* Accents & Borders */
-            --accent-core: #2563eb;         /* Sapphire Blue (Primary) */
-            --accent-sec: #f59e0b;          /* Amber Orange (Secondary) */
-            --metal-border: #cbd5e1;        /* Light metallic border */
+            --accent-core: #2563eb;         /* Sapphire Blue */
+            --accent-sec: #f59e0b;          /* Amber Orange */
+            --metal-border: #cbd5e1;        
             
             /* Typography */
-            --text-dark: #1e293b;           /* Dark slate blue for main text */
-            --text-muted: #64748b;          /* Medium gray for secondary text */
+            --text-dark: #1e293b;           
+            --text-muted: #64748b;          
 
-            /* Animation */
-            --anim-mecha: cubic-bezier(0.22, 1, 0.36, 1); /* Snappy mechanical feel */
+            /* Animation Curves */
+            --anim-mecha: cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         body {
             background-color: var(--mecha-bg);
-            /* Subtle grid pattern on light background */
             background-image: 
                 linear-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(37, 99, 235, 0.05) 1px, transparent 1px);
@@ -55,12 +54,11 @@
         #bg-canvas { position: fixed; inset: 0; z-index: 0; opacity: 0.4; pointer-events: none;}
         .scanlines {
             position: fixed; inset: 0; z-index: 50; pointer-events: none;
-            /* Inverted scanlines for light mode */
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05));
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.02) 50%, rgba(0,0,0,0.02));
             background-size: 100% 4px;
         }
 
-        /* --- DYNAMIC SCALER WRAPPER --- */
+        /* --- DYNAMIC SCALER --- */
         #app-scaler {
             position: relative; z-index: 10;
             width: 440px;
@@ -72,38 +70,62 @@
         .mecha-frame {
             background: var(--mecha-glass);
             backdrop-filter: blur(20px) saturate(120%);
-            /* Double border effect for metallic look */
             border: 2px solid var(--mecha-white);
             outline: 1px solid var(--metal-border);
             border-radius: 24px;
             padding: 40px;
             position: relative;
-            /* Soft blue glow shadow */
             box-shadow: 
                 0 20px 40px -10px rgba(37, 99, 235, 0.15),
                 0 0 20px rgba(255, 255, 255, 0.5) inset;
             overflow: hidden;
-            transition: height 0.4s var(--anim-mecha);
+            /* Transition properties including border and shadow for pulse effect */
+            transition: height 0.4s var(--anim-mecha), box-shadow 0.3s ease, border-color 0.3s ease;
         }
 
-        /* Decorative Corners - Blue Accents */
+        /* PULSE ANIMATION KEYFRAMES */
+        @keyframes mech-pulse {
+            0% {
+                border-color: var(--mecha-white);
+                box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.15);
+            }
+            50% {
+                border-color: var(--accent-core);
+                box-shadow: 
+                    0 0 15px 2px rgba(37, 99, 235, 0.4),
+                    0 30px 60px -5px rgba(37, 99, 235, 0.3),
+                    0 0 40px rgba(37, 99, 235, 0.1) inset;
+            }
+            100% {
+                border-color: var(--mecha-white);
+                box-shadow: 0 20px 40px -10px rgba(37, 99, 235, 0.15);
+            }
+        }
+
+        .mecha-frame.pulsing {
+            animation: mech-pulse 0.8s ease-in-out forwards;
+        }
+
+        /* Decorative Corners */
         .corner-deco { position: absolute; width: 20px; height: 20px; border: 3px solid var(--accent-core); opacity: 0.8; transition: 0.3s; z-index: 20;}
         .c-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; border-radius: 22px 0 0 0; }
         .c-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; border-radius: 0 0 22px 0; }
         
-        /* Form Slider Mechanism */
+        /* --- FORM SLIDER MECHANISM --- */
         .form-slider {
             position: relative;
             width: 100%;
+            min-height: 340px; /* Menjaga tinggi agar tidak collapse */
         }
 
         .auth-panel {
             position: absolute;
             top: 0; left: 0; width: 100%;
-            transition: all 0.5s var(--anim-mecha);
+            transition: all 0.6s var(--anim-mecha);
             opacity: 0;
-            transform: translateX(60px) scale(0.95);
             pointer-events: none;
+            visibility: hidden;
+            transform: scale(0.95);
         }
 
         .auth-panel.active {
@@ -111,16 +133,18 @@
             opacity: 1;
             transform: translateX(0) scale(1);
             pointer-events: auto;
+            visibility: visible;
         }
 
-        .auth-panel.prev { transform: translateX(-60px) scale(0.95); opacity: 0; }
+        .auth-panel.prev { transform: translateX(-80px) scale(0.95); opacity: 0; }
+        .auth-panel.next { transform: translateX(80px) scale(0.95); opacity: 0; }
 
-        /* --- INPUTS & BUTTONS (CLEAN STYLE) --- */
+        /* --- INPUTS & BUTTONS --- */
         .input-group { position: relative; margin-bottom: 20px; }
         
         .mech-input {
             width: 100%;
-            background: rgba(255, 255, 255, 0.8); /* Cleaner white bg */
+            background: rgba(255, 255, 255, 0.8);
             border: 2px solid var(--metal-border);
             color: var(--text-dark);
             padding: 16px 16px 16px 50px;
@@ -132,7 +156,6 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
         }
-        .mech-input::placeholder { color: #94a3b8; font-weight: 500; }
         .mech-input:focus {
             border-color: var(--accent-core);
             background: var(--mecha-white);
@@ -156,32 +179,25 @@
             cursor: pointer;
             transition: all 0.2s;
             border: none;
-            position: relative;
-            overflow: hidden;
-            /* Metallic gradient look */
             background: linear-gradient(135deg, var(--accent-core), #1d4ed8);
-            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2), 0 2px 4px -1px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
         }
-        
-        /* Secondary Button Variant */
         .btn-core.secondary {
             background: linear-gradient(135deg, var(--accent-sec), #d97706);
-            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2), 0 2px 4px -1px rgba(245, 158, 11, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2);
         }
-
         .btn-core:hover { transform: translateY(-2px); box-shadow: 0 12px 20px -5px rgba(37, 99, 235, 0.3); }
-        .btn-core.secondary:hover { box-shadow: 0 12px 20px -5px rgba(245, 158, 11, 0.3); }
         .btn-core:active { transform: scale(0.98); }
         
-        /* Spinner White */
+        /* Spinner */
         .spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle;}
         @keyframes spin { to {transform: rotate(360deg);} }
 
-        /* Console Log (Light Mode) */
+        /* Console Log */
         .console-log {
             margin-top: 24px;
             padding: 14px;
-            background: rgba(241, 245, 249, 0.8); /* Light gray bg */
+            background: rgba(241, 245, 249, 0.8);
             border: 1px solid var(--metal-border);
             border-left: 4px solid var(--accent-core);
             border-radius: 8px;
@@ -195,16 +211,13 @@
         .blink { animation: blink 1s infinite; font-weight: 900; color: var(--accent-core);}
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* Text Utilities */
+        /* Utilities */
+        .header-shadow { text-shadow: 2px 2px 0px rgba(255,255,255,1), 4px 4px 10px rgba(37, 99, 235, 0.2); }
         .text-accent { color: var(--accent-core); }
         .text-accent-sec { color: var(--accent-sec); }
-        .text-dark { color: var(--text-dark); }
-        .text-muted { color: var(--text-muted); }
-        .hover-accent:hover { color: var(--accent-core); border-color: var(--accent-core); }
-        .hover-accent-sec:hover { color: var(--accent-sec); border-color: var(--accent-sec); }
         
-        /* Header Shadow */
-        .header-shadow { text-shadow: 2px 2px 0px rgba(255,255,255,1), 4px 4px 10px rgba(37, 99, 235, 0.2); }
+        /* Error Shake Animation */
+        @keyframes shake { 0%,100%{transform:translate(0)} 20%{transform:translate(-8px)} 40%{transform:translate(8px)} 60%{transform:translate(-4px)} 80%{transform:translate(4px)} }
 
     </style>
 </head>
@@ -254,13 +267,13 @@
 
                     <div class="mt-8 text-center">
                         <p class="text-[11px] text-muted font-bold font-mono mb-3 tracking-widest">NEW UNIT DEPLOYMENT?</p>
-                        <button onclick="App.switchPanel('register')" class="text-xs font-black text-muted hover-accent tracking-[0.2em] uppercase transition-all border-b-2 border-dashed border-slate-300 pb-1">
+                        <button onclick="App.switchPanel('register')" class="text-xs font-black text-muted hover:text-blue-600 tracking-[0.2em] uppercase transition-all border-b-2 border-dashed border-slate-300 pb-1">
                             REQUEST IDENTITY
                         </button>
                     </div>
                 </div>
 
-                <div id="panelRegister" class="auth-panel">
+                <div id="panelRegister" class="auth-panel next">
                      <h2 class="text-2xl font-black mb-8 text-dark flex items-center gap-3 uppercase italic tracking-tight">
                         <span class="bg-amber-100 p-2 rounded-lg"><i class="fas fa-user-plus text-accent-sec"></i></span> NEW REGISTRATION
                     </h2>
@@ -286,7 +299,7 @@
 
                     <div class="mt-8 text-center">
                         <p class="text-[11px] text-muted font-bold font-mono mb-3 tracking-widest">ALREADY OPERATIONAL?</p>
-                        <button onclick="App.switchPanel('login')" class="text-xs font-black text-muted hover-accent-sec tracking-[0.2em] uppercase transition-all border-b-2 border-dashed border-slate-300 pb-1">
+                        <button onclick="App.switchPanel('login')" class="text-xs font-black text-muted hover:text-amber-600 tracking-[0.2em] uppercase transition-all border-b-2 border-dashed border-slate-300 pb-1">
                             RETURN TO LOGIN
                         </button>
                     </div>
@@ -319,55 +332,56 @@
             init() {
                 this.initScaler();
                 this.initParticles();
-                localStorage.removeItem('isLoggedIn'); // Clean slate
+                localStorage.removeItem('isLoggedIn');
             },
 
-            // --- 1. ULTRA SMOOTH SCALER ENGINE ---
+            // --- SCALER ---
             initScaler() {
                 const scaler = document.getElementById('app-scaler');
-                const baseW = 460; // Slightly wider design base
+                const baseW = 460;
                 const baseH = 850; 
-
                 const resize = () => {
                     const winW = window.innerWidth;
                     const winH = window.innerHeight;
                     let scale = Math.min(winW / baseW, winH / baseH);
-                    if (scale > 1.1) scale = 1.1; // Max scale cap
+                    if (scale > 1.1) scale = 1.1;
                     scaler.style.transform = `scale(${scale})`;
                 };
                 window.addEventListener('resize', resize);
                 resize();
             },
 
-            // --- 2. TRANSITION LOGIC ---
+            // --- TRANSITION LOGIC (PULSE & SLIDE) ---
             switchPanel(target) {
                 const pLogin = document.getElementById('panelLogin');
                 const pReg = document.getElementById('panelRegister');
                 const card = document.getElementById('mainCard');
 
-                this.log("SWITCHING INTERFACE PROTOCOL...", "neutral");
+                this.log(`INITIALIZING ${target.toUpperCase()} PROTOCOL...`, "neutral");
 
-                // Optional: adjust height dynamically if needed, though current contents are similar
-                // card.style.height = target === 'register' ? '580px' : '520px'; 
+                // Trigger Pulse
+                card.classList.remove('pulsing');
+                void card.offsetWidth; // Force Reflow
+                card.classList.add('pulsing');
+                setTimeout(() => card.classList.remove('pulsing'), 800);
 
+                // Slide Logic
                 if (target === 'register') {
                     pLogin.classList.remove('active');
                     pLogin.classList.add('prev');
-                    setTimeout(() => {
-                        pReg.classList.remove('prev');
-                        pReg.classList.add('active');
-                    }, 100);
+                    
+                    pReg.classList.remove('prev', 'next');
+                    pReg.classList.add('active');
                 } else {
                     pReg.classList.remove('active');
-                     // reset reg position implicitly by removing active
-                    setTimeout(() => {
-                        pLogin.classList.remove('prev');
-                        pLogin.classList.add('active');
-                    }, 100);
+                    pReg.classList.add('next');
+                    
+                    pLogin.classList.remove('prev', 'next');
+                    pLogin.classList.add('active');
                 }
             },
 
-            // --- 3. AUTH LOGIC ---
+            // --- LOGIN ---
             async handleLogin(e) {
                 e.preventDefault();
                 const btn = document.getElementById('btnLogin');
@@ -378,7 +392,7 @@
                 this.log("VERIFYING CREDENTIALS...", "neutral");
 
                 try {
-                    await new Promise(r => setTimeout(r, 1200)); // Dramatic delay
+                    await new Promise(r => setTimeout(r, 1200));
 
                     const { data, error } = await this.sb.from('users').select('*').eq('nik', nik).single();
                     
@@ -389,7 +403,7 @@
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('userNIK', data.nik);
                     
-                    // White flash transition effect
+                    // Exit Animation
                     document.body.style.transition = "all 0.8s ease-out";
                     document.body.style.backgroundColor = "#ffffff";
                     document.getElementById('app-scaler').style.opacity = "0";
@@ -404,6 +418,7 @@
                 }
             },
 
+            // --- REGISTER ---
             async handleRegister(e) {
                 e.preventDefault();
                 const btn = document.getElementById('btnReg');
@@ -418,7 +433,7 @@
                     await new Promise(r => setTimeout(r, 1500));
 
                     const { data: exist } = await this.sb.from('users').select('nik').eq('nik', nik).single();
-                    if (exist) throw new Error("NIK ALREADY REGISTERED IN DATABASE");
+                    if (exist) throw new Error("NIK ALREADY REGISTERED");
 
                     const { error } = await this.sb.from('users').insert([{
                         nik, full_name: name, password: pass, role: 'technician', status: 'pending'
@@ -426,7 +441,7 @@
 
                     if (error) throw error;
 
-                    this.log("SUCCESS: REQUEST LOGGED. AWAITING COMMAND APPROVAL.", "success");
+                    this.log("SUCCESS: REQUEST LOGGED. AWAITING APPROVAL.", "success");
                     alert("Registration Transmitted!\nPlease wait for admin approval.");
                     
                     e.target.reset();
@@ -440,23 +455,20 @@
                 }
             },
 
-            // --- UTILS ---
+            // --- UTILITIES ---
             log(text, type) {
                 const el = document.getElementById('sysMsg');
                 el.innerText = text;
-                el.className = ''; // Reset classes
-                // Using Tailwind text colors for logs based on theme palette
+                el.className = ''; 
                 if(type === 'error') el.classList.add('text-red-600', 'font-bold');
                 else if(type === 'success') el.classList.add('text-blue-600', 'font-bold');
                 else el.classList.add('text-slate-500');
             },
 
             setLoading(btn, isLoading, originalContent = "") {
-                const txt = btn.querySelector('.btn-txt');
-                // Handle icon presence in original content
                 if(isLoading) {
                     btn.disabled = true;
-                    btn.innerHTML = `<span class="spinner"></span> PROCESSING DATA`;
+                    btn.innerHTML = `<span class="spinner"></span> PROCESSING`;
                 } else {
                     btn.disabled = false;
                     btn.innerHTML = originalContent;
@@ -465,16 +477,15 @@
 
             shakeCard() {
                 const c = document.getElementById('mainCard');
-                // Using border color change for error feedback in light mode
-                c.style.borderColor = "#ef4444"; // Red border
+                c.style.borderColor = "#ef4444"; 
                 c.style.animation = "shake 0.4s ease-in-out";
                 setTimeout(() => {
                     c.style.animation = "";
-                    c.style.borderColor = "var(--mecha-white)"; // Reset to white border
+                    c.style.borderColor = "var(--mecha-white)"; 
                 }, 400);
             },
 
-            // --- PARTICLES (BLUE ENERGY) ---
+            // --- PARTICLES (Blue Square Energy) ---
             initParticles() {
                 const canvas = document.getElementById('bg-canvas');
                 const ctx = canvas.getContext('2d');
@@ -483,19 +494,18 @@
                 window.addEventListener('resize', resizeP);
                 resizeP();
 
-                let particles = Array.from({length: 50}, () => ({
+                let particles = Array.from({length: 40}, () => ({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.3, // Slower movement
-                    vy: (Math.random() - 0.5) * 0.3,
-                    size: Math.random() * 3 + 1,
-                    a: Math.random() * 0.4
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    size: Math.random() * 4 + 1,
+                    a: Math.random() * 0.3
                 }));
 
                 const loop = () => {
                     ctx.clearRect(0,0, canvas.width, canvas.height);
-                    // Change particle color to Sapphire Blue
-                    ctx.fillStyle = "#2563eb"; 
+                    ctx.fillStyle = "#2563eb"; // Blue
                     
                     particles.forEach(p => {
                         p.x += p.vx; p.y += p.vy;
@@ -504,8 +514,7 @@
                         
                         ctx.globalAlpha = p.a;
                         ctx.beginPath();
-                        // Draw tiny squares/diamonds for a more "tech" feel than circles
-                        ctx.rect(p.x, p.y, p.size, p.size); 
+                        ctx.rect(p.x, p.y, p.size, p.size); // Tech squares
                         ctx.fill();
                     });
                     requestAnimationFrame(loop);
@@ -513,11 +522,6 @@
                 loop();
             }
         };
-
-        // Add shake animation style dynamically
-        const styleSheet = document.createElement("style");
-        styleSheet.innerText = `@keyframes shake { 0%,100%{transform:translate(0)} 20%{transform:translate(-8px)} 40%{transform:translate(8px)} 60%{transform:translate(-4px)} 80%{transform:translate(4px)} }`;
-        document.head.appendChild(styleSheet);
 
         window.onload = () => App.init();
     </script>
