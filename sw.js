@@ -1,5 +1,5 @@
 // PERUBAHAN 1: Naikkan versi cache agar browser mendeteksi update (v3 -> v4)
-const CACHE_NAME = 'hexindo-fleet-mecha-v4.5';
+const CACHE_NAME = 'hexindo-fleet-mecha-v4.5.1';
 
 const ASSETS_TO_CACHE = [
     // --- FILE UTAMA ---
