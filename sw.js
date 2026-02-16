@@ -4,14 +4,14 @@ const CACHE_NAME = 'hexindo-fleet-mecha-v2.2.1';
 const ASSETS_TO_CACHE = [
     // 1. Halaman Utama (HTML)
     './',
-    './index.html',
-    './login.html',
-    './admin.html',
-    './dar.html',
-    './ppu.html',
-    './pump-tuning.html',
-    './settings-mecha.html',
-    './toolbox.html',
+    '../index/index-mecha.html',
+    '../login/login-mecha.html',
+    '../admin/admin-mecha.html',
+    '../activity/dar-mecha.html',
+    '../uc/ppu-mecha.html',
+    '../hyd/pump-tuning-mecha.html',
+    '../settings/settings-mecha.html',
+    '../tool/toolbox-mecha.html',
     
     // 2. Ikon Aplikasi (PWA Icons) - TERBARU
     './icon-192.png',
