@@ -105,7 +105,46 @@
         .loader-mecha { width: 60px; height: 60px; border: 4px solid #e2e8f0; border-top: 4px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .fade-out { opacity: 0; visibility: hidden; }
-        .hidden { display: none !important; }
+        
+        /* --- MECHA ANIMATION ENGINE --- */
+        .tab-panel {
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            opacity: 1;
+            transform: translate3d(0, 0, 0) scale(1);
+            filter: blur(0);
+            width: 100%;
+        }
+        .mech-hidden { display: none !important; }
+        
+        /* Animasi Keluar ke Kiri (General -> Pump) */
+        .slide-out-left {
+            opacity: 0;
+            transform: translate3d(-30px, 0, 0) scale(0.98);
+            filter: blur(8px);
+            pointer-events: none;
+        }
+        
+        /* Animasi Masuk dari Kanan (Pump Starts) */
+        .slide-in-right-start {
+            opacity: 0;
+            transform: translate3d(30px, 0, 0) scale(1.02);
+            filter: blur(8px);
+        }
+
+        /* Animasi Keluar ke Kanan (Pump -> General) */
+        .slide-out-right {
+            opacity: 0;
+            transform: translate3d(30px, 0, 0) scale(0.98);
+            filter: blur(8px);
+            pointer-events: none;
+        }
+
+        /* Animasi Masuk dari Kiri (General Starts) */
+        .slide-in-left-start {
+            opacity: 0;
+            transform: translate3d(-30px, 0, 0) scale(1.02);
+            filter: blur(8px);
+        }
     </style>
 </head>
 <body>
@@ -177,7 +216,7 @@
             </div>
         </div>
 
-        <div id="section-general" class="space-y-6 fade-in">
+        <div id="section-general" class="tab-panel space-y-6">
             
             <div class="glass-mecha">
                 <div class="bg-slate-50 p-4 border-b border-slate-200">
@@ -226,7 +265,7 @@
             </div>
         </div>
 
-        <div id="section-pump" class="hidden space-y-6 fade-in">
+        <div id="section-pump" class="tab-panel mech-hidden space-y-6">
             <div class="flex justify-between items-center bg-slate-800 text-white p-4 rounded-2xl shadow-xl mx-1 border border-slate-700">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center text-blue-400 text-xl font-mono font-bold" id="active-p-num">1</div>
@@ -360,6 +399,63 @@
             }
         };
 
+        // --- ANIMATION ENGINE ---
+        let isAnimating = false;
+        let currentActiveTab = 'general';
+
+        function switchTab(targetTab) {
+            if (isAnimating || currentActiveTab === targetTab) return;
+            isAnimating = true;
+            
+            const generalEl = document.getElementById('section-general');
+            const pumpEl = document.getElementById('section-pump');
+            const btnGen = document.getElementById('tab-gen');
+            const btnPump = document.getElementById('tab-pump');
+
+            btnGen.classList.toggle('active', targetTab === 'general');
+            btnPump.classList.toggle('active', targetTab === 'pump');
+
+            let outgoing, incoming;
+            let outClass, inStartClass;
+
+            if (targetTab === 'pump') {
+                outgoing = generalEl; incoming = pumpEl;
+                outClass = 'slide-out-left';
+                inStartClass = 'slide-in-right-start';
+            } else {
+                outgoing = pumpEl; incoming = generalEl;
+                outClass = 'slide-out-right';
+                inStartClass = 'slide-in-left-start';
+            }
+
+            outgoing.classList.add(outClass);
+
+            setTimeout(() => {
+                outgoing.classList.add('mech-hidden');
+                outgoing.classList.remove(outClass);
+
+                incoming.classList.remove('mech-hidden');
+                incoming.classList.add(inStartClass);
+                void incoming.offsetWidth; // Force Reflow
+
+                requestAnimationFrame(() => {
+                    incoming.classList.remove(inStartClass);
+                    
+                    if(targetTab === 'pump') {
+                        if(!nikChart) initChart();
+                        renderPumpAnalysis();
+                        // Delay chart resize to prevent layout thrashing
+                        setTimeout(() => { if(nikChart) nikChart.resize(); }, 50);
+                    }
+                    
+                    setTimeout(() => {
+                        isAnimating = false;
+                        currentActiveTab = targetTab;
+                    }, 400); 
+                });
+            }, 300);
+        }
+
         // --- VALIDATION HELPER ---
         function valColor(el, min, max) {
             const val = parseFloat(el.value);
@@ -382,14 +478,6 @@
             const scaleRatio = window.innerWidth < 720 ? window.innerWidth / 720 : 1;
             scaler.style.transform = `scale(${scaleRatio})`;
             scaler.style.marginBottom = window.innerWidth < 720 ? `-${(1 - scaleRatio) * scaler.offsetHeight}px` : "0px";
-        }
-
-        function switchTab(t) {
-            document.getElementById('section-general').classList.toggle('hidden', t !== 'general');
-            document.getElementById('section-pump').classList.toggle('hidden', t !== 'pump');
-            document.getElementById('tab-gen').classList.toggle('active', t === 'general');
-            document.getElementById('tab-pump').classList.toggle('active', t === 'pump');
-            if(t === 'pump') { if(!nikChart) initChart(); renderPumpAnalysis(); }
         }
 
         function toggleHistory(event) {
@@ -606,7 +694,11 @@
                 populate('.data-eng', data.engine_speed_values || []);
                 populate('.data-cyc', data.cycle_time_values || []);
                 
-                if(!document.getElementById('section-pump').classList.contains('hidden')) renderPumpAnalysis();
+                switchTab('general'); // Force switch to general to load inputs correctly first
+                setTimeout(() => {
+                    if(!document.getElementById('section-pump').classList.contains('mech-hidden')) renderPumpAnalysis();
+                }, 500);
+
                 document.getElementById('history-panel').classList.add('minimized');
                 
                 document.getElementById('sync-status').innerText = "EDIT MODE";
@@ -623,7 +715,7 @@
             document.getElementById('test_date').valueAsDate = new Date();
             masterStore = {};
             localStorage.removeItem('nik_master_store');
-            if(!document.getElementById('section-pump').classList.contains('hidden')) renderPumpAnalysis();
+            if(!document.getElementById('section-pump').classList.contains('mech-hidden')) renderPumpAnalysis();
             document.getElementById('sync-status').innerText = "NEW ENTRY MODE";
             document.getElementById('status-dot').className = "w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse";
         }
