@@ -110,8 +110,8 @@
             </button>
         </div>
 
-          <div class="flex-1 overflow-auto flex bg-black/5 relative p-4" id="canvasContainer">
-            <canvas id="the-canvas" class="shadow-2xl m-auto bg-white transition-all duration-200"></canvas>
+        <div class="flex-1 overflow-auto flex bg-black/5 relative p-4" id="canvasContainer">
+            <canvas id="the-canvas" class="shadow-2xl m-auto bg-white max-w-none flex-shrink-0"></canvas>
 
             <div id="canvasLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10 hidden">
                 <div class="w-12 h-12 border-4 border-slate-200 rounded-full animate-spin mb-3" style="border-top-color: var(--warna-aksen);"></div>
@@ -264,7 +264,6 @@
             modal.classList.remove('hidden'); loader.classList.remove('hidden');
             document.getElementById('viewerTitle').innerText = title;
             
-            // Atur zoom standar sedikit lebih kecil untuk desktop
             scale = window.innerWidth < 640 ? 0.6 : 1.0; 
 
             try {
@@ -283,14 +282,25 @@
             } catch (error) { alert("Error loading PDF: " + error.message); closePdfViewer(); }
         }
 
+        // PERBAIKAN: Fungsi Render yang memaksa ukuran CSS
         async function renderPage(num) {
             pageRendering = true;
+            document.getElementById('canvasLoader').classList.remove('hidden');
+
             const page = await pdfDoc.getPage(num);
             const viewport = page.getViewport({ scale: scale });
             const canvas = document.getElementById('the-canvas');
             const context = canvas.getContext('2d');
-            canvas.height = viewport.height; canvas.width = viewport.width;
+            
+            canvas.height = viewport.height; 
+            canvas.width = viewport.width;
+
+            // KUNCI UTAMA: Paksa ukuran fisik via inline style agar kebal dari Tailwind
+            canvas.style.width = viewport.width + 'px';
+            canvas.style.height = viewport.height + 'px';
+
             await page.render({ canvasContext: context, viewport: viewport }).promise;
+            
             pageRendering = false;
             document.getElementById('canvasLoader').classList.add('hidden');
             document.getElementById('pageIndicator').innerText = `PAGE ${num} / ${pdfDoc.numPages}`;
@@ -388,15 +398,15 @@
         document.getElementById('btnPrev').onclick = () => { if(pageNum > 1) { pageNum--; renderPage(pageNum); }};
         document.getElementById('btnNext').onclick = () => { if(pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); }};
         
-        // FUNGSI ZOOM IN & ZOOM OUT BERTAHAP
+        // PERBAIKAN: Fungsi Zoom dengan pengaman Anti-Lag
         function zoomIn() { 
-            if (scale >= 10.0) return; // Maksimal 1000%
+            if (scale >= 10.0 || pageRendering) return; // Maksimal 1000%
             scale += 0.2; 
             renderPage(pageNum); 
         }
         
         function zoomOut() { 
-            if (scale <= 0.4) return; // Minimal 40%
+            if (scale <= 0.4 || pageRendering) return; // Minimal 40%
             scale -= 0.2; 
             renderPage(pageNum); 
         }
