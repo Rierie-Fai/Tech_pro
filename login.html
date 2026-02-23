@@ -4,16 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Portal Masuk | Hexindo Fleet</title>
-    <link rel="manifest" href="./manifest.json">
     
     <script src="./assets/js/splash.js"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body { 
             height: 100vh; width: 100vw; overflow: hidden;
             display: flex; justify-content: center; align-items: center;
             background-color: #f0fdf4; transition: background-color 0.5s ease;
+        }
+
+        /* ========================================================
+           KUNCI MUTLAK BACKGROUND: 
+           Memaksa semua background keluar dari jalur Flexbox
+           sehingga MUSTAHIL mendorong form ke kanan.
+           ======================================================== */
+        #bg-layer, #bg-canvas {
+            position: fixed !important;
+            top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
+            z-index: 0 !important;
+            pointer-events: none !important;
         }
         
         /* KUNCI GEMBOK HALAMAN */
@@ -21,8 +34,9 @@
             opacity: 0 !important; visibility: hidden !important; 
             pointer-events: none !important; transform: scale(0.95) !important;
         }
+        
         #login-context { 
-            z-index: 10; width: 90%; max-width: 400px; 
+            position: relative; z-index: 10; width: 90%; max-width: 400px; 
             transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
 
@@ -41,7 +55,6 @@
         .tema-mint { background: #ecfdf5; color: #064e3b; font-family: 'Rajdhani', sans-serif; }
         .tema-mint .judul-portal { font-family: 'Quicksand', sans-serif; font-size: 2.2rem; color: #10b981; }
         .tema-mint .sub-judul { font-family: 'Quicksand', sans-serif; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; opacity: 0.6; }
-        .tema-mint #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         .tema-mint .blob { position: absolute; border-radius: 50%; animation: melayang 18s infinite alternate ease-in-out; }
         .tema-mint .blob-1 { width: 70vw; height: 70vw; top: -15%; left: -15%; background: radial-gradient(circle at center, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0.2) 25%, rgba(16, 185, 129, 0) 75%); animation-duration: 20s; }
         .tema-mint .blob-2 { width: 80vw; height: 80vw; bottom: -25%; right: -20%; background: radial-gradient(circle at center, rgba(52, 211, 153, 0.4) 5%, rgba(52, 211, 153, 0.15) 35%, rgba(52, 211, 153, 0) 70%); animation-duration: 25s; animation-delay: -8s; }
@@ -57,7 +70,7 @@
         .tema-mecha { background: #ffffff; color: #0f172a; font-family: 'Rajdhani', sans-serif; }
         .tema-mecha .judul-portal { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; color: #1e293b; letter-spacing: 5px; }
         .tema-mecha .sub-judul { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #0ea5e9; letter-spacing: 2px; }
-        .tema-mecha #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; }
+        .tema-mecha #bg-canvas { background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; }
         .tema-mecha .blob { display: none; } 
         .tema-mecha .kartu-login { background: rgba(255, 255, 255, 0.95); border: 1px solid #cbd5e1; border-radius: 0; padding: 3rem 2rem; box-shadow: 20px 20px 0px rgba(15, 23, 42, 0.05); }
         .tema-mecha .kotak-ikon { border: 1px solid #cbd5e1; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #0f172a; margin-bottom: 1rem; }
@@ -90,7 +103,7 @@
         <div class="blob blob-1"></div><div class="blob blob-2"></div>
     </div>
 
-    <div id="login-context" class="tameng-besi">
+    <div id="login-context" class="lapis-depan tameng-besi">
         <div class="kartu-login" id="loginCard">
             
             <div class="header-login">
@@ -139,6 +152,5 @@
     <script src="./assets/js/tailwindcss.js" defer></script>
     <script src="./assets/js/supabase.js" defer></script>
     <script src="./html/js/auth.js" defer></script> 
-    <script src="./assets/js/offline-manager.js" defer></script>
 </body>
 </html>
