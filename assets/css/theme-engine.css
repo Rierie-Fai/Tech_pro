@@ -24,3 +24,41 @@
     position: relative;
     z-index: 10;
 }
+/* =========================================
+   PERBAIKAN BUG OFFLINE MANAGER (ANTI-BLOK NYANGKUT)
+   ========================================= */
+
+/* 1. Paksa Toast Notifikasi untuk sembunyi dan ke tengah */
+#hexindo-toast {
+    position: fixed !important;
+    top: 40px !important;
+    left: 50% !important;
+    transform: translateX(-50%) translateY(-20px) !important;
+    opacity: 0 !important; /* Paksa hilang saat tidak ada pesan */
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: 99999 !important;
+    transition: all 0.4s ease !important;
+}
+
+/* Class ini akan bereaksi saat Javascript memunculkan pesan */
+#hexindo-toast.opacity-100 {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateX(-50%) translateY(0) !important;
+}
+
+/* 2. Patenkan posisi Status Badge Online/Offline ke Kiri Bawah */
+#hexindo-status-badge {
+    position: fixed !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: 24px !important;
+    left: 24px !important;
+    z-index: 99999 !important;
+}
+
+/* 3. Matikan Widget Tema Lawas jika masih ada yang tersisa */
+#theme-switcher, .theme-toggle-btn {
+    display: none !important;
+}
