@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hexindo-cache-v1.5';
+const CACHE_NAME = 'hexindo-cache-v1.6';
 
 // Daftarkan semua file yang ada di folder Anda berdasarkan struktur direktori
 const urlsToCache = [
