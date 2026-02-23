@@ -1,0 +1,61 @@
+/* =========================================
+   UC INSPECTOR - MANNEQUIN SYSTEM CSS
+   ========================================= */
+
+/* WARNA BACKGROUND TEMA UTAMA */
+body.tema-mecha { background-color: #f8fafc !important; }
+body.tema-mint { background-color: #f0fdf4 !important; }
+
+/* ANTI-FOUC STATE (TAMENG BAJA) */
+#scaler-context.opacity-0 {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* LAYOUT DASAR */
+html, body { min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden; }
+body { transition: background-color 0.5s ease; display: flex; justify-content: center; align-items: flex-start; }
+
+#bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+#scaler-context {
+    width: 720px; transform-origin: top center; 
+    transition: transform 0.2s ease-out, opacity 0.5s ease-in-out;
+    flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
+}
+
+/* KUSTOMISASI TABEL PENGUKURAN */
+table { width: 100%; border-collapse: separate; border-spacing: 0; }
+thead th { 
+    background: rgba(0,0,0,0.03); font-size: 11px; text-transform: uppercase; 
+    border-bottom: 2px solid rgba(0,0,0,0.08); padding: 14px; font-weight: 800; text-align: center; 
+    position: sticky; top: 0; z-index: 20; color: var(--warna-teks); opacity: 0.8;
+}
+tbody td { 
+    border-bottom: 1px solid rgba(0,0,0,0.05); padding: 12px 6px; font-size: 14.5px; 
+    text-align: center; font-weight: 600; color: var(--warna-teks); vertical-align: middle; 
+}
+tbody td:nth-child(3) { color: #ef4444; background: rgba(239, 68, 68, 0.05); font-weight: 800; } /* Kolom Limit (Merah) */
+
+/* HASIL KEASUAN (WEAR OUTPUT) */
+.worn-output { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; opacity: 0.5; color: var(--warna-teks); }
+.worn-danger { color: #ef4444 !important; background: #fef2f2; border-radius: 4px; opacity: 1;}
+.worn-warning { color: var(--warna-aksen, #f59e0b) !important; background: rgba(var(--warna-aksen-rgb), 0.1); border-radius: 4px; opacity: 1; }
+.worn-safe { color: #10b981 !important; opacity: 1; }
+
+/* DRAWER (LACI KANAN) & OVERLAY */
+#drawerOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+#drawerOverlay.visible { opacity: 1; pointer-events: auto; }
+#rightDrawer { 
+    position: fixed; top: 0; right: 0; height: 100%; width: 340px; z-index: 51; 
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); 
+    border-left: 1px solid rgba(0,0,0,0.1); box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1); 
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+    display: flex; flex-direction: column; 
+}
+#rightDrawer.open { transform: translateX(0); }
+
+/* SPLASH SCREEN & LOADER */
+#splash-screen { position: fixed; inset: 0; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+.loader-mecha { width: 60px; height: 60px; border: 4px solid #e2e8f0; border-top: 4px solid var(--warna-aksen, #f59e0b); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.hidden { display: none !important; }

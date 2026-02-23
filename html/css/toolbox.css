@@ -1,0 +1,124 @@
+/* =========================================
+   TOOLBOX PRO - MANNEQUIN SYSTEM CSS
+   ========================================= */
+
+/* WARNA BACKGROUND TEMA UTAMA */
+body.tema-mecha { background-color: #f8fafc !important; }
+body.tema-mint { background-color: #f0fdf4 !important; }
+
+/* ANTI-FOUC STATE (TAMENG BAJA) */
+#scaler-context.opacity-0 {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* LAYOUT DASAR */
+html, body { min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden; }
+body { transition: background-color 0.5s ease; display: flex; justify-content: center; align-items: flex-start; }
+
+#bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+#scaler-context {
+    width: 720px; transform-origin: top center; 
+    transition: transform 0.2s ease-out, opacity 0.5s ease-in-out;
+    flex-shrink: 0; padding: 1.5rem; position: relative; z-index: 10;
+}
+
+/* FILTER PILLS (TOMBOL ALL, B, R, H) */
+.filter-pill { 
+    padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 700; 
+    background: rgba(0,0,0,0.05); cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+    color: var(--warna-teks); opacity: 0.7;
+}
+.filter-pill.active { 
+    background: var(--warna-aksen, #2563eb); 
+    color: white; 
+    opacity: 1; 
+    border: none; 
+}
+
+/* CUSTOM STYLING TABEL INSPEKSI */
+table { width: 100%; border-collapse: separate; border-spacing: 0; }
+thead th { 
+    background: rgba(0,0,0,0.03); font-size: 12px; text-transform: uppercase; opacity: 0.6;
+    border-bottom: 2px solid rgba(0,0,0,0.08); padding: 14px; font-weight: 800; text-align: center; 
+    position: sticky; top: 0; z-index: 20; 
+}
+tbody td { 
+    padding: 12px 8px; font-size: 14px; vertical-align: middle; font-weight: 600; 
+}
+
+/* INDIKATOR WARNA BARIS (B/R/H) */
+.row-baik { background-color: rgba(16, 185, 129, 0.08) !important; border-left: 4px solid #10b981; }
+.row-rusak { background-color: rgba(245, 158, 11, 0.08) !important; border-left: 4px solid #f59e0b; }
+.row-hilang { background-color: rgba(239, 68, 68, 0.08) !important; border-left: 4px solid #ef4444; }
+
+/* CUSTOM RADIO BUTTONS (BULATAN B/R/H) */
+input[type="radio"] { 
+    appearance: none; width: 20px; height: 20px; border: 2px solid rgba(0,0,0,0.2); 
+    border-radius: 50%; cursor: pointer; transition: 0.2s; position: relative;
+}
+input[type="radio"]:checked { border-color: transparent; transform: scale(1.1); }
+input[type="radio"][value="B"]:checked { background: #10b981; }
+input[type="radio"][value="R"]:checked { background: #f59e0b; }
+input[type="radio"][value="H"]:checked { background: #ef4444; }
+input[type="radio"]:checked::after {
+    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 8px; height: 8px; background: white; border-radius: 50%;
+}
+
+
+/* =========================================
+   SISTEM LACI (DRAWERS) & OVERLAY - FIXED
+   ========================================= */
+#drawerOverlay { 
+    position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); 
+    z-index: 50; opacity: 0; pointer-events: none; transition: opacity 0.3s; 
+}
+#drawerOverlay.visible { opacity: 1; pointer-events: auto; }
+
+/* LACI KANAN (ACTION CENTER) */
+#sideDrawer { 
+    position: fixed; top: 0; right: 0; height: 100%; width: 300px; z-index: 51; 
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); border-left: 1px solid rgba(0,0,0,0.1);
+    transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column; padding: 1.5rem; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+}
+#sideDrawer.open { transform: translateX(0); }
+
+/* LACI BAWAH (HISTORY LOGS) */
+#bottomDrawer {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 51;
+    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,0.1); border-radius: 24px 24px 0 0;
+    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 1.5rem; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
+}
+#bottomDrawer.open { transform: translateY(0); }
+
+
+/* =========================================
+   KOMPONEN LAINNYA
+   ========================================= */
+/* SPLASH SCREEN KETIKA LOADING */
+#splash-screen { 
+    position: fixed; inset: 0; background: #ffffff; z-index: 999; 
+    display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    transition: opacity 0.5s; 
+}
+.loader-mecha { 
+    width: 50px; height: 50px; border: 4px solid #e2e8f0; 
+    border-top-color: var(--warna-aksen, #2563eb); border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* TOMBOL MELAYANG (FLOATING ACTION BUTTON) */
+.fab { 
+    position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px; color: white; 
+    border-radius: 20px; display: flex; align-items: center; justify-content: center; 
+    z-index: 40; transition: all 0.2s; cursor: pointer; 
+}
+.fab:hover { transform: rotate(90deg); }
+
+/* UTILITAS MUTLAK UNTUK MENYEMBUNYIKAN ELEMEN */
+.hidden { display: none !important; }

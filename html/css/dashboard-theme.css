@@ -1,0 +1,222 @@
+/* =========================================
+   PENGATURAN DASAR & PEMUSATAN LAYAR
+   ========================================= */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body { 
+    min-height: 100vh; background: #f1f5f9;
+    display: block; 
+    overflow-x: hidden; transition: background-color 0.8s ease;
+}
+
+#bg-layer {
+    position: fixed; 
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0;
+    pointer-events: none; 
+}
+
+#mecha-canvas, #bubble-canvas {
+    width: 100%; height: 100%;
+    display: block;
+}
+
+#scaler-context { 
+    width: 720px; 
+    margin: 0 auto; 
+    padding: 2.5rem; 
+    position: relative; z-index: 10; transition: transform 0.2s, opacity 0.8s; 
+}
+.opacity-0 { opacity: 0; }
+
+.kartu-utama { width: 100%; margin-bottom: 2rem; position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; display: block; }
+.modul-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+/* =========================================
+   TEMA 1: WHITE MECHA (Tajam & Blueprint)
+   ========================================= */
+.tema-mecha { background: #f8fafc; }
+.tema-mecha .kartu-utama { background: white; border: 2px solid #e2e8f0; border-radius: 4px; padding: 2rem; }
+.tema-mecha .header-portal { border-bottom: 8px solid #f59e0b; }
+.tema-mecha .nik-badge { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; padding: 10px 15px; font-family: 'JetBrains Mono', monospace; font-weight: bold; }
+.tema-mecha .digital-clock { color: #1e293b; font-size: 5.5rem; text-align: center; letter-spacing: -2px; font-family: 'JetBrains Mono', monospace; margin: 1.5rem 0; }
+
+#target-reticle { position: absolute; border: 1px solid #f59e0b; z-index: 50; pointer-events: none; opacity: 0; transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); }
+.tema-mecha #target-reticle.active { opacity: 1; }
+.corner { position: absolute; width: 12px; height: 12px; border-color: #f59e0b; border-style: solid; }
+.t-l { top: -2px; left: -2px; border-width: 3px 0 0 3px; } .t-r { top: -2px; right: -2px; border-width: 3px 3px 0 0; }
+.b-l { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; } .b-r { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; }
+.scan-label { position: absolute; bottom: -20px; right: 0; font-size: 10px; font-weight: 900; color: #f59e0b; background: rgba(0,0,0,0.8); padding: 2px 6px; font-family: 'JetBrains Mono', monospace; }
+
+/* =========================================
+   TEMA 2: MINT JELLY (Empuk & Bergelombang)
+   ========================================= */
+.tema-mint { background: #f0fdf4; }
+.tema-mint .kartu-utama { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border: 2px solid #ffffff; border-radius: 40px; padding: 2.5rem; box-shadow: 0 15px 40px rgba(6, 78, 59, 0.05); }
+.tema-mint .header-portal { border-bottom: 8px solid #10b981; }
+.tema-mint .nik-badge { background: #ecfdf5; border: 1px solid #10b981; color: #064e3b; border-radius: 18px; padding: 10px 15px; font-weight: bold; }
+.tema-mint .digital-clock { color: #064e3b; font-weight: 900; font-size: 5.5rem; text-align: center; margin: 1.5rem 0; }
+
+/* --- MESIN ANIMASI ORISINAL: MINT JELLY CARDS (SEMUA BOX) --- */
+.tema-mint .kartu-utama { 
+    transition: none !important; /* Matikan transisi bawaan agar tidak bentrok dengan keyframes */
+    animation: napasJellyInset 5s infinite ease-in-out;
+}
+
+/* Variasi Nafas untuk Header & Jam (Box Besar) */
+.tema-mint #scaler-context > .kartu-utama:nth-of-type(1) { animation-duration: 5.8s; animation-delay: 0.2s; }
+.tema-mint #scaler-context > .kartu-utama:nth-of-type(2) { animation-duration: 5.1s; animation-delay: 1.5s; }
+
+/* Variasi Nafas untuk Modul Menu (Box Kecil) agar mandiri dan acak */
+.tema-mint .modul-grid .kartu-utama:nth-child(1) { animation-duration: 5.2s; animation-delay: 0.0s; }
+.tema-mint .modul-grid .kartu-utama:nth-child(2) { animation-duration: 4.6s; animation-delay: 1.4s; } 
+.tema-mint .modul-grid .kartu-utama:nth-child(3) { animation-duration: 5.7s; animation-delay: 3.1s; }
+.tema-mint .modul-grid .kartu-utama:nth-child(4) { animation-duration: 4.9s; animation-delay: 0.8s; }
+.tema-mint .modul-grid .kartu-utama:nth-child(5) { animation-duration: 5.4s; animation-delay: 2.3s; }
+.tema-mint .modul-grid .kartu-utama:nth-child(6) { animation-duration: 4.8s; animation-delay: 1.1s; }
+
+@keyframes napasJellyInset {
+    /* FASE 1: TENGGELAM KE DALAM */
+    0%, 100% {
+        transform: scale(0.96); /* Diperhalus sedikit agar Header yang besar tidak terlalu mengecil */
+        box-shadow: 
+            inset 0 15px 25px rgba(4, 94, 75, 0.25), 
+            inset 0 -10px 20px rgba(255, 255, 255, 0.9), 
+            0 0 0px rgba(16, 185, 129, 0);
+        background: rgba(209, 250, 229, 0.4); 
+        border-color: rgba(16, 185, 129, 0.1);
+    }
+    /* FASE 2: MENGAPUNG KE ATAS */
+    50% {
+        transform: scale(1.03); /* Diperhalus agar Header tidak menabrak batas pinggir layar HP */
+        box-shadow: 
+            inset 0 0 0px rgba(4, 94, 75, 0), 
+            inset 0 0 0px rgba(255, 255, 255, 0), 
+            0 20px 30px -5px rgba(16, 185, 129, 0.35); 
+        background: rgba(255, 255, 255, 1); 
+        border-color: rgba(52, 211, 153, 0.6);
+    }
+}
+
+
+/* =========================================
+   KOMPONEN KARTU & ROLE
+   ========================================= */
+.badge-role { padding: 8px 18px; border-radius: 12px; font-weight: 900; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; display: inline-block; }
+.role-tech { background: #e2e8f0; color: #475569; }
+.role-admin { background: #fef3c7; color: #b45309; border: 2px solid #f59e0b; box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.brand-box { display: flex; align-items: center; gap: 15px; }
+.action-box { display: flex; gap: 12px; }
+.judul-portal {
+    font-size: 2.1rem !important;
+    font-weight: 900 !important;
+    font-style: italic !important;
+    letter-spacing: -1px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    text-transform: uppercase !important;
+}
+
+.judul-portal span {
+    opacity: 0.5 !important;
+}
+.judul-portal span { 
+    opacity: 0.5; 
+}
+
+.judul-portal span { opacity: 0.5; }
+
+.header-bottom { display: flex; justify-content: space-between; align-items: flex-end; padding-top: 1.5rem; border-top: 2px solid rgba(0,0,0,0.05); }
+.label-mini { font-size: 0.7rem; font-weight: 900; opacity: 0.5; letter-spacing: 2px; margin-bottom: 5px; }
+.value-bold { font-size: 1.5rem; font-weight: 900; }
+
+.status-bar { display: flex; justify-content: space-between; align-items: center; }
+.date-text { font-weight: 800; opacity: 0.6; font-size: 0.9rem; text-transform: uppercase; }
+
+.menu-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2.5rem 1.5rem; text-align: center; color: #1e293b; }
+.menu-icon { font-size: 3.5rem; margin-bottom: 1.2rem; color: #10b981; }
+.tema-mecha .menu-icon { color: #0ea5e9; }
+.menu-label h3 { font-size: 1.2rem; font-weight: 900; margin-bottom: 5px; }
+.menu-label p { font-size: 0.8rem; font-weight: bold; opacity: 0.6; }
+
+.btn-icon { width: 55px; height: 55px; background: white; border: 1px solid #e2e8f0; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: 0.2s; }
+.btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+
+.marquee-container { width: 100%; overflow: hidden; white-space: nowrap; background: rgba(0,0,0,0.03); border-radius: 8px; padding: 10px; margin-top: 1rem; }
+.marquee-text { display: inline-block; animation: marquee 20s linear infinite; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: bold; opacity: 0.6; }
+@keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+.footer-bottom { text-align: center; padding: 2rem 0; opacity: 0.4; font-size: 0.75rem; font-weight: 900; letter-spacing: 3px; }
+
+/* =========================================
+   SISTEM LOADER INTER-PAGE (PINDAH HALAMAN)
+   ========================================= */
+.layar-transisi { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.layar-transisi.aktif { opacity: 1; pointer-events: auto; }
+
+#mint-loader-overlay { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(5px); }
+.jelly-dots-container { display: flex; gap: 15px; margin-bottom: 20px; }
+.dot { width: 25px; height: 25px; background-color: #10b981; border-radius: 50%; animation: bouncyWave 0.6s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95); }
+.dot:nth-child(1) { animation-delay: 0.0s; } .dot:nth-child(2) { animation-delay: 0.2s; } .dot:nth-child(3) { animation-delay: 0.4s; }
+.teks-loading-jelly { color: #047857; font-weight: 700; letter-spacing: 1px; font-family: 'Quicksand', sans-serif;}
+@keyframes bouncyWave { 0% { transform: translateY(0) scale(1); opacity: 0.7; } 100% { transform: translateY(-30px) scale(1.1); opacity: 1; background-color: #34d399; } }
+
+#mecha-layar-transisi { background: #ffffff; }
+#mecha-layar-transisi .teks-loading { font-family: 'Orbitron', sans-serif; color: #0ea5e9; font-size: 18px; letter-spacing: 4px; display: block; }
+#crosshair-target { position: fixed; pointer-events: none; opacity: 0; z-index: 9999; background: linear-gradient(to right, #0ea5e9 3px, transparent 3px) 0 0, linear-gradient(to right, #0ea5e9 3px, transparent 3px) 0 100%, linear-gradient(to left, #0ea5e9 3px, transparent 3px) 100% 0, linear-gradient(to left, #0ea5e9 3px, transparent 3px) 100% 100%, linear-gradient(to bottom, #0ea5e9 3px, transparent 3px) 0 0, linear-gradient(to bottom, #0ea5e9 3px, transparent 3px) 100% 0, linear-gradient(to top, #0ea5e9 3px, transparent 3px) 0 100%, linear-gradient(to top, #0ea5e9 3px, transparent 3px) 100% 100%; background-repeat: no-repeat; background-size: 15px 15px; transition: all 0.1s ease-out; }
+#crosshair-target.mengunci { animation: lock-on-anim 0.8s forwards; }
+.garis-scan { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background-color: rgba(14, 165, 233, 0.6); transform: translateY(-50%); display: none; }
+#crosshair-target.mengunci .garis-scan { display: block; animation: scan-naik-turun 0.4s infinite alternate linear; }
+@keyframes lock-on-anim { 0% { transform: scale(1.5); opacity: 0; } 30% { transform: scale(0.95); opacity: 1; } 50% { transform: scale(1.05); opacity: 1; } 70% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 1; box-shadow: inset 0 0 15px rgba(14, 165, 233, 0.2); } }
+@keyframes scan-naik-turun { 0% { top: 10%; } 100% { top: 90%; } }
+
+/* =========================================
+   SISTEM LACI (DRAWERS) - FINAL & FIX
+   ========================================= */
+.drawer {
+    position: fixed !important; 
+    top: 0 !important; 
+    height: 100% !important; 
+    width: 360px; 
+    max-width: 88%;
+    background: #ffffff !important; /* Paksa warna solid */
+    z-index: 100 !important; 
+    display: flex; 
+    flex-direction: column;
+    transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1) !important;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.15);
+    pointer-events: auto !important; /* Paksa menerima sentuhan */
+}
+
+
+/* Posisi Awal Sembunyi */
+#notifDrawer { right: 0; transform: translate3d(100%, 0, 0) !important; border-left: 2px solid #e2e8f0; }
+#chatDrawer { left: 0; transform: translate3d(-100%, 0, 0) !important; border-right: 2px solid #e2e8f0; }
+
+/* Posisi Terbuka (KASTA TERTINGGI DENGAN ID) */
+#notifDrawer.open, #chatDrawer.open { transform: translate3d(0, 0, 0) !important; }
+
+/* Lapisan Kaca Gelap (Overlay) */
+#drawerOverlay {
+    position: fixed !important; 
+    inset: 0 !important; 
+    background: rgba(15, 23, 42, 0.5); 
+    backdrop-filter: blur(4px);
+    z-index: 90 !important; 
+    opacity: 0; 
+    pointer-events: none; 
+    transition: opacity 0.4s ease;
+}
+#drawerOverlay.visible { 
+    opacity: 1 !important; 
+    pointer-events: auto !important; 
+}
+
+
+/* Memperbaiki Header Laci agar rapi */
+.drawer .p-5 { padding: 1.25rem; }
+.drawer .flex-1 { flex: 1 1 0%; }
+.drawer .overflow-y-auto { overflow-y: auto; }
