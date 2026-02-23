@@ -1,0 +1,36 @@
+/* =========================================
+   FONT: JETBRAINS MONO
+   Pasangan Teks untuk Tema White Mecha
+   ========================================= */
+
+/* JetBrains Mono - Light (Kurus / Tipis) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 300;
+  src: url('../webfonts/JetBrainsMono-Light.woff2') format('woff2');
+}
+
+/* JetBrains Mono - Regular (Standar / Normal) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../webfonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+/* JetBrains Mono - Medium (Agak Tebal) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  src: url('../webfonts/JetBrainsMono-Medium.woff2') format('woff2');
+}
+
+/* JetBrains Mono - Bold (Tebal / Judul) */
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../webfonts/JetBrainsMono-Bold.woff2') format('woff2');
+}

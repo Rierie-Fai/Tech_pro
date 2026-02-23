@@ -1,0 +1,26 @@
+/* =========================================
+   HEXINDO BACKGROUND PARTICLE SYSTEM
+   ========================================= */
+
+/* Lapisan Paling Belakang (Kertas Kosong) */
+#bg-layer {
+    position: fixed; 
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; /* Mengalah dan diam di paling belakang */
+    pointer-events: none; /* Sentuhan kursor/jari tembus ke tombol di depannya */
+}
+
+/* Kanvas Partikel */
+#mecha-canvas, #bubble-canvas {
+    width: 100%; 
+    height: 100%;
+    display: block;
+}
+
+/* Pengaman Konten Utama (Wajib dipasang di kontainer halaman lain) */
+/* Ini memastikan form login/setting melayang di atas partikel */
+.lapis-depan {
+    position: relative;
+    z-index: 10;
+}

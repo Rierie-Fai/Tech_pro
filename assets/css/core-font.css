@@ -1,0 +1,77 @@
+/* ============================================================
+   CORE-FONT.CSS (Final Structural Pairing)
+   Hexindo PWA - Manekin System
+   ============================================================ */
+
+/* 1. IMPORT SUMBER FONT LOKAL */
+@import url('rajdhani.css');       /* Pasangan 1 */
+@import url('jetbrains-mono.css');
+@import url('quicksand.css');      /* Pasangan 2 */
+@import url('nunito.css');
+@import url('teko.css');           /* Pasangan 3 */
+@import url('roboto-mono.css');
+@import url('orbitron.css');       /* Pasangan 4 */
+@import url('space-mono.css');
+@import url('fredoka.css');        /* Pasangan 5 */
+@import url('varela-round.css');
+
+/* 2. DEFINISI PASANGAN FONT BERDASARKAN ATRIBUT [data-font] */
+
+/* Default / Fallback */
+:root {
+    --font-judul: 'Quicksand', sans-serif;
+    --font-teks: 'Nunito', sans-serif;
+}
+
+/* 1. TECH (Mecha Default) */
+[data-font="tech"] {
+    --font-judul: 'Rajdhani', sans-serif;
+    --font-teks: 'JetBrains Mono', monospace;
+}
+
+/* 2. JELLY (Mint Default) */
+[data-font="jelly"] {
+    --font-judul: 'Quicksand', sans-serif;
+    --font-teks: 'Nunito', sans-serif;
+}
+
+/* 3. HEAVY (Alt.1 - Industrial Strength) */
+[data-font="heavy"] {
+    --font-judul: 'Teko', sans-serif;
+    --font-teks: 'Roboto Mono', monospace;
+}
+
+/* 4. SCIFI (Alt.2 - Galactic Terminal) */
+[data-font="scifi"] {
+    --font-judul: 'Orbitron', sans-serif;
+    --font-teks: 'Space Mono', monospace;
+}
+
+/* 5. BOUNCY (Alt.3 - Soft & Friendly) */
+[data-font="bouncy"] {
+    --font-judul: 'Fredoka', sans-serif;
+    --font-teks: 'Varela Round', sans-serif;
+}
+
+/* 3. PENERAPAN GLOBAL PADA KERANGKA (MANEKIN) */
+body {
+    font-family: var(--font-teks);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Judul, Nama Portal, dan Tombol Utama */
+h1, h2, h3, .judul-portal, .btn-utama, .label-header {
+    font-family: var(--font-judul);
+    text-transform: uppercase; /* Memberikan kesan tegas pada judul */
+}
+
+/* Elemen Input dan Form */
+input, textarea, select, .msg-status {
+    font-family: var(--font-teks);
+}
+
+/* Kode atau Data Teknis khusus */
+.data-monitor, .code-view {
+    font-family: 'JetBrains Mono', monospace; /* Tetap konsisten untuk data angka */
+}

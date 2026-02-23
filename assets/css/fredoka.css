@@ -1,0 +1,26 @@
+/* fredoka-regular - latin */
+@font-face {
+  font-display: swap; 
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../webfonts/fredoka-v17-latin-regular.woff2') format('woff2'); 
+}
+
+/* fredoka-600 - latin */
+@font-face {
+  font-display: swap; 
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 600;
+  src: url('../wenfonts/fredoka-v17-latin-600.woff2') format('woff2'); 
+}
+
+/* fredoka-700 - latin */
+@font-face {
+  font-display: swap; 
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../webfonts/fredoka-v17-latin-700.woff2') format('woff2'); 
+}

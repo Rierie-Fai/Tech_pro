@@ -1,0 +1,93 @@
+/* =========================================
+   CETAK BIRU ORISINAL: SPLASH SCREEN 
+   ========================================= */
+body { 
+    margin: 0; padding: 0; overflow: hidden; 
+    display: flex; flex-direction: column; height: 100vh; 
+    transition: background-color 0.6s ease;
+}
+
+#splash-container {
+    flex: 1; display: flex; flex-direction: column; 
+    justify-content: center; align-items: center;
+    transition: all 0.5s ease; width: 100%; height: 100%;
+}
+
+.logo-text { font-size: 42px; margin-bottom: 50px; }
+.loader-box { position: relative; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; margin-bottom: 30px; }
+.status-text { font-size: 14px; letter-spacing: 2px; }
+
+/* =========================================
+   BAJU 1: WHITE MECHA (Clean Sci-Fi)
+   ========================================= */
+body.tema-mecha { background-color: #ffffff; color: #0f172a; }
+
+.tema-mecha .logo-text { 
+    font-family: var(--font-judul, 'Orbitron', sans-serif); 
+    color: #1e293b; font-weight: 900; letter-spacing: 8px;
+}
+.tema-mecha .status-text { 
+    font-family: var(--font-teks, 'Orbitron', sans-serif); 
+    color: #0ea5e9; text-transform: uppercase; 
+    animation: pulse-mecha-text 2s infinite; 
+}
+
+/* Loader White Mecha: Segi Empat Presisi Berputar */
+.tema-mecha .spinner {
+    width: 50px; height: 50px; 
+    border: 2px solid #e2e8f0; 
+    border-top: 2px solid #0ea5e9; 
+    border-right: 2px solid #0ea5e9;
+    border-radius: 0px; /* Sangat Kaku / Kotak */
+    animation: spin-mecha-sharp 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; 
+}
+
+/* Kotak kecil di tengah sebagai inti prosesor */
+.tema-mecha .spinner::after {
+    content: ''; position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
+    background-color: #0ea5e9;
+    animation: pulse-core 1.5s infinite alternate;
+}
+
+@keyframes spin-mecha-sharp { 
+    0% { transform: rotate(0deg); } 
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(180deg); }
+    75% { transform: rotate(270deg); }
+    100% { transform: rotate(360deg); } 
+}
+@keyframes pulse-core { 0% { opacity: 0.2; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+@keyframes pulse-mecha-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+
+/* =========================================
+   BAJU 2: MINT JELLY (Organisme Mengalir)
+   ========================================= */
+body.tema-mint { background-color: #ecfdf5; color: #064e3b; }
+
+.tema-mint .logo-text { 
+    font-family: var(--font-judul, 'Quicksand', sans-serif); 
+    color: #10b981; font-weight: 900; letter-spacing: 3px;
+}
+.tema-mint .status-text { 
+    font-family: var(--font-teks, 'Quicksand', sans-serif); 
+    color: #047857; font-weight: 700; 
+}
+
+/* Loader Mint: Tetesan jelly yang berubah bentuk (Gooey Blob) */
+.tema-mint .spinner {
+    width: 60px; height: 60px; background-color: #34d399;
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+    animation: morph-jelly 3s ease-in-out infinite alternate;
+    box-shadow: 0 15px 25px rgba(16, 185, 129, 0.3), inset 0 8px 15px rgba(255,255,255,0.8);
+    border: none; 
+}
+.tema-mint .spinner::after { display: none; }
+
+@keyframes morph-jelly {
+    0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: scale(1) translateY(0) rotate(0deg); }
+    100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: scale(1.15) translateY(-15px) rotate(20deg); }
+}
+
+/* UTILITY UNTUK PINDAH HALAMAN */
+.fade-out { opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }
