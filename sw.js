@@ -1,91 +1,190 @@
-// PERUBAHAN 1: Naikkan versi cache agar browser mendeteksi update (v3 -> v4)
-const CACHE_NAME = 'hexindo-fleet-mecha-v4.5.1.1';
+const CACHE_NAME = 'hexindo-cache-v1.0';
 
-const ASSETS_TO_CACHE = [
-    // --- FILE UTAMA ---
-    './',               // Root
-    './index.html',     // <--- PERUBAHAN 2: File Redirector Baru (Wajib didaftarkan)
-    
-    // --- HALAMAN APLIKASI (Pastikan path ini sesuai struktur folder Anda) ---
-    './login/login-mecha.html',
-    './index/index-mecha.html',  // Halaman Dashboard Utama
-    './admin/admin-mecha.html',
-    './activity/dar-mecha.html',
-    './uc/ppu-mecha.html',
-    './hyd/pump-tuning-mecha.html',
-    './settings/settings-mecha.html',
-    './tool/toolbox-mecha.html',
-    
-    // --- ICON ---
-    './icon-192.png',
-    './icon-512.png',
+// Daftarkan semua file yang ada di folder Anda berdasarkan struktur direktori
+const urlsToCache = [
+  './',
+  './manifest.json',
+  
+  // HTML ROOT
+  './activity.html',
+  './admin.html',
+  './dashboard.html',
+  './index.html',
+  './login.html',
+  './pump-tuning.html',
+  './setting.html',
+  './toolbox.html',
+  './troubleshoot.html',
+  './uc.html',
 
-    // --- CSS (Pastikan ada di folder css di Root) ---
-    './css/all.min.css',
-    './css/jetbrain.css',
-    './css/rajdhani.css',
+  // HTML/CSS
+  './html/css/activity.css',
+  './html/css/admin.css',
+  './html/css/dashboard-theme.css',
+  './html/css/login-theme.css',
+  './html/css/pump.css',
+  './html/css/toolbox.css',
+  './html/css/uc.css',
 
-    // --- JS (Pastikan ada di folder js di Root) ---
-    './js/chart.js',
-    './js/jspdf.plugin.autotable.min.js',
-    './js/jspdf.umd.min.js',
-    './js/supabase-js@2.js',
-    './js/tailwindcss.js',
-    './js/xlsx.full.min.js',
+  // HTML/JS
+  './html/js/activity.js',
+  './html/js/admin.js',
+  './html/js/auth.js',
+  './html/js/boot.js',
+  './html/js/dashboard.js',
+  './html/js/pump.js',
+  './html/js/toolbox.js',
+  './html/js/uc.js',
 
-    // --- FONTS ---
-    './webfonts/fa-brands-400.woff2',
-    './webfonts/fa-regular-400.woff2',
-    './webfonts/fa-solid-900.woff2',
-    './webfonts/fa-v4compatibility.woff2',
-    './webfonts/JetBrainsMono-Bold.ttf',
-    './webfonts/JetBrainsMono-Regular.ttf',
-    './webfonts/Rajdhani-Bold.ttf',
-    './webfonts/Rajdhani-Medium.ttf', 
-    './webfonts/Rajdhani-Regular.ttf'
+  // ASSETS/CSS
+  './assets/css/all.min.css',
+  './assets/css/core-font.css',
+  './assets/css/fredoka.css',
+  './assets/css/jetbrain.css',
+  './assets/css/nunito.css',
+  './assets/css/orbitron.css',
+  './assets/css/quicksand.css',
+  './assets/css/rajdhani.css',
+  './assets/css/roboto-mono.css',
+  './assets/css/space-mono.css',
+  './assets/css/splash-theme.css',
+  './assets/css/teko.css',
+  './assets/css/theme-engine.css',
+  './assets/css/varela-round.css',
+
+  // ASSETS/JS
+  './assets/js/chart.js',
+  './assets/js/jspdf.autotable.min.js',
+  './assets/js/jspdf.umd.min.js',
+  './assets/js/splash.js',
+  './assets/js/supabase.js',
+  './assets/js/tailwindcss.js',
+  './assets/js/theme-engine.js',
+  './assets/js/xlsx.full.min.js',
+  './assets/js/pdf.min.js', 
+  './assets/js/offline-manager.js',
+
+  // ASSETS/WEBFONTS (AWAS TYPO)
+  './assets/webfonts/fa-brands-400.woff2',
+  './assets/webfonts/fa-regular-400.woff2',
+  './assets/webfonts/fa-solid-900.woff2',
+  './assets/webfonts/fa-v4compatibility.woff2',
+  
+  './assets/webfonts/fredoka-v17-latin-600.woff2',
+  './assets/webfonts/fredoka-v17-latin-700.woff2',
+  './assets/webfonts/fredoka-v17-latin-regular.woff2',
+  
+  './assets/webfonts/JetBrainsMono-Bold.woff2',
+  './assets/webfonts/JetBrainsMono-Light.woff2',
+  './assets/webfonts/JetBrainsMono-Medium.woff2',
+  './assets/webfonts/JetBrainsMono-Regular.woff2',
+  
+  './assets/webfonts/nunito-v32-latin-300.woff2',
+  './assets/webfonts/nunito-v32-latin-500.woff2',
+  './assets/webfonts/nunito-v32-latin-600.woff2',
+  './assets/webfonts/nunito-v32-latin-700.woff2',
+  './assets/webfonts/nunito-v32-latin-regular.woff2',
+  
+  './assets/webfonts/orbitron-v35-latin-500.woff2',
+  './assets/webfonts/orbitron-v35-latin-700.woff2',
+  './assets/webfonts/orbitron-v35-latin-900.woff2',
+  './assets/webfonts/orbitron-v35-latin-regular.woff2',
+  
+  './assets/webfonts/quicksand-v37-latin-500.woff2',
+  './assets/webfonts/quicksand-v37-latin-700.woff2',
+  './assets/webfonts/quicksand-v37-latin-regular.woff2',
+  
+  './assets/webfonts/Rajdhani-Light.woff2',
+  './assets/webfonts/Rajdhani-Medium.woff2',
+  './assets/webfonts/Rajdhani-Regular.woff2',
+  './assets/webfonts/Rajdhani-Variable.woff2',
+  
+  './assets/webfonts/roboto-mono-v31-latin-300.woff2',
+  './assets/webfonts/roboto-mono-v31-latin-600.woff2',
+  './assets/webfonts/roboto-mono-v31-latin-700.woff2',
+  './assets/webfonts/roboto-mono-v31-latin-regular.woff2',
+  
+  './assets/webfonts/space-mono-v17-latin-700.woff2',
+  './assets/webfonts/space-mono-v17-latin-700italic.woff2',
+  './assets/webfonts/space-mono-v17-latin-italic.woff2',
+  './assets/webfonts/space-mono-v17-latin-regular.woff2',
+  
+  './assets/webfonts/teko-v23-latin-600.woff2',
+  './assets/webfonts/teko-v23-latin-700.woff2',
+  './assets/webfonts/teko-v23-latin-regular.woff2',
+  
+  './assets/webfonts/varela-round-v21-latin-regular.woff2'
 ];
 
-// --- INSTALL EVENT ---
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[Service Worker] Caching App Assets (v4)...');
-            return cache.addAll(ASSETS_TO_CACHE).catch(err => {
-                console.error('[SW Error] Gagal cache file. Cek path:', err);
-            });
-        })
-    );
-    self.skipWaiting();
+// --- 1. INSTALL SERVICE WORKER ---
+self.addEventListener('install', event => {
+  self.skipWaiting(); // Langsung aktif tanpa nunggu tab ditutup
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
-// --- ACTIVATE EVENT (Pembersih Cache Lama) ---
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((keyList) => {
-            return Promise.all(
-                keyList.map((key) => {
-                    // Hapus semua cache yang BUKAN v4
-                    if (key !== CACHE_NAME) {
-                        console.log('[Service Worker] Menghapus Cache Lama:', key);
-                        return caches.delete(key);
-                    }
-                })
-            );
+// --- 2. ACTIVATE (BERSIHKAN CACHE LAMA) ---
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Menghapus cache lama:', cacheName);
+            return caches.delete(cacheName);
+          }
         })
-    );
-    self.clients.claim();
+      );
+    })
+  );
+  self.clients.claim(); // Ambil alih kontrol halaman saat ini juga
 });
 
-// --- FETCH EVENT ---
-self.addEventListener('fetch', (event) => {
-    // Jangan cache request database Supabase
-    if (event.request.url.includes('supabase.co')) {
-        return; 
-    }
+// --- 3. FETCH (AMBIL DATA) ---
+self.addEventListener('fetch', event => {
+  
+  // PENGECUALIAN MUTLAK: Biarkan koneksi Supabase & API eksternal lolos ke internet (JANGAN DI-CACHE!)
+  if (event.request.url.includes('supabase.co') || 
+      event.request.url.includes('unpkg.com') || 
+      event.request.url.includes('cloudflare')) {
+    return;
+  }
 
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
-        })
+  // STRATEGI: Cache First, fallback ke Network (Sangat Cepat & Mendukung Offline)
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Jika ada di cache (memori HP), langsung berikan!
+        if (response) {
+          return response;
+        }
+
+        // Jika tidak ada di cache, terpaksa download dari internet
+        return fetch(event.request).then(
+          function(response) {
+            // Cek apakah response valid (agar tidak menyimpan error 404 ke memori)
+            if(!response || response.status !== 200 || response.type !== 'basic' || event.request.method !== 'GET') {
+              return response;
+            }
+
+            // Simpan file baru ke dalam cache diam-diam
+            var responseToCache = response.clone();
+            caches.open(CACHE_NAME)
+              .then(function(cache) {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        ).catch(() => {
+             // Fallback murni offline jika gagal fetch (opsional)
+             console.log("Koneksi terputus total. File tidak ada di cache.");
+        });
+      })
     );
 });

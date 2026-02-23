@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>System Settings | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+    <link rel="preload" href="./assets/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+    
+    <script src="./assets/js/splash.js"></script>
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js"></script>
+    
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/all.min.css">
+
+    <style>
+        /* =========================================
+           DASAR & SCALER PRESISI
+           ========================================= */
+        html, body { margin: 0; padding: 0; }
+        body { 
+            min-height: 100vh; overflow-x: hidden; display: block; 
+            -webkit-tap-highlight-color: transparent; transition: background-color 0.5s ease;
+        }
+
+        #bg-layer { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+        #scaler-context { 
+            width: 720px; margin: 0 auto; transform-origin: top center; 
+            transition: transform 0.2s, opacity 0.5s; padding: 2.5rem; position: relative; z-index: 10; 
+        }
+        .opacity-0 { opacity: 0 !important; visibility: hidden !important; }
+
+
+        /* =========================================
+           MESIN TEMA DINAMIS (LIVE PREVIEW)
+           ========================================= */
+        
+        /* 1. TEMA MECHA (Kaku, Putih/Amber) */
+        .tema-mecha { background: #f8fafc; }
+        .tema-mecha .panel-utama { background: #ffffff; border: 2px solid #e2e8f0; border-radius: 4px; }
+        .tema-mecha .header-panel { border-bottom: 8px solid #f59e0b; }
+        .tema-mecha .warna-aksen { color: #f59e0b; }
+        .tema-mecha .warna-teks { color: #1e293b; }
+        .tema-mecha .btn-utama { background: white; border: 2px solid #f59e0b; color: #f59e0b; border-radius: 4px; }
+        .tema-mecha .btn-utama:hover { background: #f59e0b; color: white; }
+        .tema-mecha .input-utama { border: 2px solid #e2e8f0; border-radius: 4px; background: #f8fafc; }
+        .tema-mecha .input-utama:focus { border-color: #f59e0b; }
+        .tema-mecha .badge-admin { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; border-radius: 4px; }
+
+        /* 2. TEMA MINT (Bulat, Kaca/Emerald) */
+        .tema-mint { background: #f0fdf4; }
+        .tema-mint .panel-utama { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); border: 2px solid #ffffff; border-radius: 40px; box-shadow: 0 15px 40px rgba(16,185,129,0.05); }
+        .tema-mint .header-panel { border-bottom: 8px solid #10b981; }
+        .tema-mint .warna-aksen { color: #10b981; }
+        .tema-mint .warna-teks { color: #064e3b; }
+        .tema-mint .btn-utama { background: white; border: 2px solid #10b981; color: #10b981; border-radius: 20px; box-shadow: 0 5px 15px rgba(16,185,129,0.1); }
+        .tema-mint .btn-utama:hover { background: #10b981; color: white; transform: translateY(-2px); }
+        .tema-mint .input-utama { border: 2px solid #ffffff; border-radius: 20px; background: rgba(255,255,255,0.5); box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        .tema-mint .input-utama:focus { border-color: #10b981; background: white; }
+        .tema-mint .badge-admin { background: #ecfdf5; color: #064e3b; border: 1px solid #10b981; border-radius: 15px; }
+
+        /* =========================================
+           KARTU PEMILIHAN (ACTIVE STATE)
+           ========================================= */
+        .opsi-kartu { border: 2px solid transparent; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        
+        .tema-mecha .opsi-kartu { background: #f8fafc; border-color: #e2e8f0; border-radius: 4px; }
+        .tema-mecha .opsi-kartu.aktif { border-color: #f59e0b; background: #fffbeb; }
+        
+        .tema-mint .opsi-kartu { background: rgba(255,255,255,0.5); border-color: #ffffff; border-radius: 20px; }
+        .tema-mint .opsi-kartu.aktif { border-color: #10b981; background: #ecfdf5; box-shadow: 0 10px 20px rgba(16,185,129,0.1); }
+
+        /* UTILITIES */
+        .panel-utama { padding: 2rem; margin-bottom: 2rem; transition: all 0.4s ease; }
+        .input-utama { width: 100%; padding: 1rem; font-weight: bold; outline: none; transition: 0.3s; }
+        .btn-utama { width: 100%; padding: 1rem; font-weight: 900; text-transform: uppercase; transition: all 0.3s; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        
+        #splash-screen { position: fixed; inset: 0; background: #ffffff; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; transition: opacity 0.5s; }
+        .loader-spin { width: 60px; height: 60px; border: 6px solid #e2e8f0; border-top: 6px solid #10b981; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+    </style>
+</head>
+
+<body id="body-tema">
+
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-spin"></div>
+        <p class="text-xs font-mono font-bold tracking-widest mt-4">LOADING CONFIG...</p>
+    </div>
+
+    <div id="scaler-context" class="opacity-0">
+        <header class="panel-utama header-panel flex justify-between items-center">
+            <div class="flex items-center gap-6">
+                <a href="dashboard.html" class="h-14 w-14 flex items-center justify-center text-xl shadow-sm border opsi-kartu warna-teks hover:scale-105">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-4xl font-black leading-none tracking-tight uppercase italic warna-teks" style="font-family: var(--font-judul);">
+                        NIK <span class="warna-aksen">MANAGER</span>
+                    </h1>
+                    <div class="flex items-center gap-3 mt-2">
+                        <div class="w-2 h-2 rounded-full animate-pulse warna-aksen bg-current"></div>
+                        <p class="text-xs font-bold tracking-[0.2em] uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">SYSTEM PREFERENCES</p>
+                    </div>
+                </div>
+            </div>
+            <div id="roleBadge" class="px-4 py-2 font-bold uppercase tracking-wide badge-admin" style="font-family: var(--font-teks);">
+                <i class="fas fa-spinner fa-spin mr-2"></i> VERIFYING...
+            </div>
+        </header>
+
+        <section class="panel-utama">
+            <div class="flex items-center gap-5 mb-6 pb-4 border-b border-black/5">
+                <div class="w-12 h-12 flex items-center justify-center text-xl opsi-kartu warna-aksen">
+                    <i class="fas fa-palette"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-wide warna-teks" style="font-family: var(--font-judul);">Visual Theme</h2>
+                    <p class="text-xs font-bold uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">Select Dashboard Layout</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-5 mb-6">
+                <div onclick="previewTheme('mecha')" id="card-theme-mecha" class="opsi-kartu p-5 flex flex-col items-center text-center">
+                    <i class="fas fa-robot text-3xl mb-2" style="color: #f59e0b;"></i>
+                    <h3 class="text-sm font-black uppercase warna-teks" style="font-family: var(--font-judul);">WHITE MECHA</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks">Rigid & Technical</p>
+                </div>
+                <div onclick="previewTheme('mint')" id="card-theme-mint" class="opsi-kartu p-5 flex flex-col items-center text-center">
+                    <i class="fas fa-leaf text-3xl mb-2" style="color: #10b981;"></i>
+                    <h3 class="text-sm font-black uppercase warna-teks" style="font-family: var(--font-judul);">MINT JELLY</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks">Soft & Organic</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel-utama">
+            <div class="flex items-center gap-5 mb-6 pb-4 border-b border-black/5">
+                <div class="w-12 h-12 flex items-center justify-center text-xl opsi-kartu warna-aksen">
+                    <i class="fas fa-font"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-wide warna-teks" style="font-family: var(--font-judul);">Typography</h2>
+                    <p class="text-xs font-bold uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">Select 5 Font Pairings</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div onclick="previewFont('tech')" id="card-font-tech" class="opsi-kartu p-4 flex flex-col items-center text-center">
+                    <h3 class="text-2xl font-black uppercase warna-teks" style="font-family: 'Rajdhani', sans-serif;">TECH</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks mt-1" style="font-family: 'JetBrains Mono', monospace;">Rajdhani + JetBrains</p>
+                </div>
+                
+                <div onclick="previewFont('jelly')" id="card-font-jelly" class="opsi-kartu p-4 flex flex-col items-center text-center">
+                    <h3 class="text-2xl font-black uppercase warna-teks" style="font-family: 'Quicksand', sans-serif;">JELLY</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks mt-1" style="font-family: 'Nunito', sans-serif;">Quicksand + Nunito</p>
+                </div>
+
+                <div onclick="previewFont('heavy')" id="card-font-heavy" class="opsi-kartu p-4 flex flex-col items-center text-center">
+                    <h3 class="text-3xl font-black uppercase warna-teks leading-none mt-1" style="font-family: 'Teko', sans-serif;">HEAVY</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks mt-1" style="font-family: 'Roboto Mono', monospace;">Teko + Roboto Mono</p>
+                </div>
+
+                <div onclick="previewFont('scifi')" id="card-font-scifi" class="opsi-kartu p-4 flex flex-col items-center text-center">
+                    <h3 class="text-xl font-black uppercase warna-teks" style="font-family: 'Orbitron', sans-serif;">SCI-FI</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks mt-1" style="font-family: 'Space Mono', monospace;">Orbitron + Space Mono</p>
+                </div>
+
+                <div onclick="previewFont('bouncy')" id="card-font-bouncy" class="opsi-kartu p-4 flex flex-col items-center text-center col-span-2">
+                    <h3 class="text-2xl font-black uppercase warna-teks" style="font-family: 'Fredoka', sans-serif;">BOUNCY</h3>
+                    <p class="text-[10px] font-bold uppercase opacity-50 warna-teks mt-1" style="font-family: 'Varela Round', sans-serif;">Fredoka + Varela Round</p>
+                </div>
+            </div>
+
+            <button onclick="applySettings()" class="btn-utama" style="font-family: var(--font-judul);">
+                <i class="fas fa-sync-alt"></i> APPLY & REBOOT
+            </button>
+        </section>
+
+        <section class="panel-utama">
+            <div class="flex items-center gap-5 mb-6 pb-4 border-b border-black/5">
+                <div class="w-12 h-12 flex items-center justify-center text-xl opsi-kartu warna-aksen">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-wide warna-teks" style="font-family: var(--font-judul);">Security</h2>
+                    <p class="text-xs font-bold uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">Change Password</p>
+                </div>
+            </div>
+
+            <form id="changePassForm" class="space-y-4">
+                <input type="password" id="newPass" class="input-utama warna-teks" style="font-family: var(--font-teks);" placeholder="NEW PASSWORD" required>
+                <input type="password" id="confirmPass" class="input-utama warna-teks mb-4" style="font-family: var(--font-teks);" placeholder="CONFIRM PASSWORD" required>
+                <button type="submit" class="btn-utama" style="font-family: var(--font-judul);">
+                    <i class="fas fa-lock"></i> UPDATE KEY
+                </button>
+            </form>
+        </section>
+        
+        <section id="adminPanel" class="panel-utama hidden">
+            <div class="flex items-center gap-5 mb-6 pb-4 border-b border-black/5">
+                <div class="w-12 h-12 flex items-center justify-center text-xl opsi-kartu" style="color: #ef4444;">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black uppercase tracking-wide warna-teks" style="font-family: var(--font-judul);">Deploy Tech</h2>
+                    <p class="text-xs font-bold uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">Authorize NIK</p>
+                </div>
+            </div>
+            
+            <form id="addUserForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="regNik" class="input-utama warna-teks uppercase" style="font-family: var(--font-teks);" placeholder="NIK" required>
+                    <input type="text" id="regName" class="input-utama warna-teks uppercase" style="font-family: var(--font-teks);" placeholder="FULL NAME" required>
+                </div>
+                <button type="submit" id="btnDeploy" class="btn-utama" style="border-color: #ef4444; color: #ef4444; font-family: var(--font-judul);">
+                    <i class="fas fa-rocket"></i> AUTHORIZE
+                </button>
+            </form>
+        </section>
+
+        <section id="userListPanel" class="panel-utama hidden overflow-hidden p-0">
+            <div class="p-4 border-b border-black/5 bg-black/5 flex justify-between items-center">
+                <h2 class="text-sm font-black uppercase tracking-widest warna-teks" style="font-family: var(--font-judul);">NIK DATABASE</h2>
+                <span class="text-[10px] font-bold opacity-50 uppercase bg-white/50 px-2 py-1 rounded">Admin Privileges</span>
+            </div>
+            <div class="overflow-x-auto max-h-[400px]">
+                <table class="w-full text-left">
+                    <thead class="bg-black/5 text-[10px] uppercase font-bold tracking-wider opacity-70 warna-teks" style="font-family: var(--font-teks);">
+                        <tr>
+                            <th class="p-4">Identitas (NIK)</th>
+                            <th class="p-4">Nama Personel</th>
+                            <th class="p-4">Otoritas</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-center">Tindakan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody" style="font-family: var(--font-teks);"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="text-center py-8">
+            <button onclick="logout()" class="text-red-500 text-xs font-black uppercase tracking-[0.2em] hover:text-red-400 mb-4 transition-colors" style="font-family: var(--font-teks);">
+                <i class="fas fa-power-off mr-1"></i> TERMINATE SESSION
+            </button>
+        </footer>
+        
+    </div>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const CONFIG = { 
+            SB_URL: "https://corpgiuxyhfxdnqwwmlv.supabase.co", 
+            SB_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E" 
+        };
+        const sb = supabase.createClient(CONFIG.SB_URL, CONFIG.SB_KEY);
+        const currentNik = localStorage.getItem('userNIK');
+        
+        // --- LOGIKA LIVE PREVIEW (TEMA & FONT) ---
+        let selectedTheme = localStorage.getItem('appTheme') || 'mint';
+        let selectedFont = localStorage.getItem('appFont') || 'jelly';
+        const fontList = ['tech', 'jelly', 'heavy', 'scifi', 'bouncy'];
+
+        function previewTheme(theme) { 
+            selectedTheme = theme; 
+            document.body.className = `tema-${theme}`;
+            document.getElementById('card-theme-mecha').classList.remove('aktif');
+            document.getElementById('card-theme-mint').classList.remove('aktif');
+            document.getElementById(`card-theme-${theme}`).classList.add('aktif'); 
+        }
+
+        function previewFont(font) {
+            selectedFont = font;
+            document.body.setAttribute('data-font', font);
+            fontList.forEach(f => {
+                const el = document.getElementById(`card-font-${f}`);
+                if (el) el.classList.remove('aktif');
+            });
+            document.getElementById(`card-font-${font}`).classList.add('aktif');
+        }
+
+        function applySettings() {
+            localStorage.setItem('appTheme', selectedTheme);
+            localStorage.setItem('appFont', selectedFont);
+            
+            const splash = document.getElementById('splash-screen');
+            splash.style.display = 'flex';
+            setTimeout(() => splash.style.opacity = '1', 10);
+            
+            setTimeout(() => window.location.replace('index.html'), 1000);
+        }
+
+        // --- INISIALISASI HALAMAN (VERSI KEBAL GAGAL) ---
+        async function initPage() {
+            previewTheme(selectedTheme);
+            previewFont(selectedFont);
+            
+            // 1. Cek Sesi Lokal
+            if (!currentNik) { window.location.replace("login.html"); return; }
+            
+            const badge = document.getElementById('roleBadge');
+            
+            try {
+                // 2. Tarik Data Role dari Database
+                const { data: user, error } = await sb.from('users').select('role').eq('nik', currentNik).single();
+                
+                if (error || !user) {
+                    // Jika NIK tidak ditemukan di database
+                    badge.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i> UNAUTHORIZED`;
+                } else {
+                    // Jika Sukses Verifikasi
+                    if(user.role === 'admin') {
+                        badge.innerHTML = `<i class="fas fa-user-shield mr-2"></i> ADMIN ACCESS`;
+                        document.getElementById('adminPanel').classList.remove('hidden');
+                        document.getElementById('userListPanel').classList.remove('hidden');
+                        await fetchUsers(); // Panggil data user lain
+                    } else {
+                        badge.innerHTML = `<i class="fas fa-tools mr-2"></i> TECH ACCESS`;
+                    }
+                }
+            } catch (err) { 
+                // Jika Internet terputus atau Supabase Down
+                console.error("Gagal Verifikasi Database:", err); 
+                badge.innerHTML = `<i class="fas fa-wifi mr-2"></i> OFFLINE MODE`;
+            }
+            
+            runAutoScale();
+            
+            // 3. FUNGSI PEMBUKA TIRAI (DENGAN PENGAMAN)
+            let tiraiTerbuka = false;
+            const bukaTirai = () => {
+                if(tiraiTerbuka) return; // Mencegah tirai dibuka 2 kali
+                tiraiTerbuka = true;
+                
+                const splash = document.getElementById('splash-screen');
+                const scaler = document.getElementById('scaler-context');
+                
+                if(splash) {
+                    splash.style.opacity = '0'; 
+                    setTimeout(() => splash.style.display = 'none', 500); 
+                }
+                if(scaler) scaler.classList.remove('opacity-0');
+            };
+
+            // Tunggu font selesai, lalu beri jeda 300ms agar CSS rapi, baru buka tirai
+            document.fonts.ready.then(() => setTimeout(bukaTirai, 300)).catch(bukaTirai);
+            
+            // PENGAMAN MUTLAK: Jika koneksi nyangkut, paksa buka tirai dalam 2 detik!
+            setTimeout(bukaTirai, 2000);
+        }
+
+
+
+        // --- MANAJEMEN DATABASE & ADMIN ---
+        async function fetchUsers() {
+            const { data, error } = await sb.from('users').select('*').order('full_name');
+            if (error) { console.error("Gagal memuat database:", error); return; }
+
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = (data || []).map(u => {
+                const roleColor = u.role === 'admin' 
+                    ? 'bg-amber-100 text-amber-700 border border-amber-300' 
+                    : 'bg-emerald-100 text-emerald-700 border border-emerald-300';
+                
+                const isSuspend = u.status === 'suspend';
+                const statusColor = isSuspend
+                    ? 'bg-red-100 text-red-700 border border-red-300'
+                    : 'bg-blue-100 text-blue-700 border border-blue-300';
+                const statusIcon = isSuspend ? 'fa-ban' : 'fa-check-circle';
+                
+                const actionButtons = u.nik !== currentNik 
+                    ? `
+                        <button onclick="toggleStatus('${u.nik}', '${u.status}')" class="${isSuspend ? 'text-green-500 hover:text-green-700' : 'text-orange-500 hover:text-orange-700'} mx-2 transition-transform hover:scale-110" title="${isSuspend ? 'Aktifkan Akses' : 'Tangguhkan (Suspend)'}">
+                            <i class="fas ${isSuspend ? 'fa-play-circle' : 'fa-pause-circle'}"></i>
+                        </button>
+                        <button onclick="resetPass('${u.nik}')" class="text-blue-500 hover:text-blue-700 mx-2 transition-transform hover:scale-110" title="Reset Sandi ke hexindo123">
+                            <i class="fas fa-key"></i>
+                        </button>
+                        <button onclick="deleteUser('${u.nik}')" class="text-red-500 hover:text-red-700 mx-2 transition-transform hover:scale-110" title="Hapus Permanen">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                      ` 
+                    : `<span class="text-[10px] opacity-50 font-bold italic">CURRENT SESSION</span>`;
+
+                return `
+                <tr class="border-b border-black/5 text-xs warna-teks hover:bg-black/5 transition-colors">
+                    <td class="p-4 font-bold opacity-70">${u.nik}</td>
+                    <td class="p-4 uppercase font-black">${u.full_name}</td>
+                    <td class="p-4 uppercase font-bold">
+                        <span class="px-2 py-1 rounded text-[10px] ${roleColor}">${u.role}</span>
+                    </td>
+                    <td class="p-4 uppercase font-bold">
+                        <span class="px-2 py-1 rounded text-[10px] ${statusColor}">
+                            <i class="fas ${statusIcon} mr-1"></i> ${u.status || 'active'}
+                        </span>
+                    </td>
+                    <td class="p-4 text-center whitespace-nowrap">${actionButtons}</td>
+                </tr>`;
+            }).join('');
+            
+            runAutoScale();
+        }
+
+        window.toggleStatus = async function(nikTarget, currentStatus) {
+            const newStatus = currentStatus === 'suspend' ? 'active' : 'suspend';
+            const actionText = currentStatus === 'suspend' ? 'MENGAKTIFKAN' : 'MENANGGUHKAN (SUSPEND)';
+            if(!confirm(`UBAH STATUS PERSONEL\n\nApakah Anda yakin ingin ${actionText} akses untuk NIK: ${nikTarget}?`)) return;
+            
+            const { error } = await sb.from('users').update({ status: newStatus }).eq('nik', nikTarget);
+            if(error) alert(`⚠️ Gagal mengubah status personel!`); else fetchUsers();
+        };
+
+        window.resetPass = async function(nikTarget) {
+            if(!confirm(`RESET KATA SANDI\n\nKembalikan sandi NIK: ${nikTarget} ke bawaan pabrik (hexindo123)?`)) return;
+            
+            const { error } = await sb.from('users').update({ password: 'hexindo123' }).eq('nik', nikTarget);
+            if(error) alert("⚠️ Gagal melakukan reset kata sandi!"); else alert(`✅ Kunci akses untuk NIK ${nikTarget} berhasil dikembalikan ke bawaan!`);
+        };
+
+        window.deleteUser = async function(nikTarget) {
+            if(!confirm(`PERINGATAN KRITIS!\n\nApakah Anda yakin ingin MENGHAPUS PERMANEN NIK: ${nikTarget} dari sistem?\nTindakan ini tidak dapat dibatalkan.`)) return;
+            
+            const { error } = await sb.from('users').delete().eq('nik', nikTarget);
+            if(error) alert("⚠️ Gagal menghapus personel dari database!"); else fetchUsers();
+        };
+
+        // --- FORM HANDLER ---
+        document.getElementById('changePassForm').onsubmit = async (e) => { 
+            e.preventDefault(); 
+            const p1 = document.getElementById('newPass').value; 
+            const p2 = document.getElementById('confirmPass').value; 
+            if(p1 !== p2) return alert("⚠️ Mismatch!"); 
+            const { error } = await sb.from('users').update({ password: p1 }).eq('nik', currentNik); 
+            if (!error) { alert("✅ Security Key Updated!"); e.target.reset(); } 
+        };
+
+        document.getElementById('addUserForm').onsubmit = async (e) => {
+            e.preventDefault(); 
+            const newNik = document.getElementById('regNik').value.toUpperCase().trim(); 
+            const newName = document.getElementById('regName').value.toUpperCase().trim();
+            const { data: existing } = await sb.from('users').select('nik').eq('nik', newNik).single();
+            if(existing) return alert("⚠️ NIK Exists!"); 
+            
+            const { error } = await sb.from('users').insert([{ nik: newNik, full_name: newName, password: 'hexindo123', role: 'technician', status: 'active' }]);
+            if (!error) { alert("✅ Deployed!"); e.target.reset(); fetchUsers(); }
+        };
+
+        function logout() { 
+            if(confirm("Terminate Session?")) {
+                localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userNIK'); 
+                window.location.replace("login.html"); 
+            }
+        }
+        
+        // --- MESIN SKALA PRESISI (NATIVE ZOOM ANTI-RUANG KOSONG) ---
+        function runAutoScale() { 
+            const s = document.getElementById('scaler-context'); 
+            if(!s) return;
+            const w = document.documentElement.clientWidth; 
+            if (w < 720) {
+                const r = w / 720;
+                s.style.transform = 'none'; 
+                s.style.zoom = r;           
+                s.style.margin = '0'; 
+                s.style.marginBottom = '0px'; 
+            } else {
+                s.style.transform = 'none';
+                s.style.zoom = 1;
+                s.style.margin = '0 auto';
+                s.style.marginBottom = '0px';
+            }
+        }
+        
+        window.onload = initPage; 
+        window.addEventListener('resize', runAutoScale);
+    </script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

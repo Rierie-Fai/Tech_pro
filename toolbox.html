@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Toolbox Pro | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+    
+    <link href="./html/css/toolbox.css" rel="stylesheet">
+</head>
+<body id="body-tema">
+    
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <div class="mt-6 text-center">
+            <p class="warna-teks font-bold text-sm tracking-[0.3em] uppercase italic" style="font-family: var(--font-judul);">TOOLBOX</p>
+            <p class="warna-aksen text-[10px] font-mono font-bold tracking-widest mt-1">CHECKLIST SYSTEM V.2.2</p>
+        </div>
+    </div>
+
+    <div id="drawerOverlay" onclick="closeAllDrawers()"></div>
+
+    <aside id="sideDrawer" class="panel-utama m-0 border-y-0 border-r-0 rounded-none bg-white/95">
+        <div class="flex justify-between items-center mb-6 pb-4 border-b border-black/10">
+            <span class="text-xs font-black warna-teks opacity-60 font-mono uppercase">/// ACTION_CENTER</span>
+            <button onclick="closeAllDrawers()" class="opacity-50 hover:opacity-100 hover:text-red-500 text-xl warna-teks transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="space-y-4 mb-8">
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex justify-between items-center">
+                <span class="text-xs font-bold text-emerald-600 uppercase"><i class="fas fa-check-circle mr-2"></i>GOOD (B)</span>
+                <span id="countB" class="text-2xl font-black text-emerald-600 font-mono">0</span>
+            </div>
+            <div class="p-4 rounded-xl bg-amber-50 border border-amber-100 flex justify-between items-center">
+                <span class="text-xs font-bold text-amber-600 uppercase"><i class="fas fa-exclamation-triangle mr-2"></i>BROKEN (R)</span>
+                <span id="countR" class="text-2xl font-black text-amber-600 font-mono">0</span>
+            </div>
+            <div class="p-4 rounded-xl bg-red-50 border border-red-100 flex justify-between items-center">
+                <span class="text-xs font-bold text-red-600 uppercase"><i class="fas fa-times-circle mr-2"></i>LOST (H)</span>
+                <span id="countH" class="text-2xl font-black text-red-600 font-mono">0</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-3 mt-auto">
+            <button onclick="prosesSimpan()" class="btn-utama py-4 rounded-xl shadow-lg shadow-black/10">
+                <span class="text-xs font-black tracking-widest"><i class="fas fa-cloud-upload-alt mr-2"></i>SYNC CLOUD</span>
+            </button>
+            <button onclick="checkAllBaik()" class="py-4 rounded-xl shadow-lg border-2 border-emerald-500 text-emerald-600 font-black text-xs hover:bg-emerald-50 transition-colors">
+                <span class="tracking-widest"><i class="fas fa-check-double mr-2"></i>SET ALL GOOD</span>
+            </button>
+            <button onclick="resetForm()" class="py-4 rounded-xl bg-black/5 text-xs font-black uppercase hover:bg-black/10 transition-colors warna-teks">
+                <span class="tracking-widest"><i class="fas fa-undo mr-2"></i>RESET FORM</span>
+            </button>
+        </div>
+    </aside>
+
+    <aside id="bottomDrawer" class="panel-utama m-0 border-x-0 border-b-0 rounded-t-3xl bg-white/95">
+        <div class="w-16 h-1.5 bg-black/10 rounded-full mx-auto mb-6"></div>
+        <div class="flex justify-between items-center mb-4 pb-2 border-b border-black/10">
+            <h3 class="text-xs font-black uppercase tracking-widest warna-teks opacity-60">RECENT LOGS</h3>
+            <button onclick="fetchHistory()" class="warna-aksen text-[10px] font-bold uppercase"><i class="fas fa-sync-alt mr-1"></i> Refresh</button>
+        </div>
+        <div class="overflow-y-auto flex-1">
+            <table class="w-full">
+                <thead class="bg-black/5">
+                    <tr>
+                        <th class="text-left pl-4 py-2 text-[10px] opacity-60 warna-teks font-bold">DATE CHECKED</th>
+                        <th class="text-right pr-4 py-2 text-[10px] opacity-60 warna-teks font-bold">ACTION</th>
+                    </tr>
+                </thead>
+                <tbody id="histBody"></tbody>
+            </table>
+        </div>
+    </aside>
+
+    <div id="scaler-context" class="space-y-6 opacity-0 lapis-depan">
+        
+        <header class="panel-utama p-6 flex justify-between items-center no-print shadow-lg m-0">
+            <div class="flex items-center gap-5">
+                <a href="index.html" class="h-12 w-12 rounded-xl flex items-center justify-center opsi-kartu text-xl">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-black leading-none tracking-tight uppercase warna-teks" style="font-family: var(--font-judul);">TOOLBOX <span class="warna-aksen">PRO</span></h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <p id="roleText" class="text-[10px] font-bold opacity-50 tracking-widest uppercase font-mono warna-teks">NIK: LOADING...</p>
+                    </div>
+                </div>
+            </div>
+            <div id="currentMonthBadge" class="px-4 py-2 bg-black/5 rounded-xl text-xs font-black uppercase border border-black/5 shadow-sm warna-teks">
+                --- 2026
+            </div>
+        </header>
+
+        <div class="panel-utama p-7 m-0">
+            <input type="hidden" id="editingId">
+            <div class="grid grid-cols-2 gap-5 mb-5" style="font-family: var(--font-teks);">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-2 warna-teks">ASSET ID</label>
+                    <input type="text" id="asset" class="input-utama bg-black/5 font-mono opacity-80 font-bold" readonly>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-2 warna-teks">DATE</label>
+                    <input type="date" id="tgl" onchange="updateMonthBadge()" class="input-utama">
+                </div>
+            </div>
+            <div style="font-family: var(--font-teks);">
+                <label class="block text-[10px] font-bold uppercase opacity-60 mb-2 warna-teks">TECHNICIAN</label>
+                <input type="text" id="pic" class="input-utama bg-black/5 font-bold uppercase opacity-80" readonly placeholder="Fetching Name...">
+            </div>
+        </div>
+
+        <div class="panel-utama overflow-hidden pb-4 m-0 p-0">
+            <div class="p-5 bg-black/5 border-b border-black/10 flex justify-between items-center sticky top-0 z-30">
+                <span class="text-xs font-black uppercase tracking-wider warna-teks" style="font-family: var(--font-judul);"><i class="fas fa-list-ul mr-2 opacity-50"></i>INSPECTION LIST</span>
+                <div class="flex gap-2">
+                    <div onclick="applyFilter('ALL')" class="filter-pill active" id="f-ALL">All</div>
+                    <div onclick="applyFilter('B')" class="filter-pill" id="f-B">B</div>
+                    <div onclick="applyFilter('R')" class="filter-pill" id="f-R">R</div>
+                    <div onclick="applyFilter('H')" class="filter-pill" id="f-H">H</div>
+                </div>
+            </div>
+            
+            <div class="overflow-y-auto max-h-[500px]" style="font-family: var(--font-teks);">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th width="50" class="warna-teks">NO</th>
+                            <th class="text-left warna-teks pl-4">ITEM DESCRIPTION</th>
+                            <th width="60" class="text-emerald-500">GOOD</th>
+                            <th width="60" class="text-amber-500">BAD</th>
+                            <th width="60" class="text-red-500">LOST</th>
+                        </tr>
+                    </thead>
+                    <tbody id="toolTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex justify-center mt-8 pb-24">
+            <button onclick="openHistory()" class="py-4 px-8 border-2 border-black/10 rounded-full text-xs font-black uppercase hover:border-black/30 transition-colors warna-teks" style="font-family: var(--font-judul);">
+                <span class="tracking-widest">VIEW HISTORY LOGS ↓</span>
+            </button>
+        </div>
+    </div>
+
+    <div onclick="toggleDrawer()" class="fab shadow-lg shadow-black/20" style="background-color: var(--warna-aksen, #2563eb);">
+        <i class="fas fa-layer-group text-2xl"></i>
+    </div>
+
+    <script src="./html/js/toolbox.js" defer></script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

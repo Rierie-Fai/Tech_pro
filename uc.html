@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UC Inspector | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+
+    <style>
+        #scaler-context.opacity-0 {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+    
+    <link href="./html/css/uc.css" rel="stylesheet">
+</head>
+<body id="body-tema">
+    
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <div class="mt-6 text-center">
+            <p class="warna-teks font-bold text-sm tracking-[0.3em] uppercase italic" style="font-family: var(--font-judul);">UNDERCARRIAGE</p>
+            <p class="warna-aksen text-[10px] font-mono font-bold tracking-widest mt-1">INSPECTION SYSTEM V.2.2</p>
+        </div>
+    </div>
+
+    <div id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <aside id="rightDrawer" class="panel-utama m-0 border-y-0 border-r-0 rounded-none bg-white/95">
+        <div class="p-5 border-b border-black/10 flex justify-between items-center">
+            <div>
+                <h3 class="text-xs font-black warna-teks font-mono uppercase">/// REPOSITORY</h3>
+                <p class="text-[9px] opacity-60 warna-teks uppercase font-bold tracking-widest mt-1">HISTORY LOGS</p>
+            </div>
+            <button onclick="toggleDrawer()" class="opacity-50 hover:opacity-100 hover:text-red-500 text-xl warna-teks transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="historyBody" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+    </aside>
+
+    <div id="scaler-context" class="space-y-6 opacity-0 lapis-depan">
+        
+        <header class="panel-utama p-6 flex justify-between items-center no-print m-0 shadow-lg">
+            <div class="flex items-center gap-5">
+                <a href="index.html" class="h-12 w-12 rounded-xl flex items-center justify-center opsi-kartu text-xl">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-black leading-none tracking-tight uppercase warna-teks" style="font-family: var(--font-judul);">UC <span class="warna-aksen">INSPECTOR</span></h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <p id="roleText" class="text-[10px] font-bold opacity-50 warna-teks tracking-widest uppercase font-mono">NIK: LOADING...</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleDrawer()" class="h-12 w-12 rounded-xl flex items-center justify-center opsi-kartu text-lg">
+                <i class="fas fa-history"></i>
+            </button>
+        </header>
+
+        <div class="panel-utama p-7 m-0">
+            <input type="hidden" id="editingId">
+            <div class="grid grid-cols-2 gap-x-5 gap-y-4" style="font-family: var(--font-teks);">
+                <div class="col-span-2">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Technician & NIK</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="techName" class="input-utama w-full bg-black/5 font-bold uppercase" readonly placeholder="Fetching Name...">
+                        <input type="text" id="techNik" class="input-utama w-32 text-center font-mono opacity-80 bg-black/5 shrink-0" readonly>
+                    </div>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Date</label>
+                    <input type="date" id="inspDate" class="input-utama w-full !p-2.5">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Customer</label>
+                    <input type="text" id="custName" class="input-utama w-full !p-2.5 uppercase" value="PT ADARO SERVICE">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Unit Serial No</label>
+                    <input type="text" id="unitSN" class="input-utama w-full !p-2.5 font-mono uppercase font-bold warna-aksen" placeholder="EX3600-6">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">HM (Hour Meter)</label>
+                    <input type="number" id="unitHM" class="input-utama w-full !p-2.5 font-mono" placeholder="0">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-utama m-0 p-0 overflow-hidden pb-4">
+            <div class="p-5 bg-black/5 border-b border-black/10 flex justify-between items-center sticky top-0 z-30">
+                <span class="text-xs font-black warna-teks uppercase tracking-wider" style="font-family: var(--font-judul);"><i class="fas fa-ruler-combined mr-2 opacity-50"></i>MEASUREMENTS</span>
+            </div>
+            
+            <div class="overflow-x-auto p-2" style="font-family: var(--font-teks);">
+                <table class="w-full min-w-[500px]">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" class="text-left pl-4">Component</th>
+                            <th rowspan="2" class="warna-aksen">Std</th>
+                            <th rowspan="2" class="text-red-500">Limit</th>
+                            <th colspan="2" class="warna-teks opacity-80">Actual (mm)</th>
+                            <th colspan="2" class="warna-teks opacity-50">Wear (%)</th>
+                        </tr>
+                        <tr>
+                            <th class="text-[9px] opacity-60">LEFT</th>
+                            <th class="text-[9px] opacity-60">RIGHT</th>
+                            <th class="text-[9px] opacity-60">LEFT</th>
+                            <th class="text-[9px] opacity-60">RIGHT</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inspectionBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel-utama p-7 m-0">
+            <label class="block text-[10px] font-bold uppercase opacity-60 mb-2 warna-teks" style="font-family: var(--font-teks);">Findings / Recommendations</label>
+            <textarea id="commentInp" class="input-utama w-full min-h-[120px] mb-6 text-sm resize-none" placeholder="Catatan hasil inspeksi dan rekomendasi penggantian..."></textarea>
+            
+            <button onclick="syncToCloud()" id="btnSync" class="btn-utama w-full py-5 shadow-xl">
+                <span class="text-sm tracking-[0.2em] uppercase"><i class="fas fa-cloud-upload-alt mr-2"></i>SUBMIT INSPECTION</span>
+            </button>
+        </div>
+    </div>
+
+    <script src="./html/js/uc.js" defer></script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

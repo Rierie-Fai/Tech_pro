@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pump Tune-Up | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+
+    <style>
+        #scaler-context.opacity-0 {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    <script src="./assets/js/chart.js" defer></script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+    
+    <link href="./html/css/pump.css" rel="stylesheet">
+</head>
+<body id="body-tema">
+    
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <div class="mt-6 text-center">
+            <p class="warna-teks font-bold text-sm tracking-[0.3em] uppercase italic" style="font-family: var(--font-judul);">PUMP TUNING</p>
+            <p class="warna-aksen text-[10px] font-mono font-bold tracking-widest mt-1">SYSTEM V.2.2.VALIDATOR</p>
+        </div>
+    </div>
+
+    <div id="history-panel" class="minimized">
+        <div class="p-5 border-b border-black/10 flex justify-between items-center bg-black/5">
+            <div>
+                <span class="text-xs font-black warna-teks font-mono uppercase">/// CLOUD_ARCHIVE</span>
+                <p class="text-[9px] opacity-50 warna-teks font-bold uppercase mt-1">Previous Adjustments</p>
+            </div>
+            <button onclick="toggleHistory()" class="opacity-50 hover:opacity-100 hover:text-red-500 text-xl warna-teks transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="flex-1 overflow-y-auto p-4 space-y-3" id="history-list"></div>
+    </div>
+    
+    <div id="history-trigger" onclick="toggleHistory(event)">
+        <i class="fas fa-history mb-2"></i> HISTORY
+    </div>
+
+    <div id="scaler-context" class="space-y-6 opacity-0 lapis-depan">
+        
+        <header class="panel-utama p-6 flex justify-between items-center no-print m-0 shadow-lg">
+            <div class="flex items-center gap-5">
+                <a href="index.html" class="h-12 w-12 rounded-xl flex items-center justify-center opsi-kartu text-xl">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-black leading-none tracking-tight uppercase warna-teks" style="font-family: var(--font-judul);">HYDRAULIC <span class="warna-aksen">TUNER</span></h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <div id="status-dot" class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                        <p id="sync-status" class="text-[10px] font-bold opacity-50 warna-teks tracking-widest uppercase">READY TO SYNC</p>
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3 items-center">
+                <div class="bg-black/5 p-1.5 rounded-xl border border-black/10 flex">
+                    <button onclick="switchTab('general')" id="tab-gen" class="tab-btn active">General</button>
+                    <button onclick="switchTab('pump')" id="tab-pump" class="tab-btn">Pump</button>
+                </div>
+                <button onclick="prepareNewEntry()" class="h-10 w-10 border-2 border-black/10 rounded-xl shadow-sm hover:border-black/30 transition-all flex items-center justify-center warna-teks">
+                    <i class="fas fa-plus text-sm"></i>
+                </button>
+                <button onclick="saveToCloud()" class="btn-utama h-10 px-6 shadow-lg">
+                    <span class="text-xs font-black uppercase tracking-wider">SYNC DATA</span>
+                </button>
+            </div>
+        </header>
+
+        <div class="panel-utama p-7 m-0">
+            <input type="hidden" id="current_record_id">
+            <div class="flex justify-between items-end mb-5 border-b border-black/10 pb-3">
+                <span class="text-sm font-bold opacity-40 font-mono warna-teks">/// UNIT_PARAMETERS</span>
+                <span class="text-xs warna-aksen font-bold font-mono bg-black/5 px-2 py-1 rounded" id="display-nik">GUEST</span>
+                <input type="hidden" id="nik">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-x-5 gap-y-4" style="font-family: var(--font-teks);">
+                <div class="col-span-2">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Technician Name</label>
+                    <input type="text" id="nama_pic" class="input-utama w-full !bg-black/5 font-bold" readonly>
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Date</label>
+                    <input type="date" id="test_date" class="input-utama w-full !p-2.5">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Model</label>
+                    <input type="text" id="unit_model" class="input-utama w-full !p-2.5 uppercase font-bold warna-aksen" placeholder="EX3600-6">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">Serial No</label>
+                    <input type="text" id="serial_num" class="input-utama w-full !p-2.5 uppercase font-mono" placeholder="SN12345">
+                </div>
+                <div class="col-span-1">
+                    <label class="block text-[10px] font-bold uppercase opacity-60 mb-1.5 warna-teks">HM (Hour Meter)</label>
+                    <input type="number" id="hour_meter" class="input-utama w-full !p-2.5 font-mono" placeholder="0.0">
+                </div>
+            </div>
+        </div>
+
+        <div id="section-general" class="space-y-6 fade-in">
+            <div class="panel-utama m-0 p-0 overflow-hidden">
+                <div class="bg-black/5 p-4 border-b border-black/10">
+                    <h3 class="text-xs font-black warna-teks uppercase tracking-widest" style="font-family: var(--font-judul);"><i class="fas fa-microchip mr-2 opacity-50"></i>Component History</h3>
+                </div>
+                <div class="p-2 overflow-x-auto">
+                    <table class="w-full min-w-[500px]">
+                        <thead><tr><th class="text-left pl-4 py-3">Component</th><th class="py-3">Serial Number</th><th class="py-3">Part No</th><th class="py-3">Lifetime (Hr)</th><th class="py-3">Note</th></tr></thead>
+                        <tbody id="comp-history-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel-utama m-0 p-0 overflow-hidden">
+                <div class="bg-black/5 p-4 border-b border-black/10 flex justify-between items-center">
+                    <h3 class="text-xs font-black warna-teks uppercase tracking-widest" style="font-family: var(--font-judul);"><i class="fas fa-gauge-high mr-2 opacity-50"></i>Main Relief Pressure</h3>
+                    <span class="text-[10px] font-bold warna-aksen bg-white/50 px-2 py-1 rounded border border-black/10">STD: 300-320 Kg</span>
+                </div>
+                <div class="p-5 grid grid-cols-4 gap-3" id="pump-relief-grid"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="panel-utama mb-0 p-0 overflow-hidden">
+                    <div class="bg-black/5 p-3 border-b border-black/10">
+                        <h3 class="text-[10px] font-black warna-teks uppercase tracking-wider" style="font-family: var(--font-judul);"><i class="fas fa-bolt mr-1.5 opacity-50"></i>Engine RPM</h3>
+                    </div>
+                    <div class="p-1.5">
+                        <table class="w-full">
+                            <thead><tr><th class="text-left pl-3 text-[9px] py-2">Item</th><th class="text-[9px] py-2">Std</th><th class="text-blue-600 text-[9px] py-2">Bef</th><th class="text-emerald-600 text-[9px] py-2">Aft</th></tr></thead>
+                            <tbody id="engine-speed-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel-utama mb-0 p-0 overflow-hidden">
+                    <div class="bg-black/5 p-3 border-b border-black/10">
+                        <h3 class="text-[10px] font-black warna-teks uppercase tracking-wider" style="font-family: var(--font-judul);"><i class="fas fa-stopwatch mr-1.5 opacity-50"></i>Cycle Time</h3>
+                    </div>
+                    <div class="p-1.5">
+                        <table class="w-full">
+                            <thead><tr><th class="text-left pl-3 text-[9px] py-2">Action</th><th class="text-[9px] py-2">Std</th><th class="text-blue-600 text-[9px] py-2">Bef</th><th class="text-emerald-600 text-[9px] py-2">Aft</th></tr></thead>
+                            <tbody id="cycle-time-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-pump" class="hidden space-y-6 fade-in">
+            <div class="flex justify-between items-center bg-black/80 text-white p-4 rounded-2xl shadow-xl mx-1 border border-white/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-xl font-mono font-bold" style="color: var(--warna-aksen, #fcd34d);" id="active-p-num">1</div>
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider block opacity-50">Active Pump</span>
+                        <span class="text-sm font-black uppercase tracking-wide">Flow Analysis</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <select id="pump-select" onchange="changePump(this.value)" class="bg-black/50 text-white text-xs font-bold border border-white/20 rounded-lg pl-4 pr-10 py-2.5 outline-none focus:border-white appearance-none cursor-pointer">
+                        <option value="1">PUMP 1</option><option value="2">PUMP 2</option>
+                        <option value="3">PUMP 3</option><option value="4">PUMP 4</option>
+                        <option value="5">PUMP 5</option><option value="6">PUMP 6</option>
+                        <option value="7">PUMP 7</option><option value="8">PUMP 8</option>
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 opacity-50 text-xs pointer-events-none"></i>
+                </div>
+            </div>
+
+            <div id="pump-tables-container" class="space-y-6"></div>
+
+            <div class="panel-utama p-6 m-0 bg-white/90">
+                <div class="flex justify-between items-center mb-4">
+                     <h3 class="text-xs font-black warna-teks uppercase tracking-widest" style="font-family: var(--font-judul);"><i class="fas fa-chart-line mr-2 opacity-50"></i>Performance Graph</h3>
+                </div>
+                <div style="height: 320px; width: 100%;">
+                    <canvas id="nikChart"></canvas>
+                </div>
+            </div>
+            
+            <textarea id="nik-notes" class="input-utama w-full p-5 text-sm font-semibold h-32 focus:outline-none resize-none transition-colors" placeholder="Type technical analysis notes here..."></textarea>
+        </div>
+
+        <footer class="text-center py-10">
+            <p class="opacity-30 warna-teks text-[10px] uppercase font-bold tracking-[0.4em]">HEXINDO ADARO PROJECT 2026</p>
+        </footer>
+    </div>
+
+    <script src="./html/js/pump.js" defer></script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

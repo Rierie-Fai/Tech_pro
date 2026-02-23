@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Portal Masuk | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    
+    <script src="./assets/js/splash.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            height: 100vh; width: 100vw; overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #f0fdf4; transition: background-color 0.5s ease;
+        }
+        
+        /* KUNCI GEMBOK HALAMAN */
+        .tameng-besi { 
+            opacity: 0 !important; visibility: hidden !important; 
+            pointer-events: none !important; transform: scale(0.95) !important;
+        }
+        #login-context { 
+            z-index: 10; width: 90%; max-width: 400px; 
+            transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        }
+
+        .uppercase { text-transform: uppercase; }
+        .header-login { display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem; }
+        .grup-input { position: relative; margin-bottom: 1.5rem; width: 100%; }
+        .ikon-input { position: absolute; left: 1.5rem; top: 50%; transform: translateY(-50%); font-size: 1.2rem; transition: color 0.3s; }
+
+        /* ANIMASI EXPAND REGISTER */
+        .expand-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .expand-inner { overflow: hidden; opacity: 0; visibility: hidden; transition: opacity 0.5s ease, visibility 0.5s, margin 0.5s; margin-bottom: 0; }
+        .expand-wrapper.open { grid-template-rows: 1fr; }
+        .expand-wrapper.open .expand-inner { opacity: 1; visibility: visible; margin-bottom: 1.5rem; padding-top: 5px; }
+
+        /* TEMA MINT */
+        .tema-mint { background: #ecfdf5; color: #064e3b; font-family: 'Rajdhani', sans-serif; }
+        .tema-mint .judul-portal { font-family: 'Quicksand', sans-serif; font-size: 2.2rem; color: #10b981; }
+        .tema-mint .sub-judul { font-family: 'Quicksand', sans-serif; font-size: 0.75rem; font-weight: bold; letter-spacing: 2px; opacity: 0.6; }
+        .tema-mint #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        .tema-mint .blob { position: absolute; border-radius: 50%; animation: melayang 18s infinite alternate ease-in-out; }
+        .tema-mint .blob-1 { width: 70vw; height: 70vw; top: -15%; left: -15%; background: radial-gradient(circle at center, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0.2) 25%, rgba(16, 185, 129, 0) 75%); animation-duration: 20s; }
+        .tema-mint .blob-2 { width: 80vw; height: 80vw; bottom: -25%; right: -20%; background: radial-gradient(circle at center, rgba(52, 211, 153, 0.4) 5%, rgba(52, 211, 153, 0.15) 35%, rgba(52, 211, 153, 0) 70%); animation-duration: 25s; animation-delay: -8s; }
+        .tema-mint .kartu-login { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border: 2px solid rgba(167, 243, 208, 0.8); border-radius: 40px; padding: 3rem 2rem; box-shadow: 0 20px 40px rgba(16, 185, 129, 0.1); }
+        .tema-mint .kotak-ikon { background: white; border-radius: 50%; width: 70px; height: 70px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #10b981; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.15); margin-bottom: 1rem; }
+        .tema-mint .ikon-input { color: #6ee7b7; }
+        .tema-mint .input-manekin { width: 100%; padding: 1.2rem 1.2rem 1.2rem 3.5rem; background: #ffffff; border: 2px solid #a7f3d0; border-radius: 30px; font-family: 'Rajdhani', sans-serif; font-size: 1rem; font-weight: bold; color: #064e3b; transition: all 0.3s; }
+        .tema-mint .input-manekin:focus { border-color: #10b981; outline: none; box-shadow: inset 0 5px 15px rgba(4, 94, 75, 0.1); background: #f0fdf4; }
+        .tema-mint .input-manekin:focus + .ikon-input { color: #10b981; }
+        .tema-mint .btn-utama { width: 100%; padding: 1.2rem; background: #10b981; color: white; border: none; border-radius: 30px; font-family: 'Quicksand', sans-serif; font-size: 1.1rem; font-weight: 900; cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; gap: 10px; align-items: center; }
+
+        /* TEMA MECHA */
+        .tema-mecha { background: #ffffff; color: #0f172a; font-family: 'Rajdhani', sans-serif; }
+        .tema-mecha .judul-portal { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; color: #1e293b; letter-spacing: 5px; }
+        .tema-mecha .sub-judul { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #0ea5e9; letter-spacing: 2px; }
+        .tema-mecha #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; background-image: linear-gradient(#f1f5f9 1px, transparent 1px), linear-gradient(90deg, #f1f5f9 1px, transparent 1px); background-size: 30px 30px; opacity: 0.5; }
+        .tema-mecha .blob { display: none; } 
+        .tema-mecha .kartu-login { background: rgba(255, 255, 255, 0.95); border: 1px solid #cbd5e1; border-radius: 0; padding: 3rem 2rem; box-shadow: 20px 20px 0px rgba(15, 23, 42, 0.05); }
+        .tema-mecha .kotak-ikon { border: 1px solid #cbd5e1; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #0f172a; margin-bottom: 1rem; }
+        .tema-mecha .ikon-input { color: #94a3b8; }
+        .tema-mecha .input-manekin { width: 100%; padding: 1rem 1rem 1rem 3.5rem; background: transparent; border: none; border-bottom: 2px solid #cbd5e1; border-radius: 0; font-family: 'Rajdhani', sans-serif; font-size: 0.9rem; color: #0f172a; transition: all 0.3s; }
+        .tema-mecha .input-manekin:focus { border-bottom-color: #0ea5e9; outline: none; background: rgba(14, 165, 233, 0.05); }
+        .tema-mecha .input-manekin:focus + .ikon-input { color: #0ea5e9; }
+        .tema-mecha .btn-utama { width: 100%; padding: 1.2rem; background: #0f172a; color: #0ea5e9; border: 1px solid #0ea5e9; border-radius: 0; font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; font-weight: 700; letter-spacing: 2px; cursor: pointer; display: flex; justify-content: center; gap: 10px; }
+
+        /* UTILITIES */
+        .msg-status { font-family: 'Rajdhani', sans-serif; font-size: 0.75rem; font-weight: bold; margin-top: 1rem; text-align: center; opacity: 0; transition: opacity 0.3s; letter-spacing: 1px; text-transform: uppercase; }
+        .msg-error { color: #ef4444; opacity: 1; }
+        .msg-success { color: #10b981; opacity: 1; }
+        .tema-mecha .msg-success { color: #0ea5e9; } 
+        .footer-login { font-family: 'Rajdhani', sans-serif; margin-top: 2rem; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; opacity: 0.7; }
+        @keyframes melayang { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 50% { transform: translate(4vw, 8vh) scale(1.08) rotate(10deg); } 100% { transform: translate(-5vw, -3vh) scale(0.95) rotate(-5deg); } }
+    </style>
+
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+</head>
+
+<body id="body-tema"> 
+    
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+    </div>
+    
+    <div id="bg-canvas">
+        <div class="blob blob-1"></div><div class="blob blob-2"></div>
+    </div>
+
+    <div id="login-context" class="tameng-besi">
+        <div class="kartu-login" id="loginCard">
+            
+            <div class="header-login">
+                <div id="iconBox" class="kotak-ikon">
+                    <i id="mainIcon" class="fas fa-shield-halved"></i>
+                </div>
+                <h1 class="judul-portal">HEXINDO</h1>
+                <p id="subTitle" class="sub-judul">SECURE TERMINAL ACCESS</p>
+            </div>
+
+            <form id="authForm">
+                <div class="grup-input">
+                    <i class="fas fa-id-card ikon-input"></i>
+                    <input type="text" id="nikInput" class="input-manekin uppercase" placeholder="NIK IDENTITY" required autocomplete="off">
+                </div>
+
+                <div id="nameWrapper" class="expand-wrapper">
+                    <div class="expand-inner"> 
+                        <div class="grup-input">
+                            <i class="fas fa-user-circle ikon-input"></i>
+                            <input type="text" id="nameInput" class="input-manekin uppercase" placeholder="FULL NAME">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grup-input">
+                    <i class="fas fa-fingerprint ikon-input"></i>
+                    <input type="password" id="passInput" class="input-manekin" placeholder="ACCESS KEY" required>
+                </div>
+                
+                <button type="submit" id="btnSubmit" class="btn-utama">
+                    <span id="btnText">BOOT SYSTEM</span>
+                    <i class="fas fa-bolt-lightning"></i>
+                </button>
+                
+                <div id="statusMsg" class="msg-status">READY</div>
+            </form>
+
+            <div class="footer-login" onclick="App.toggleMode()">
+                <p id="switchText">New Personnel? <span>Register NIK</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/theme-engine.js" defer></script>
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    <script src="./html/js/auth.js" defer></script> 
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

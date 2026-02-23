@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Diagnostic | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+    
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <style>
+        #main-container.opacity-0 {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* Override CSS Status Bar Offline (Biar di Kiri Bawah) */
+        #hexindo-status-badge {
+            top: auto !important; right: auto !important;
+            bottom: 20px !important; left: 20px !important;
+            z-index: 9999 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    </style>
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/pdf.min.js" defer></script>
+    <script src="./assets/js/supabase.js"></script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+
+</head>
+<body id="body-tema" class="pb-24 px-4 pt-4 min-h-screen flex justify-center">
+
+    <div id="bg-layer">
+        <canvas id="mecha-canvas" class="fixed inset-0 pointer-events-none opacity-40 z-0"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen" class="fixed inset-0 bg-white z-[9999] flex flex-col justify-center items-center transition-opacity duration-500">
+        <div class="w-12 h-12 border-4 border-slate-200 rounded-full animate-spin" style="border-top-color: var(--warna-aksen, #0891b2);"></div>
+        <div class="mt-6 text-center">
+            <p class="font-bold text-sm tracking-[0.3em] uppercase italic warna-teks" style="font-family: var(--font-judul);">DIAGNOSTIC</p>
+            <p class="text-[10px] font-mono font-bold tracking-widest mt-1 warna-aksen">AI TROUBLESHOOT</p>
+        </div>
+    </div>
+
+    <div id="main-container" class="w-full max-w-[720px] relative z-10 opacity-0 transition-opacity duration-500">
+        
+        <header class="flex justify-between items-center mb-6 panel-utama p-4 sticky top-4 z-40 m-0 shadow-lg border border-black/5">
+            <div class="flex items-center gap-4">
+                <button onclick="history.back()" class="w-10 h-10 rounded-xl opsi-kartu transition-colors flex items-center justify-center text-lg">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-xl opsi-kartu transition-colors flex items-center justify-center text-lg">
+                    <i class="fas fa-home"></i>
+                </button>
+            </div>
+            
+            <div class="text-right">
+                <h1 class="text-xl font-black italic uppercase tracking-tighter leading-none warna-teks" style="font-family: var(--font-judul);">
+                    SMART <span class="warna-aksen">DIAGNOSTIC</span>
+                </h1>
+                <p class="text-[10px] font-bold uppercase tracking-widest opacity-50 warna-teks" style="font-family: var(--font-teks);">TROUBLESHOOT SYSTEM</p>
+            </div>
+
+            <button id="btnAdminToggle" onclick="toggleAdminPanel()" class="w-10 h-10 rounded-xl text-white shadow-lg flex items-center justify-center active:scale-95 transition-transform" style="background-color: var(--warna-aksen, #0891b2);">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </button>
+        </header>
+
+        <div class="panel-utama p-6 mb-6 m-0 relative overflow-hidden" style="font-family: var(--font-teks);">
+            <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full blur-2xl opacity-20" style="background-color: var(--warna-aksen);"></div>
+            
+            <label class="text-xs font-bold uppercase tracking-widest mb-2 block ml-1 opacity-60 warna-teks">
+                <i class="fas fa-search mr-1 warna-aksen"></i> Search Database
+            </label>
+            <div class="flex gap-2">
+                <input type="text" id="searchInput" 
+                    placeholder="Enter Error Code (e.g. E03)..." 
+                    class="input-utama w-full px-4 py-3 text-sm font-bold shadow-sm font-mono placeholder-black/30"
+                    onkeypress="if(event.key === 'Enter') searchManual()">
+                
+                <button onclick="searchManual()" 
+                    class="btn-utama rounded-xl px-5 shadow-lg active:scale-95">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div id="resultsArea" class="space-y-4 min-h-[40vh] pb-20">
+            <div class="text-center py-12 opacity-50">
+                <div class="w-20 h-20 bg-black/5 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl warna-teks">
+                    <i class="fas fa-laptop-medical"></i>
+                </div>
+                <h3 class="text-lg font-black uppercase warna-teks" style="font-family: var(--font-judul);">System Ready</h3>
+                <p class="text-sm font-mono warna-teks">Awaiting Input...</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="pdfViewerModal" class="hidden fixed inset-0 z-[100] bg-white/90 backdrop-blur-xl flex flex-col h-screen w-screen">
+        <div class="flex justify-between items-center p-3 bg-white border-b border-black/10 shadow-sm z-10">
+            <div class="flex flex-col">
+                <span id="viewerTitle" class="warna-teks font-black text-sm uppercase truncate max-w-[200px]" style="font-family: var(--font-judul);">MANUAL VIEW</span>
+                <span id="pageIndicator" class="warna-aksen text-xs font-mono font-bold">PAGE 0</span>
+            </div>
+            <button onclick="closePdfViewer()" class="bg-red-50 text-red-500 border border-red-100 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition-colors">
+                CLOSE
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-auto flex justify-center bg-black/5 relative p-4" id="canvasContainer">
+            <canvas id="the-canvas" class="shadow-2xl my-auto max-w-full bg-white"></canvas>
+            
+            <div id="canvasLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-white/80 z-10 hidden">
+                <div class="w-12 h-12 border-4 border-slate-200 rounded-full animate-spin mb-3" style="border-top-color: var(--warna-aksen);"></div>
+                <span class="opacity-50 warna-teks text-xs font-bold font-mono uppercase tracking-widest">Rendering...</span>
+            </div>
+        </div>
+
+        <div class="p-4 bg-white border-t border-black/10 flex justify-center gap-4 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+            <button id="btnPrev" class="w-12 h-12 rounded-xl bg-black/5 warna-teks hover:bg-black/80 hover:text-white transition-colors flex items-center justify-center shadow-sm">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button id="btnZoom" onclick="toggleZoom()" class="w-12 h-12 rounded-xl border transition-colors flex items-center justify-center shadow-sm warna-aksen" style="border-color: var(--warna-aksen); background-color: rgba(var(--warna-aksen-rgb), 0.1);">
+                <i class="fas fa-search-plus"></i>
+            </button>
+            <button id="btnNext" class="w-12 h-12 rounded-xl bg-black/5 warna-teks hover:bg-black/80 hover:text-white transition-colors flex items-center justify-center shadow-sm">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="panel-utama w-full max-w-md p-6 relative m-0">
+            
+            <button onclick="toggleAdminPanel()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/5 opacity-50 hover:opacity-100 hover:text-red-500 flex items-center justify-center transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <h2 class="text-lg font-black uppercase flex items-center gap-2 mb-6 warna-teks" style="font-family: var(--font-judul);">
+                <i class="fas fa-cloud-upload-alt warna-aksen"></i> Upload Manual
+            </h2>
+
+            <div class="space-y-4" style="font-family: var(--font-teks);">
+                <div>
+                    <label class="text-[10px] opacity-60 font-bold uppercase tracking-wider mb-1 block warna-teks">Document Title</label>
+                    <input type="text" id="manualTitle" placeholder="Ex: EX2000-7 Shop Manual" class="input-utama w-full py-3">
+                </div>
+                
+                <div>
+                    <label class="text-[10px] opacity-60 font-bold uppercase tracking-wider mb-1 block warna-teks">PDF File</label>
+                    <input type="file" id="pdfUploader" accept="application/pdf" class="input-utama block w-full text-xs p-2 border-dashed border-2 cursor-pointer">
+                </div>
+
+                <div class="bg-black/90 rounded-xl p-4 h-32 overflow-y-auto font-mono text-xs border border-black/80">
+                    <div id="uploadStatus" class="text-green-400 flex flex-col gap-1">
+                        <span class="text-slate-400"><i class="fas fa-terminal mr-2"></i>System Ready...</span>
+                    </div>
+                </div>
+
+                <button onclick="processPDF()" class="btn-utama w-full py-3.5 flex justify-center items-center gap-2 uppercase tracking-wide text-sm shadow-xl">
+                    <i class="fas fa-rocket"></i> Start Indexing
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/offline-manager.js" defer></script>
+
+    <script>
+        // --- 1. INISIALISASI MANEKIN & ANTI-FOUC ---
+        const App = {
+            init() {
+                const theme = localStorage.getItem('appTheme') || 'mint';
+                const font = localStorage.getItem('appFont') || 'jelly';
+                document.body.className = `tema-${theme}`;
+                document.body.setAttribute('data-font', font);
+
+                this.executeCurtainDrop();
+            },
+            
+            executeCurtainDrop() {
+                let tiraiTerbuka = false;
+                const bukaTirai = () => {
+                    if(tiraiTerbuka) return; 
+                    tiraiTerbuka = true;
+                    const splash = document.getElementById('splash-screen');
+                    const mainCtx = document.getElementById('main-container');
+                    
+                    if(splash) { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); }
+                    if(mainCtx) { mainCtx.classList.remove('opacity-0'); }
+                };
+
+                document.fonts.ready.then(() => {
+                    requestAnimationFrame(() => { requestAnimationFrame(() => setTimeout(bukaTirai, 150)); });
+                }).catch(bukaTirai);
+
+                setTimeout(bukaTirai, 2000); 
+                window.addEventListener('pageshow', (event) => { if (event.persisted) { tiraiTerbuka = false; bukaTirai(); } });
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => App.init());
+
+        // --- 2. LOGIKA DIAGNOSTIC ASLI ---
+        const sbUrl = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
+        const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
+        const db = supabase.createClient(sbUrl, sbKey);
+
+        // Hanya load PDF Worker jika pdfjsLib sudah tersedia
+        window.addEventListener('load', () => {
+            if(window.pdfjsLib) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+            }
+        });
+
+        let pdfDoc = null, pageNum = 1, pageRendering = false, scale = 1.0;
+
+        // --- SEARCH LOGIC ---
+        async function searchManual() {
+            const query = document.getElementById('searchInput').value;
+            const resultsDiv = document.getElementById('resultsArea');
+            
+            if (!query) return;
+
+            resultsDiv.innerHTML = `
+                <div class="text-center py-10 animate-pulse">
+                    <div class="w-12 h-12 border-4 border-slate-200 rounded-full animate-spin mx-auto mb-3" style="border-top-color: var(--warna-aksen);"></div>
+                    <span class="warna-aksen font-bold text-xs uppercase tracking-widest" style="font-family: var(--font-teks);">Searching Database...</span>
+                </div>`;
+
+            const { data, error } = await db
+                .from('manual_pages')
+                .select(`page_number, content, manuals (title, file_url)`)
+                .textSearch('search_vector', query, { type: 'websearch', config: 'english' })
+                .limit(10);
+
+            resultsDiv.innerHTML = '';
+
+            if (error || !data || data.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="text-center py-10 opacity-60 warna-teks">
+                        <i class="fas fa-search-minus text-4xl mb-3"></i>
+                        <p class="text-sm font-bold">NO DATA FOUND</p>
+                    </div>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const previewText = item.content.length > 150 ? item.content.substring(0, 150) + "..." : item.content;
+                const safeTitle = item.manuals.title.replace(/'/g, "\\'");
+                const safeUrl = item.manuals.file_url;
+
+                const cardHTML = `
+                    <div class="panel-utama p-5 mb-4 animate-fade-in group cursor-default" style="animation-delay: ${index * 0.1}s">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-black text-sm uppercase tracking-wide warna-teks group-hover:warna-aksen transition-colors" style="font-family: var(--font-judul);">${item.manuals.title}</h3>
+                            <span class="bg-black/5 warna-aksen text-[10px] px-2 py-1 rounded font-bold font-mono">
+                                PAGE ${item.page_number}
+                            </span>
+                        </div>
+                        <p class="opacity-60 text-xs leading-relaxed font-mono mb-4 pl-3 border-l-2 border-black/10 warna-teks">
+                            "${previewText}"
+                        </p>
+                        <button onclick="openManualPage('${safeUrl}', ${item.page_number}, '${safeTitle}')"
+                            class="w-full bg-black/5 hover:bg-black/80 hover:text-white warna-teks text-xs py-3 rounded-xl flex items-center justify-center gap-2 transition-colors font-bold uppercase tracking-wider" style="font-family: var(--font-judul);">
+                            <i class="fas fa-external-link-alt"></i> View Original Page
+                        </button>
+                    </div>
+                `;
+                resultsDiv.innerHTML += cardHTML;
+            });
+        }
+
+        // --- PDF VIEWER LOGIC ---
+        async function openManualPage(url, pageNumber, title) {
+            const modal = document.getElementById('pdfViewerModal');
+            const loader = document.getElementById('canvasLoader');
+            const loaderText = loader.querySelector('span');
+
+            modal.classList.remove('hidden'); loader.classList.remove('hidden');
+            document.getElementById('viewerTitle').innerText = title;
+            scale = window.innerWidth < 640 ? 0.6 : 1.2; 
+
+            try {
+                loaderText.innerText = "LOADING CACHE...";
+                if(window.HexindoFleet) {
+                    const pdfBlob = await window.HexindoFleet.getOrDownloadManual(url, (status) => { loaderText.innerText = status.toUpperCase(); });
+                    const arrayBuffer = await pdfBlob.arrayBuffer();
+                    const loadingTask = pdfjsLib.getDocument(arrayBuffer);
+                    pdfDoc = await loadingTask.promise;
+                } else {
+                    // Fallback jika tidak jalan di Android
+                    const loadingTask = pdfjsLib.getDocument(url);
+                    pdfDoc = await loadingTask.promise;
+                }
+                pageNum = parseInt(pageNumber);
+                renderPage(pageNum);
+            } catch (error) { alert("Error loading PDF: " + error.message); closePdfViewer(); }
+        }
+
+        async function renderPage(num) {
+            pageRendering = true;
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+            const canvas = document.getElementById('the-canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height; canvas.width = viewport.width;
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            pageRendering = false;
+            document.getElementById('canvasLoader').classList.add('hidden');
+            document.getElementById('pageIndicator').innerText = `PAGE ${num} / ${pdfDoc.numPages}`;
+        }
+
+        // --- UPLOAD & INDEXING LOGIC DENGAN PROGRESS BAR ---
+        async function processPDF() {
+            const fileInput = document.getElementById('pdfUploader');
+            const titleInput = document.getElementById('manualTitle').value;
+            const statusDiv = document.getElementById('uploadStatus');
+            
+            if (!fileInput.files[0] || !titleInput) { 
+                statusDiv.innerHTML = `<span class="text-red-400">⚠️ Missing Data! Isi Judul dan Pilih File PDF.</span>`; 
+                return; 
+            }
+            
+            const file = fileInput.files[0];
+            const fileName = `manuals/${Date.now()}_${file.name.replace(/\s+/g, '-')}`;
+            
+            statusDiv.innerHTML = `<span class="text-cyan-400 animate-pulse">Initialize Upload...</span>`;
+            
+            try {
+                // 1. PROSES UPLOAD DENGAN REAL-TIME TRACKING (XHR)
+                await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    const uploadUrl = `${sbUrl}/storage/v1/object/manuals/${fileName}`;
+                    
+                    xhr.upload.onprogress = (event) => {
+                        if (event.lengthComputable) {
+                            const loadedMB = (event.loaded / (1024 * 1024)).toFixed(2);
+                            const totalMB = (event.total / (1024 * 1024)).toFixed(2);
+                            const percent = Math.round((event.loaded / event.total) * 100);
+                            
+                            // Tampilkan MB dan Garis Progress Bar Biru
+                            statusDiv.innerHTML = `
+                                <span class="text-cyan-400 font-bold">Uploading: ${loadedMB} MB / ${totalMB} MB (${percent}%)</span>
+                                <div class="w-full bg-slate-700 h-1.5 mt-2 rounded-full overflow-hidden shadow-inner">
+                                    <div class="bg-cyan-500 h-full transition-all duration-200" style="width: ${percent}%"></div>
+                                </div>
+                            `;
+                        }
+                    };
+
+                    xhr.open('POST', uploadUrl, true);
+                    xhr.setRequestHeader('Authorization', `Bearer ${sbKey}`);
+                    xhr.setRequestHeader('apikey', sbKey);
+                    xhr.setRequestHeader('Content-Type', file.type);
+                    xhr.setRequestHeader('x-upsert', 'true'); // Timpa jika nama file sama
+
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) resolve();
+                        else reject(new Error(`Upload Failed: ${xhr.statusText}`));
+                    };
+                    xhr.onerror = () => reject(new Error('Network error / Koneksi Terputus.'));
+                    
+                    xhr.send(file);
+                });
+
+                // 2. DAPATKAN URL & SIMPAN KE DATABASE
+                statusDiv.innerHTML = `<span class="text-cyan-400">Upload Complete. Registering to Database...</span>`;
+                const { data: { publicUrl } } = db.storage.from('manuals').getPublicUrl(fileName);
+                
+                const { data: manualData, error: manualError } = await db.from('manuals').insert([{ title: titleInput, file_url: publicUrl }]).select();
+                if (manualError) throw manualError;
+                
+                // 3. PROSES INDEXING TEXT (Ekstrak isi per halaman)
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ').replace(/\s+/g, ' ').trim();
+                    
+                    if (pageText.length > 20) {
+                        await db.from('manual_pages').insert({ manual_id: manualData[0].id, page_number: i, content: pageText });
+                    }
+                    
+                    // Update Progres Indexing dan Garis Progress Bar Ungu
+                    const idxPercent = Math.round((i / pdf.numPages) * 100);
+                    statusDiv.innerHTML = `
+                        <span class="text-cyan-400 font-bold mb-1 block">✅ Upload Complete!</span>
+                        <span class="text-purple-400">Indexing AI Text: Page ${i} / ${pdf.numPages} (${idxPercent}%)</span>
+                        <div class="w-full bg-slate-700 h-1.5 mt-2 rounded-full overflow-hidden shadow-inner">
+                            <div class="bg-purple-500 h-full transition-all duration-200" style="width: ${idxPercent}%"></div>
+                        </div>
+                    `;
+                }
+                
+                statusDiv.innerHTML += `<br><span class="text-emerald-400 font-bold mt-3 inline-block">✅ DONE! ALL SYSTEMS READY.</span>`;
+                
+                // Tutup panel setelah 1.5 detik agar user sempat melihat pesan 'Done'
+                setTimeout(() => { 
+                    document.getElementById('pdfUploader').value = '';
+                    document.getElementById('manualTitle').value = '';
+                    statusDiv.innerHTML = `<span class="text-slate-400"><i class="fas fa-terminal mr-2"></i>System Ready...</span>`;
+                    toggleAdminPanel(); 
+                }, 1500);
+
+            } catch (e) { 
+                statusDiv.innerHTML += `<br><span class="text-red-500 mt-2 block">❌ ERROR: ${e.message}</span>`; 
+            }
+        }
+
+
+        // Helpers UI
+        function toggleAdminPanel() { document.getElementById('adminPanel').classList.toggle('hidden'); }
+        function closePdfViewer() { document.getElementById('pdfViewerModal').classList.add('hidden'); pdfDoc = null; }
+        document.getElementById('btnPrev').onclick = () => { if(pageNum > 1) { pageNum--; renderPage(pageNum); }};
+        document.getElementById('btnNext').onclick = () => { if(pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); }};
+        function toggleZoom() { scale = scale === 1.2 ? 0.6 : 1.2; renderPage(pageNum); }
+    </script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

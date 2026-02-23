@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin HQ | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+
+    <script>
+        const userNik = localStorage.getItem('userNIK');
+        if (!userNik) window.location.replace('login.html');
+    </script>
+
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+
+    <style>
+        #app-context.opacity-0 {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+    </style>
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    <script src="./assets/js/chart.js" defer></script>
+    
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+    
+    <link href="./html/css/admin.css" rel="stylesheet">
+</head>
+<body id="body-tema">
+
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-mecha"></div>
+        <p class="text-[10px] font-bold warna-aksen uppercase tracking-widest mt-4">CONNECTING TO HQ...</p>
+    </div>
+
+    <div id="app-context" class="opacity-0 lapis-depan">
+        
+        <div id="mobile-overlay" onclick="App.toggleSidebar()"></div>
+
+        <aside id="sidebar" class="panel-utama m-0 rounded-none border-y-0 border-l-0">
+            <div class="p-4 pl-5 flex items-center justify-between border-b border-black/10">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm shadow-md" style="background-color: var(--warna-aksen);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base font-black italic uppercase leading-none warna-teks" style="font-family: var(--font-judul);">HEXINDO <span class="warna-aksen">ADMIN</span></h1>
+                    </div>
+                </div>
+                <button onclick="App.toggleSidebar()" class="lg:hidden opacity-50 hover:opacity-100 hover:text-red-500 warna-teks transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-1" style="font-family: var(--font-teks);">
+                <div onclick="App.switchTab('dashboard')" class="nav-item active" id="nav-dashboard">
+                    <i class="fas fa-th-large w-4 text-center text-sm"></i> Dashboard
+                </div>
+                <div onclick="App.switchTab('users')" class="nav-item" id="nav-users">
+                    <i class="fas fa-users-cog w-4 text-center text-sm"></i> User List
+                </div>
+                
+                <div class="px-3 py-3 mt-2">
+                    <p class="text-[9px] font-black opacity-50 warna-teks uppercase tracking-widest">DATA REPO</p>
+                    <div class="h-px w-full bg-black/10 mt-1"></div>
+                </div>
+
+                <div onclick="App.switchTab('reports-pump')" class="nav-item" id="nav-reports-pump">
+                    <i class="fas fa-tachometer-alt w-4 text-center text-sm"></i> Pump Data
+                </div>
+                <div onclick="App.switchTab('reports-uc')" class="nav-item" id="nav-reports-uc">
+                    <i class="fas fa-tractor w-4 text-center text-sm"></i> UC Inspection
+                </div>
+                <div onclick="App.switchTab('audit')" class="nav-item" id="nav-audit">
+                    <i class="fas fa-file-contract w-4 text-center text-sm"></i> Logs
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-black/10">
+                <a href="index.html" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg border-2 border-black/10 warna-teks font-black text-xs uppercase hover:bg-black/5 transition-colors" style="font-family: var(--font-judul);">
+                    <i class="fas fa-sign-out-alt"></i> Exit HQ
+                </a>
+            </div>
+        </aside>
+
+        <main>
+            <header class="flex justify-between items-center mb-4 panel-utama py-3 px-5 m-0 shadow-sm border-0">
+                <div class="flex items-center gap-3">
+                    <button onclick="App.toggleSidebar()" class="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center opsi-kartu text-xs">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div>
+                        <h2 class="text-lg font-black uppercase italic tracking-tight leading-none warna-teks" id="pageTitle" style="font-family: var(--font-judul);">OVERVIEW</h2>
+                        <p class="text-[9px] opacity-50 warna-teks font-mono font-bold uppercase tracking-wide" id="currentDate">...</p>
+                    </div>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-3 bg-black/5 px-3 py-1.5 rounded-lg border border-black/5 shadow-sm">
+                    <div class="text-right leading-tight">
+                        <p class="text-xs font-black warna-teks uppercase" id="adminName" style="font-family: var(--font-judul);">...</p>
+                        <p class="text-[8px] warna-aksen font-bold uppercase tracking-wider">SUPER USER</p>
+                    </div>
+                    <div class="w-7 h-7 bg-black/80 rounded-md flex items-center justify-center text-white text-xs">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div id="tab-dashboard" class="space-y-4 fade-in">
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="panel-utama p-4 m-0 flex justify-between items-center">
+                        <div><p class="text-2xl font-black warna-teks font-mono" id="stat-users">0</p><p class="text-[10px] font-bold opacity-50 warna-teks uppercase mt-1">Techs</p></div>
+                        <i class="fas fa-users text-2xl opacity-20 warna-teks"></i>
+                    </div>
+                    <div class="panel-utama p-4 m-0 flex justify-between items-center border-l-4" style="border-left-color: var(--warna-aksen);">
+                        <div><p class="text-2xl font-black warna-aksen font-mono" id="stat-activity">0</p><p class="text-[10px] font-bold opacity-50 warna-teks uppercase mt-1">Logs</p></div>
+                        <i class="fas fa-clipboard-check text-2xl opacity-30 warna-aksen"></i>
+                    </div>
+                    <div class="panel-utama p-4 m-0 flex justify-between items-center border-l-4 border-emerald-500">
+                        <div><p class="text-2xl font-black text-emerald-600 font-mono" id="stat-pump">0</p><p class="text-[10px] font-bold opacity-50 warna-teks uppercase mt-1">Pumps</p></div>
+                        <i class="fas fa-gauge-high text-2xl opacity-30 text-emerald-500"></i>
+                    </div>
+                    <div class="panel-utama p-4 m-0 flex justify-between items-center border-l-4 border-amber-500">
+                        <div><p class="text-2xl font-black text-amber-600 font-mono" id="stat-uc">0</p><p class="text-[10px] font-bold opacity-50 warna-teks uppercase mt-1">UC Units</p></div>
+                        <i class="fas fa-tractor text-2xl opacity-30 text-amber-500"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="panel-utama col-span-2 m-0 p-5">
+                        <h3 class="text-xs font-black warna-teks uppercase tracking-widest mb-4" style="font-family: var(--font-judul);">Weekly Traffic</h3>
+                        <div class="h-48 w-full"><canvas id="activityChart"></canvas></div>
+                    </div>
+
+                    <div class="panel-utama m-0 p-5">
+                        <h3 class="text-xs font-black warna-teks uppercase tracking-widest mb-4" style="font-family: var(--font-judul);">Live Stream</h3>
+                        <div class="space-y-2 overflow-y-auto max-h-[180px] pr-1" id="mini-audit-log"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-users" class="hidden fade-in">
+                <div class="panel-utama m-0 p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-2.5 opacity-40 warna-teks text-xs"></i>
+                            <input type="text" placeholder="Search..." class="input-utama pl-8 pr-3 py-2 text-xs w-48">
+                        </div>
+                        <button onclick="document.getElementById('modalUser').classList.remove('hidden')" class="btn-utama px-4 py-2 text-[10px] flex items-center gap-2">
+                            <i class="fas fa-plus"></i> Add NIK
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="w-full">
+                            <thead><tr><th>NIK</th><th>Name</th><th>Role</th><th>Status</th><th class="text-right">Action</th></tr></thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-reports-pump" class="hidden fade-in">
+                 <div class="panel-utama m-0 p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-black warna-teks uppercase" style="font-family: var(--font-judul);">Pump Records</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="w-full">
+                            <thead><tr><th>Date</th><th>Unit</th><th>S/N</th><th>Tech</th><th>Status</th></tr></thead>
+                            <tbody id="pumpTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-reports-uc" class="hidden fade-in">
+                <div class="panel-utama m-0 p-5">
+                    <h3 class="text-sm font-black warna-teks uppercase mb-4" style="font-family: var(--font-judul);">Undercarriage Logs</h3>
+                    <div class="table-container">
+                        <table class="w-full">
+                            <thead><tr><th>Date</th><th>Unit S/N</th><th>Tech</th><th>Model</th><th>Status</th></tr></thead>
+                            <tbody id="ucTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-audit" class="hidden fade-in">
+                 <div class="panel-utama m-0 p-5">
+                    <h3 class="text-sm font-black warna-teks uppercase mb-4" style="font-family: var(--font-judul);">Security Audit</h3>
+                    <div class="table-container">
+                        <table class="w-full">
+                            <thead><tr><th>Time</th><th>NIK</th><th>Action</th><th>Payload</th></tr></thead>
+                            <tbody id="auditTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modalUser" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm p-4 lapis-depan">
+        <div class="panel-utama w-full max-w-xs p-6 relative m-0">
+            <h3 class="text-base font-black warna-teks uppercase italic mb-1" style="font-family: var(--font-judul);">New User</h3>
+            <p class="text-[10px] opacity-50 warna-teks font-bold uppercase mb-4" style="font-family: var(--font-teks);">Deploy new NIK access</p>
+            
+            <form id="addUserForm" class="space-y-4">
+                <input type="text" id="newNik" placeholder="NIK ID" class="input-utama w-full py-3 text-sm font-mono font-bold uppercase">
+                <input type="text" id="newName" placeholder="Full Name" class="input-utama w-full py-3 text-xs font-bold uppercase">
+                
+                <div class="flex gap-3 mt-6">
+                    <button type="button" onclick="document.getElementById('modalUser').classList.add('hidden')" class="flex-1 py-3 rounded-xl border-2 border-black/10 opacity-60 font-black text-[10px] uppercase hover:bg-black/5 transition-colors warna-teks">Cancel</button>
+                    <button type="submit" class="flex-1 btn-utama py-3 text-[10px]">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="./html/js/admin.js" defer></script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>

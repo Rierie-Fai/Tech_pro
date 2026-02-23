@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Activity Report | Hexindo Fleet</title>
+    <link rel="manifest" href="./manifest.json">
+
+    <script>
+        if (localStorage.getItem('isLoggedIn') !== 'true') { window.location.replace('login.html'); }
+    </script>
+
+    <link rel="preload" href="./assets/css/core-font.css" as="style">
+    <link rel="preload" href="./assets/css/all.min.css" as="style">
+    <link rel="preload" href="./assets/css/theme-engine.css" as="style">
+    
+    <link rel="preload" href="./assets/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+    <style>
+        #app-context.opacity-0 {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            display: none !important;
+        }
+    </style>
+
+
+    <link href="./assets/css/theme-engine.css" rel="stylesheet">
+    <link href="./assets/css/core-font.css" rel="stylesheet">
+    <link href="./assets/css/all.min.css" rel="stylesheet">
+    <script src="./assets/js/theme-engine.js" defer></script>
+
+    <link href="./html/css/activity.css" rel="stylesheet">
+
+    <script src="./assets/js/tailwindcss.js" defer></script>
+    <script src="./assets/js/supabase.js" defer></script>
+    <script src="./assets/js/xlsx.full.min.js" defer></script>
+    <script src="./assets/js/jspdf.umd.min.js" defer></script>
+    <script src="./assets/js/jspdf.autotable.min.js" defer></script>
+    
+    <script src="./html/js/activity.js" defer></script>
+    <script src="./assets/js/offline-manager.js" defer></script>
+</head>
+<body id="body-tema">
+
+    <div id="bg-layer">
+        <canvas id="mecha-canvas"></canvas>
+        <canvas id="bubble-canvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="splash-screen">
+        <div class="loader-spin"></div>
+        <p class="mt-6 font-bold warna-aksen text-sm tracking-[0.2em] uppercase animate-pulse">Initializing Interface...</p>
+    </div>
+
+    <div id="drawerOverlay" onclick="toggleFilterDrawer()"></div>
+    <aside id="filterDrawer" class="panel-utama m-0 border-y-0 border-r-0 rounded-none bg-white/90">
+        <div class="p-6 border-b border-black/10 flex justify-between items-center">
+            <div>
+                <h3 class="text-sm font-black warna-teks uppercase" style="font-family: var(--font-judul);">/// FILTER_DB</h3>
+                <p class="text-[10px] opacity-50 font-bold uppercase tracking-widest mt-1 warna-teks" style="font-family: var(--font-teks);">Search Parameters</p>
+            </div>
+            <button onclick="toggleFilterDrawer()" class="opacity-50 hover:opacity-100 hover:text-red-500 text-2xl warna-teks transition-colors"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="p-6 space-y-5 flex-1 overflow-y-auto" style="font-family: var(--font-teks);">
+            <div>
+                <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Keyword Search</label>
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-3.5 opacity-40 text-sm warna-teks"></i>
+                    <input type="text" id="filterKeyword" class="input-utama pl-10" placeholder="Customer, Unit, or Job...">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div><label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Start Date</label><input type="date" id="filterDateStart" class="input-utama"></div>
+                <div><label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">End Date</label><input type="date" id="filterDateEnd" class="input-utama"></div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Cloud Status</label>
+                <select id="filterStatus" class="input-utama">
+                    <option value="all">Show All</option>
+                    <option value="synced">Synced Only</option>
+                    <option value="local">Local Only</option>
+                </select>
+            </div>
+        </div>
+        <div class="p-5 border-t border-black/10 flex gap-3">
+            <button onclick="resetFilter()" class="flex-1 py-3 rounded-xl border border-black/20 text-[10px] font-black uppercase hover:bg-black/5 transition-all warna-teks" style="font-family: var(--font-judul);">
+                <i class="fas fa-undo mr-1"></i> Reset
+            </button>
+            <button onclick="applyFilter()" class="flex-1 btn-utama py-3 text-[10px]">
+                <i class="fas fa-check mr-1"></i> Apply
+            </button>
+        </div>
+    </aside>
+
+    <div id="app-context" class="opacity-0 lapis-depan">
+        <div id="scaler-context" class="space-y-6">
+            
+            <header class="panel-utama p-6 flex justify-between items-center no-print gap-4 shadow-lg m-0">
+                <div class="flex items-center gap-5">
+                    <a href="index.html" class="h-12 w-12 rounded-xl flex items-center justify-center opsi-kartu text-xl">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <div>
+                        <h1 class="text-3xl font-black leading-none tracking-tight uppercase warna-teks" style="font-family: var(--font-judul);">ACTIVITY <span class="warna-aksen">LOG</span></h1>
+                        <div class="flex items-center gap-2 mt-1">
+                            <div class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <p class="text-[10px] font-bold tracking-widest uppercase opacity-50 warna-teks" style="font-family: var(--font-teks);">System Online</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleFilterDrawer()" class="opsi-kartu px-5 py-2.5 rounded-xl font-bold text-xs uppercase transition-colors" style="font-family: var(--font-judul);">
+                        <i class="fas fa-filter warna-aksen mr-1.5"></i> Filter
+                    </button>
+                    <div class="flex flex-col gap-1.5 ml-2 border-l border-black/10 pl-4 justify-center">
+                        <button onclick="exportToPDF()" class="opacity-50 hover:opacity-100 hover:text-red-500 font-bold text-[10px] uppercase text-left flex items-center gap-1.5 warna-teks transition-colors">
+                            <i class="fas fa-file-pdf text-sm"></i> PDF
+                        </button>
+                        <button onclick="exportToExcel()" class="opacity-50 hover:opacity-100 hover:text-emerald-600 font-bold text-[10px] uppercase text-left flex items-center gap-1.5 warna-teks transition-colors">
+                            <i class="fas fa-file-excel text-sm"></i> XLS
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="panel-utama p-7 no-print m-0">
+                <input type="hidden" id="editId">
+                <div class="flex justify-between items-end mb-5 border-b border-black/10 pb-3">
+                    <span class="text-sm font-bold opacity-40 font-mono warna-teks">/// INPUT_PARAMETERS</span>
+                    <div class="flex gap-4">
+                        <button onclick="pullFromCloud()" id="btnPull" class="text-[10px] font-bold text-blue-500 uppercase hover:scale-105 transition-transform">
+                            <i class="fas fa-cloud-download-alt mr-1 text-xs"></i> Pull Data
+                        </button>
+                        <button onclick="syncToCloud()" id="btnSyncSmall" class="text-[10px] font-bold text-amber-500 uppercase hover:scale-105 transition-transform">
+                            <i class="fas fa-cloud-upload-alt mr-1 text-xs"></i> Push Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-x-6 gap-y-5 mb-7" style="font-family: var(--font-teks);">
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Technician & NIK</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="nameInp" class="input-utama w-full bg-black/5" readonly>
+                            <input type="text" id="nikInp" class="input-utama w-28 text-center font-mono bg-black/5 opacity-70 shrink-0" readonly>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Date</label>
+                        <input type="date" id="dateInp" class="input-utama w-full">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Customer</label>
+                        <input type="text" id="customerInp" class="input-utama w-full uppercase" placeholder="PT ADARO">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Location</label>
+                        <input type="text" id="locationInp" class="input-utama w-full uppercase" placeholder="NORTH PIT">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Model</label>
+                        <input type="text" id="modelInp" class="input-utama w-full warna-aksen font-black uppercase" placeholder="EX3600-6">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">Serial No (S/N)</label>
+                        <input type="text" id="snInp" class="input-utama w-full font-mono uppercase" placeholder="SN12345">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">HM (Hour Meter)</label>
+                        <input type="number" step="0.1" id="hmInp" class="input-utama w-full font-mono" placeholder="0.0">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase opacity-60 mb-2 warna-teks">General Job</label>
+                        <input type="text" id="jobDescInp" class="input-utama w-full uppercase" placeholder="PM / REPAIR / INSPECTION">
+                    </div>
+                </div>
+
+                <div class="border-t border-black/10 pt-5 mb-5">
+                     <span class="text-xs font-bold opacity-40 font-mono block mb-4 warna-teks">/// PROGRESS_LOGS</span>
+                    <div id="detailRowsContainer" class="space-y-4"></div>
+                </div>
+                
+                <div class="flex flex-col gap-4 mt-8">
+                    <button onclick="smartAddTask()" class="py-3.5 border border-black/20 font-black text-xs uppercase hover:bg-black/5 transition-colors warna-teks" style="font-family: var(--font-judul);">
+                        <span>+ Add Sequence Row</span>
+                    </button>
+                    <button id="submitBtn" onclick="submitLog()" class="btn-utama py-5 uppercase text-sm tracking-[0.2em] shadow-xl">
+                        <span>Authorize & Submit</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="master-scroll-container">
+                <div id="masterList" class="space-y-8 pb-8"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/offline-manager.js" defer></script>
+</body>
+</html>
