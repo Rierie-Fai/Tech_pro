@@ -119,11 +119,14 @@
             </div>
         </div>
 
-        <div class="p-4 bg-white border-t border-black/10 flex justify-center gap-4 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
+        <div class="p-4 bg-white border-t border-black/10 flex justify-center gap-3 safe-area-pb shadow-[0_-5px_20px_rgba(0,0,0,0.05)]">
             <button id="btnPrev" class="w-12 h-12 rounded-xl bg-black/5 warna-teks hover:bg-black/80 hover:text-white transition-colors flex items-center justify-center shadow-sm">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <button id="btnZoom" onclick="toggleZoom()" class="w-12 h-12 rounded-xl border transition-colors flex items-center justify-center shadow-sm warna-aksen" style="border-color: var(--warna-aksen); background-color: rgba(var(--warna-aksen-rgb), 0.1);">
+            <button onclick="zoomOut()" class="w-12 h-12 rounded-xl border transition-colors flex items-center justify-center shadow-sm warna-aksen" style="border-color: var(--warna-aksen); background-color: rgba(var(--warna-aksen-rgb), 0.1);">
+                <i class="fas fa-search-minus"></i>
+            </button>
+            <button onclick="zoomIn()" class="w-12 h-12 rounded-xl border transition-colors flex items-center justify-center shadow-sm warna-aksen" style="border-color: var(--warna-aksen); background-color: rgba(var(--warna-aksen-rgb), 0.1);">
                 <i class="fas fa-search-plus"></i>
             </button>
             <button id="btnNext" class="w-12 h-12 rounded-xl bg-black/5 warna-teks hover:bg-black/80 hover:text-white transition-colors flex items-center justify-center shadow-sm">
@@ -175,7 +178,7 @@
 
     <script>
         // ==========================================
-        // DEKLARASI VARIABEL GLOBAL (ANTI-CRASH TDZ)
+        // DEKLARASI VARIABEL GLOBAL
         // ==========================================
         let db = null;
         const sbUrl = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
@@ -184,18 +187,15 @@
 
         // TUNGGU SEMUA SCRIPT DEFER SELESAI DIMUAT
         window.addEventListener('DOMContentLoaded', () => {
-            // 1. Inisialisasi Tema
             const theme = localStorage.getItem('appTheme') || 'mint';
             const font = localStorage.getItem('appFont') || 'jelly';
             document.body.className = `tema-${theme}`;
             document.body.setAttribute('data-font', font);
 
-            // 2. Inisialisasi Supabase (Sekarang Aman karena supabase.js sudah di-download)
             if (typeof supabase !== 'undefined') {
                 db = supabase.createClient(sbUrl, sbKey, { auth: { persistSession: false }});
             }
 
-            // 3. Inisialisasi PDF Worker
             if(window.pdfjsLib) {
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
             }
@@ -263,7 +263,9 @@
 
             modal.classList.remove('hidden'); loader.classList.remove('hidden');
             document.getElementById('viewerTitle').innerText = title;
-            scale = window.innerWidth < 640 ? 0.6 : 1.2; 
+            
+            // Atur zoom standar sedikit lebih kecil untuk desktop
+            scale = window.innerWidth < 640 ? 0.6 : 1.0; 
 
             try {
                 loaderText.innerText = "LOADING CACHE...";
@@ -295,7 +297,7 @@
         }
 
         // ==========================================
-        // UPLOAD & INDEXING AI (PERBAIKAN DB TDZ)
+        // UPLOAD & INDEXING AI
         // ==========================================
         async function processPDF() {
             if (!db) return alert("System connecting, please wait a moment.");
@@ -377,12 +379,27 @@
             } catch (e) { statusDiv.innerHTML += `<br><span class="text-red-500 mt-2 block">❌ ERROR: ${e.message}</span>`; }
         }
 
-        // Helpers
+        // ==========================================
+        // HELPERS & KONTROL ZOOM BARU
+        // ==========================================
         function toggleAdminPanel() { document.getElementById('adminPanel').classList.toggle('hidden'); }
         function closePdfViewer() { document.getElementById('pdfViewerModal').classList.add('hidden'); pdfDoc = null; }
+        
         document.getElementById('btnPrev').onclick = () => { if(pageNum > 1) { pageNum--; renderPage(pageNum); }};
         document.getElementById('btnNext').onclick = () => { if(pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); }};
-        function toggleZoom() { scale = scale === 1.2 ? 0.6 : 1.2; renderPage(pageNum); }
+        
+        // FUNGSI ZOOM IN & ZOOM OUT BERTAHAP
+        function zoomIn() { 
+            if (scale >= 10.0) return; // Maksimal 1000%
+            scale += 0.2; 
+            renderPage(pageNum); 
+        }
+        
+        function zoomOut() { 
+            if (scale <= 0.4) return; // Minimal 40%
+            scale -= 0.2; 
+            renderPage(pageNum); 
+        }
     </script>
 </body>
 </html>
