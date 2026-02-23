@@ -27,10 +27,10 @@
             transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
 
-        /* Override CSS Status Bar Offline (Biar di Kiri Bawah) */
+        /* Posisi Status Bar Offline di Kiri Bawah */
         #hexindo-status-badge {
             top: auto !important; right: auto !important;
-            bottom: 20px !important; left: 20px !important;
+            bottom: 24px !important; left: 24px !important;
             z-index: 9999 !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
@@ -174,34 +174,39 @@
     <script src="./assets/js/offline-manager.js" defer></script>
 
     <script>
-        // --- 1. INISIALISASI TEMA (LOGIKA LAMA DIHAPUS, DIGANTIKAN SPLASH.JS) ---
-        const App = {
-            init() {
-                const theme = localStorage.getItem('appTheme') || 'mint';
-                const font = localStorage.getItem('appFont') || 'jelly';
-                document.body.className = `tema-${theme}`;
-                document.body.setAttribute('data-font', font);
-            }
-        };
-
-        window.addEventListener('DOMContentLoaded', () => App.init());
-
-        // --- 2. LOGIKA DIAGNOSTIC ASLI ---
+        // ==========================================
+        // DEKLARASI VARIABEL GLOBAL (ANTI-CRASH TDZ)
+        // ==========================================
+        let db = null;
         const sbUrl = 'https://corpgiuxyhfxdnqwwmlv.supabase.co';
         const sbKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNvcnBnaXV4eWhmeGRucXd3bWx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMDMwNzcsImV4cCI6MjA4NTg3OTA3N30.PMp5yZOISYrBG0UUcIGaXUPnmEAaWVKgQ3Y1W8Nea_E';
-        
-        // Matikan session auth agar tidak bentrok dengan offline-manager
-        const db = supabase.createClient(sbUrl, sbKey, { auth: { persistSession: false }});
+        let pdfDoc = null, pageNum = 1, pageRendering = false, scale = 1.0;
 
-        window.addEventListener('load', () => {
+        // TUNGGU SEMUA SCRIPT DEFER SELESAI DIMUAT
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. Inisialisasi Tema
+            const theme = localStorage.getItem('appTheme') || 'mint';
+            const font = localStorage.getItem('appFont') || 'jelly';
+            document.body.className = `tema-${theme}`;
+            document.body.setAttribute('data-font', font);
+
+            // 2. Inisialisasi Supabase (Sekarang Aman karena supabase.js sudah di-download)
+            if (typeof supabase !== 'undefined') {
+                db = supabase.createClient(sbUrl, sbKey, { auth: { persistSession: false }});
+            }
+
+            // 3. Inisialisasi PDF Worker
             if(window.pdfjsLib) {
                 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
             }
         });
 
-        let pdfDoc = null, pageNum = 1, pageRendering = false, scale = 1.0;
-
+        // ==========================================
+        // LOGIKA DIAGNOSTIC
+        // ==========================================
         async function searchManual() {
+            if (!db) return alert("System connecting, please try again in a moment.");
+            
             const query = document.getElementById('searchInput').value;
             const resultsDiv = document.getElementById('resultsArea');
             if (!query) return;
@@ -289,7 +294,12 @@
             document.getElementById('pageIndicator').innerText = `PAGE ${num} / ${pdfDoc.numPages}`;
         }
 
+        // ==========================================
+        // UPLOAD & INDEXING AI (PERBAIKAN DB TDZ)
+        // ==========================================
         async function processPDF() {
+            if (!db) return alert("System connecting, please wait a moment.");
+
             const fileInput = document.getElementById('pdfUploader');
             const titleInput = document.getElementById('manualTitle').value;
             const statusDiv = document.getElementById('uploadStatus');
